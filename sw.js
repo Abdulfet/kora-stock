@@ -1,16 +1,14 @@
 // =============================================================================
-// ኮራ ስቶክ — የኦፍላይን መሸጎጫ (sw.js — v14)
+// ኮራ ስቶክ — የኦፍላይን መሸጎጫ (sw.js — v15)
 // =============================================================================
-const SHELL_CACHE = 'korastock-shell-v14';
-const CDN_CACHE = 'korastock-cdn-v14';
+const SHELL_CACHE = 'korastock-shell-v15';
+const CDN_CACHE = 'korastock-cdn-v15';
 
 const SHELL_ASSETS = [
   './',
   './index.html',
   './manifest.json',
   './icon.svg',
-  './icon-192.png',
-  './icon-512.png',
   './kora-api.js',
   './kora-analytics.js',
   './kora-pro.js'
@@ -56,7 +54,11 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(req.url);
 
-  if (url.hostname.includes('supabase.co') || url.pathname.includes('/rest/v1/') || url.pathname.includes('/functions/v1/')) {
+  if (
+    url.hostname.includes('supabase.co') ||
+    url.pathname.includes('/rest/v1/') ||
+    url.pathname.includes('/functions/v1/')
+  ) {
     return;
   }
 
@@ -86,6 +88,8 @@ self.addEventListener('fetch', (event) => {
         }
         return res;
       })
-      .catch(() => caches.match(req).then((cached) => cached || caches.match('./index.html')))
+      .catch(() =>
+        caches.match(req).then((cached) => cached || caches.match('./index.html'))
+      )
   );
 });
