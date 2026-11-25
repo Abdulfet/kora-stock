@@ -1,8 +1,8 @@
 // =============================================================================
-// ኮራ ስቶክ — የኦፍላይን መሸጎጫ (sw.js)
+// ኮራ ስቶክ — የኦፍላይን መሸጎጫ (sw.js — v13)
 // =============================================================================
-const SHELL_CACHE = 'korastock-shell-v12';
-const CDN_CACHE = 'korastock-cdn-v12';
+const SHELL_CACHE = 'korastock-shell-v13';
+const CDN_CACHE = 'korastock-cdn-v13';
 
 const SHELL_ASSETS = [
   './',
@@ -10,7 +10,8 @@ const SHELL_ASSETS = [
   './manifest.json',
   './icon.svg',
   './kora-api.js',
-  './kora-analytics.js'
+  './kora-analytics.js',
+  './kora-pro.js'
 ];
 
 self.addEventListener('install', (event) => {
@@ -53,12 +54,10 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(req.url);
 
-  // የዳታቤዝና የመልዕክት ሰርቨር ጥያቄዎች ሳይሸጎጡ በቀጥታ ያልፋሉ
   if (url.hostname.includes('supabase.co') || url.pathname.includes('/rest/v1/') || url.pathname.includes('/functions/v1/')) {
     return;
   }
 
-  // የውጭ የፒዲኤፍ ላይብረሪዎች
   if (url.origin !== self.location.origin) {
     event.respondWith(
       caches.open(CDN_CACHE).then((cache) =>
@@ -76,7 +75,6 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // የአፑ ዋና ፋይሎች
   event.respondWith(
     fetch(req, { cache: 'no-store' })
       .then((res) => {
