@@ -1,8 +1,8 @@
 // =============================================================================
-// ኮራ ስቶክ — የኦፍላይን መሸጎጫ (sw.js — v18)
+// ኮራ ስቶክ — የኦፍላይን መሸጎጫ (sw.js — v19)
 // =============================================================================
-const SHELL_CACHE = 'korastock-shell-v18';
-const CDN_CACHE = 'korastock-cdn-v18';
+const SHELL_CACHE = 'korastock-shell-v19';
+const CDN_CACHE = 'korastock-cdn-v19';
 
 const SHELL_ASSETS = [
   './',
@@ -12,7 +12,8 @@ const SHELL_ASSETS = [
   './kora-api.js',
   './kora-analytics.js',
   './kora-pro.js',
-  './kora-tally-pro.js'
+  './kora-tally-pro.js',
+  './kora-enterprise.js'
 ];
 
 self.addEventListener('install', (event) => {
