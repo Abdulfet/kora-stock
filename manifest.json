@@ -1,15 +1,14 @@
 {
-  "id": "./",
+  "id": "/kora-stock/",
   "name": "ኮራ ስቶክ · Kora Stock",
   "short_name": "ኮራ ስቶክ",
   "description": "ዘመናዊ የንግድ፣ የመጋዘን፣ የቆጠራ እና የማጓጓዣ አስተዳደር",
-  "start_url": "./",
-  "scope": "./",
+  "start_url": "/kora-stock/",
+  "scope": "/kora-stock/",
   "display": "standalone",
-  "display_override": ["standalone", "minimal-ui"],
   "orientation": "portrait",
   "background_color": "#060a12",
-  "theme_color": "#0b1220",
+  "theme_color": "#060a12",
   "lang": "am",
   "icons": [
     {
@@ -19,12 +18,6 @@
       "purpose": "any"
     },
     {
-      "src": "./icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "maskable"
-    },
-    {
       "src": "./icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
@@ -35,6 +28,12 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
+    },
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
     }
   ]
 }
