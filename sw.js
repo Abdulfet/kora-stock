@@ -1,8 +1,8 @@
 // =============================================================================
-// ኮራ ስቶክ — የኦፍላይን መሸጎጫ (sw.js — v17)
+// ኮራ ስቶክ — የኦፍላይን መሸጎጫ (sw.js — v18)
 // =============================================================================
-const SHELL_CACHE = 'korastock-shell-v17';
-const CDN_CACHE = 'korastock-cdn-v17';
+const SHELL_CACHE = 'korastock-shell-v18';
+const CDN_CACHE = 'korastock-cdn-v18';
 
 const SHELL_ASSETS = [
   './',
@@ -52,14 +52,9 @@ self.addEventListener('message', (event) => {
 self.addEventListener('fetch', (event) => {
   const req = event.request;
   if (req.method !== 'GET') return;
-
   const url = new URL(req.url);
 
-  if (
-    url.hostname.includes('supabase.co') ||
-    url.pathname.includes('/rest/v1/') ||
-    url.pathname.includes('/functions/v1/')
-  ) {
+  if (url.hostname.includes('supabase.co') || url.pathname.includes('/rest/v1/') || url.pathname.includes('/functions/v1/')) {
     return;
   }
 
@@ -89,8 +84,6 @@ self.addEventListener('fetch', (event) => {
         }
         return res;
       })
-      .catch(() =>
-        caches.match(req).then((cached) => cached || caches.match('./index.html'))
-      )
+      .catch(() => caches.match(req).then((cached) => cached || caches.match('./index.html')))
   );
 });

@@ -1,24 +1,24 @@
 // =============================================================================
-// ኮራ ስቶክ — ባለ 1-ስክሪን ፕሮፌሽናል ቆጠራ ሞተር (kora-tally-pro.js — ክፍል 1 ከ 2)
+// ኮራ ስቶክ — ባለ 1-ስክሪን ፕሮፌሽናል ቆጠራ ሞተር (kora-tally-pro.js — v18)
 // • 100% የሻርፕ ሜታል ባለ 1-ስክሪን አቀማመጥ (ያለ Scroll)
 // • 7 የቆጠራ ሲስተሞች: 10-ሳጥን ንኪኪ፣ መንሸራተቻ፣ ባለብዙ-ተሸካሚ፣ ተቀያያሪ ሸክም፣
-//   ብሉቱዝ/ኪቦርድ፣ የክብደት/ጥቅል ቀያሪ፣ እና የካሜራ መስመር መሻገሪያ (Tripwire)
-// • የድምፅ ሞተር: የተጫነ ብዛት / የክሊክ ብዛት / ሁለቱንም + የስልክ ቋንቋዎች +
-//   ኦፍላይን የሚወርድና የሚቀረጽ የአማርኛ/ሌላ ቋንቋ ድምፅ ስቱዲዮ (IndexedDB)
+//   ብሉቱዝ/ኪቦርድ፣ የክብደት/ጥቅል ቀያሪ እና የካሜራ በር መሻገሪያ (Tripwire)
+// • የድምፅ ሞተር: የተጫነ ብዛት / የክሊክ ቁጥር / ሁለቱንም + ኦፍላይን የድምፅ ስቱዲዮ
 // =============================================================================
 (function (global) {
   'use strict';
 
-  const VOICE_DB_NAME = 'kora_voice_packs_v1';
+  const VOICE_DB = 'kora_voice_packs_v1';
   const VOICE_STORE = 'packs';
+  const PRESETS = [1, 2, 3, 5, 10, 15, 20];
 
   const TALLY_MODES = [
-    { id: 'tap',      icon: '⚡', am: 'መደበኛ ንኪኪ (10-ዙር)',     en: 'Standard Tap (10-Box)' },
-    { id: 'swipe',    icon: '👉', am: 'መንሸራተቻ (Slide)',         en: 'Slide-to-Count' },
-    { id: 'carriers', icon: '👷', am: 'ባለብዙ-ተሸካሚ (2–4 ጫኞች)', en: 'Multi-Carrier (2–4)' },
+    { id: 'tap',      icon: '⚡', am: 'መደበኛ ንኪኪ (10-ዙር)',      en: 'Standard Tap (10-Box)' },
+    { id: 'swipe',    icon: '👉', am: 'መንሸራተቻ (Slide)',          en: 'Slide-to-Count' },
+    { id: 'carriers', icon: '👷', am: 'ባለብዙ-ተሸካሚ (2–4 ጫኞች)',  en: 'Multi-Carrier (2–4)' },
     { id: 'mixed',    icon: '🎛️', am: 'ተቀያያሪ ሸክም (Mixed Pad)', en: 'Mixed Load Pad' },
-    { id: 'clicker',  icon: '🎮', am: 'ብሉቱዝ / ኪቦርድ ቆጣሪ',     en: 'Bluetooth / Key Clicker' },
-    { id: 'weight',   icon: '⚖️', am: 'የክብደት / ጥቅል ቀያሪ',      en: 'Weight & Pack Calc' },
+    { id: 'clicker',  icon: '🎮', am: 'ብሉቱዝ / ኪቦርድ ቆጣሪ',      en: 'Bluetooth / Key Clicker' },
+    { id: 'weight',   icon: '⚖️', am: 'የክብደት / ጥቅል ቀያሪ',       en: 'Weight & Pack Calc' },
     { id: 'camera',   icon: '📷', am: 'የካሜራ በር ቆጣሪ (Tripwire)', en: 'Camera Tripwire Count' }
   ];
 
@@ -42,537 +42,55 @@
     60: 'sidsa', 70: 'seba', 80: 'semanya', 90: 'zetena', 100: 'meto'
   };
 
+  let detectedStrokeFmt = null;
+  let lastTapTs = 0;
+  let camStream = null;
+  let camRafId = null;
+  let camCanvas = null;
+  let camCtx = null;
+  let camPrevL = null;
+  let camPrevR = null;
+  let camLastTrig = 0;
+  let camLastZone = null;
+  let camLastZoneTs = 0;
+  let timerId = null;
+  let hooksReady = false;
+  let origCommitFn = null;
+
   // ---------------------------------------------------------------------------
-  // 1. ባለ 1-ስክሪን የሻርፕ ሜታል ስታይሎች (CSS)
+  // 1. መሠረታዊ አጋዥ ፋንክሽኖች (በቀጥታ state ን የሚያነቡ)
   // ---------------------------------------------------------------------------
-  function injectTallyProStyles() {
-    if (document.getElementById('koraTallyProCss')) return;
-    const st = document.createElement('style');
-    st.id = 'koraTallyProCss';
-    st.textContent = `
-      /* በቆጠራ ገጽ ላይ ቦታ የሚበላውን መፈለጊያና ድርብ ታብ በመደበቅ 1-ስክሪን ማድረግ */
-      body.ktp-active .search-wrap { display: none !important; }
-      body.ktp-active #subTabsBar { display: none !important; }
-      body.ktp-active #viewRoot {
-        padding: 4px 8px 6px !important;
-        overflow: hidden !important;
-        display: flex !important;
-        flex-direction: column !important;
-        gap: 5px !important;
-      }
-
-      .ktp-shell {
-        display: flex;
-        flex-direction: column;
-        flex: 1;
-        min-height: 0;
-        gap: 5px;
-      }
-
-      /* ረድፍ 1: ታቦች + ቁልፍ + ቅንብር በአንድ መስመር */
-      .ktp-toprow {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        flex-shrink: 0;
-      }
-      .ktp-subtabs {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 4px;
-        flex: 1;
-        min-width: 0;
-      }
-      .ktp-tab {
-        height: 30px;
-        padding: 0 4px;
-        border-radius: 10px;
-        border: 1px solid var(--border-strong);
-        background: rgba(15, 23, 42, 0.85);
-        color: var(--muted);
-        font-size: 10.5px;
-        font-weight: 800;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        cursor: pointer;
-      }
-      .ktp-tab.on {
-        background: rgba(20, 184, 166, 0.22);
-        border-color: var(--teal);
-        color: #5eead4;
-      }
-      .ktp-sqbtn {
-        width: 30px;
-        height: 30px;
-        border-radius: 9px;
-        border: 1px solid var(--border-strong);
-        background: rgba(15, 23, 42, 0.9);
-        color: var(--text);
-        font-size: 14px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-        cursor: pointer;
-      }
-      .ktp-sqbtn.locked {
-        background: rgba(245, 158, 11, 0.22);
-        border-color: var(--amber);
-      }
-
-      /* ረድፍ 2: የቲኬት ዝርዝር እና የዕቃ መስመር (በቀጭን ቅርጽ) */
-      .ktp-strip {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        overflow-x: auto;
-        flex-shrink: 0;
-        padding: 1px 0;
-      }
-      .ktp-chip {
-        height: 26px;
-        padding: 0 9px;
-        border-radius: 13px;
-        border: 1px solid var(--border-strong);
-        background: rgba(15, 23, 42, 0.8);
-        color: var(--text);
-        font-size: 11px;
-        font-weight: 800;
-        white-space: nowrap;
-        flex-shrink: 0;
-        cursor: pointer;
-      }
-      .ktp-chip.on { background: var(--teal); border-color: var(--teal); color: #041b1a; }
-      .ktp-chip.done { background: rgba(16, 185, 129, 0.2); border-color: var(--emerald); color: #6ee7b7; }
-      .ktp-chip.add { border-style: dashed; border-color: var(--amber); color: var(--amber); background: transparent; }
-
-      .ktp-bar {
-        display: grid;
-        gap: 4px;
-        align-items: center;
-        flex-shrink: 0;
-      }
-      .ktp-bar.ticket { grid-template-columns: 52px 74px 1fr 28px; }
-      .ktp-bar.free   { grid-template-columns: 1fr 84px 30px; }
-      .ktp-bar.audit  { grid-template-columns: 1fr 78px; }
-      .ktp-mini-inp {
-        height: 29px;
-        padding: 0 8px;
-        border-radius: 8px;
-        border: 1px solid var(--border-strong);
-        background: rgba(11, 18, 32, 0.95);
-        color: var(--text);
-        font-size: 11.5px;
-        font-weight: 700;
-        min-width: 0;
-        width: 100%;
-      }
-      .ktp-dir-btn {
-        height: 29px;
-        border-radius: 8px;
-        border: 1px solid rgba(239, 68, 68, 0.5);
-        background: rgba(239, 68, 68, 0.18);
-        color: #fca5a5;
-        font-size: 11px;
-        font-weight: 900;
-        cursor: pointer;
-      }
-      .ktp-dir-btn.in {
-        border-color: rgba(16, 185, 129, 0.5);
-        background: rgba(16, 185, 129, 0.2);
-        color: #6ee7b7;
-      }
-
-      /* ረድፍ 3: የአንድ ሸክም መጠን */
-      .ktp-loadbox {
-        background: rgba(15, 23, 42, 0.8);
-        border: 1px solid var(--border);
-        border-radius: 10px;
-        padding: 4px 6px;
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-        flex-shrink: 0;
-      }
-      .ktp-loadhead {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        font-size: 10px;
-        color: var(--muted);
-        font-weight: 700;
-      }
-      .ktp-presets {
-        display: grid;
-        grid-template-columns: repeat(8, 1fr);
-        gap: 3px;
-      }
-      .ktp-pbtn {
-        height: 26px;
-        border-radius: 7px;
-        border: 1px solid var(--border-strong);
-        background: rgba(11, 18, 32, 0.9);
-        color: var(--text);
-        font-size: 11px;
-        font-weight: 800;
-        font-family: ui-monospace, monospace;
-        cursor: pointer;
-      }
-      .ktp-pbtn.on {
-        background: var(--teal);
-        border-color: var(--teal);
-        color: #032220;
-      }
-
-      /* ረድፍ 4: ዋናው የቆጠራ መድረክ (Flex 1 — በስክሪኑ ልክ ይለጠጣል) */
-      .ktp-board {
-        flex: 1;
-        min-height: 0;
-        display: flex;
-        flex-direction: column;
-        background: rgba(11, 18, 32, 0.92);
-        border: 1px solid var(--border-strong);
-        border-radius: 13px;
-        padding: 6px;
-        gap: 6px;
-        position: relative;
-        overflow: hidden;
-      }
-      .ktp-prog {
-        height: 4px;
-        border-radius: 4px;
-        background: rgba(51, 65, 85, 0.65);
-        overflow: hidden;
-        flex-shrink: 0;
-      }
-      .ktp-prog-fill {
-        height: 100%;
-        background: linear-gradient(90deg, var(--teal), var(--emerald));
-        transition: width 0.16s ease;
-      }
-      .ktp-kpis {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 4px;
-        flex-shrink: 0;
-      }
-      .ktp-kpi {
-        background: rgba(15, 23, 42, 0.85);
-        border: 1px solid var(--border);
-        border-radius: 9px;
-        padding: 4px 3px;
-        text-align: center;
-      }
-      .ktp-kpi span { display: block; font-size: 9px; color: var(--muted); font-weight: 700; }
-      .ktp-kpi b { display: block; font-size: 16px; font-family: ui-monospace, monospace; font-weight: 900; line-height: 1.15; margin-top: 1px; }
-      .ktp-kpi.c-teal b { color: #2dd4bf; }
-      .ktp-kpi.c-em b { color: #34d399; }
-      .ktp-kpi.c-amb b { color: #fbbf24; }
-      .ktp-kpi.c-sky b { color: #38bdf8; }
-      .ktp-kpi.c-rose b { color: #fb7185; }
-
-      .ktp-target-ok {
-        background: rgba(16, 185, 129, 0.22);
-        border: 1px solid var(--emerald);
-        color: #6ee7b7;
-        font-size: 11px;
-        font-weight: 900;
-        text-align: center;
-        padding: 4px;
-        border-radius: 8px;
-        flex-shrink: 0;
-      }
-
-      /* የመሃል መድረክ */
-      .ktp-stage {
-        flex: 1;
-        min-height: 0;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        position: relative;
-        overflow: hidden;
-      }
-      .ktp-round-box {
-        background: rgba(15, 23, 42, 0.72);
-        border: 1px solid var(--border);
-        border-radius: 11px;
-        padding: 7px;
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-      }
-      .ktp-round-head {
-        display: flex;
-        justify-content: space-between;
-        font-size: 10.5px;
-        font-weight: 800;
-        color: var(--muted);
-        font-family: ui-monospace, monospace;
-      }
-      .ktp-grid10 {
-        display: grid;
-        grid-template-columns: repeat(5, 1fr);
-        gap: 5px;
-      }
-      .ktp-cell {
-        height: 36px;
-        border-radius: 9px;
-        border: 1px solid var(--border-strong);
-        background: rgba(6, 10, 18, 0.65);
-        color: var(--muted);
-        font-family: ui-monospace, monospace;
-        font-size: 12px;
-        font-weight: 800;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.12s ease;
-      }
-      .ktp-cell.hit {
-        background: rgba(20, 184, 166, 0.2);
-        border-color: var(--teal);
-        color: #5eead4;
-      }
-      .ktp-cell.last {
-        border-width: 2px;
-        border-color: #2dd4bf;
-        box-shadow: 0 0 10px rgba(45, 212, 191, 0.35);
-      }
-
-      /* ቆጠራው ሲቆለፍ ቁጥሮቹን ሳይደብቅ በግልጽ የሚታይ ባነር */
-      .ktp-lock-overlay {
-        position: absolute;
-        inset: 0;
-        background: rgba(6, 10, 18, 0.76);
-        backdrop-filter: blur(2px);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-        border-radius: 10px;
-        z-index: 5;
-      }
-
-      .ktp-meta-foot {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 6px;
-        font-size: 10px;
-        color: var(--muted);
-        font-family: ui-monospace, monospace;
-        flex-shrink: 0;
-        overflow: hidden;
-      }
-      .ktp-speed-pill {
-        padding: 1px 6px;
-        border-radius: 99px;
-        border: 1px solid rgba(245, 158, 11, 0.45);
-        background: rgba(245, 158, 11, 0.12);
-        color: #fcd34d;
-        font-size: 9.5px;
-        font-weight: 800;
-        white-space: nowrap;
-      }
-
-      /* ረድፍ 5: ቋሚ የአውራ-ጣት መቁጠሪያ ዶክ */
-      .ktp-dock {
-        display: flex;
-        flex-direction: column;
-        gap: 5px;
-        flex-shrink: 0;
-      }
-      .ktp-main-tap {
-        height: 52px;
-        border-radius: 13px;
-        border: 2px solid var(--teal);
-        background: linear-gradient(180deg, rgba(20, 184, 166, 0.28), rgba(13, 148, 136, 0.16));
-        color: #f0fdfa;
-        font-size: 17px;
-        font-weight: 900;
-        letter-spacing: 0.3px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        cursor: pointer;
-        user-select: none;
-        -webkit-tap-highlight-color: transparent;
-      }
-      .ktp-main-tap:active { transform: scale(0.97); background: rgba(20, 184, 166, 0.45); }
-      .ktp-main-tap.locked { opacity: 0.45; border-color: var(--amber); }
-
-      /* መንሸራተቻ ቆጣሪ (Slide-to-Count) */
-      .ktp-slider-track {
-        height: 52px;
-        border-radius: 14px;
-        border: 2px solid var(--teal);
-        background: rgba(11, 18, 32, 0.95);
-        position: relative;
-        overflow: hidden;
-        touch-action: none;
-        user-select: none;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-      .ktp-slider-fill {
-        position: absolute;
-        left: 0; top: 0; bottom: 0;
-        width: 0%;
-        background: rgba(20, 184, 166, 0.32);
-        pointer-events: none;
-      }
-      .ktp-slider-thumb {
-        position: absolute;
-        left: 3px; top: 3px;
-        width: 58px; height: 42px;
-        border-radius: 10px;
-        background: var(--teal);
-        color: #032220;
-        font-size: 17px;
-        font-weight: 900;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: grab;
-        box-shadow: 0 2px 10px rgba(20, 184, 166, 0.45);
-      }
-
-      /* ባለብዙ-ተሸካሚ ቁልፎች */
-      .ktp-carrier-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 6px;
-      }
-      .ktp-carrier-btn {
-        height: 54px;
-        border-radius: 12px;
-        border: 2px solid var(--teal);
-        background: rgba(15, 23, 42, 0.92);
-        color: var(--text);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 2px;
-        cursor: pointer;
-        user-select: none;
-      }
-      .ktp-carrier-btn:active { transform: scale(0.96); }
-
-      /* ተቀያያሪ ሸክም (Mixed Load Pad) */
-      .ktp-mixed-grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 6px;
-      }
-      .ktp-mixed-btn {
-        height: 48px;
-        border-radius: 11px;
-        border: 1.5px solid var(--teal);
-        background: rgba(20, 184, 166, 0.14);
-        color: #5eead4;
-        font-size: 16px;
-        font-weight: 900;
-        font-family: ui-monospace, monospace;
-        cursor: pointer;
-      }
-      .ktp-mixed-btn:active { transform: scale(0.95); background: rgba(20, 184, 166, 0.35); }
-
-      /* የካሜራ በር ቆጣሪ */
-      .ktp-cam-wrap {
-        position: relative;
-        width: 100%;
-        flex: 1;
-        min-height: 125px;
-        border-radius: 10px;
-        overflow: hidden;
-        background: #020617;
-        border: 1px solid var(--teal);
-      }
-      .ktp-cam-wrap video {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        display: block;
-      }
-      .ktp-cam-line {
-        position: absolute;
-        top: 0; bottom: 0; left: 50%;
-        width: 3px;
-        background: #f59e0b;
-        box-shadow: 0 0 12px #f59e0b;
-        pointer-events: none;
-      }
-      .ktp-cam-hud {
-        position: absolute;
-        top: 6px; left: 6px; right: 6px;
-        display: flex;
-        justify-content: space-between;
-        pointer-events: none;
-      }
-
-      /* 4ቱ የታችኛው እርምጃ ቁልፎች */
-      .ktp-actions {
-        display: grid;
-        grid-template-columns: 1fr 1fr 1fr 1.65fr;
-        gap: 5px;
-      }
-      .ktp-act {
-        height: 38px;
-        border-radius: 10px;
-        border: 1px solid var(--border-strong);
-        background: rgba(15, 23, 42, 0.92);
-        color: var(--text);
-        font-size: 11.5px;
-        font-weight: 800;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 4px;
-        cursor: pointer;
-        white-space: nowrap;
-      }
-      .ktp-act.primary {
-        background: var(--teal);
-        border-color: var(--teal);
-        color: #032220;
-        font-weight: 900;
-      }
-
-      /* የድምፅ ስቱዲዮ */
-      .ktp-vrow {
-        display: grid;
-        grid-template-columns: 1fr auto auto auto;
-        gap: 5px;
-        align-items: center;
-        padding: 5px 7px;
-        border-radius: 9px;
-        background: rgba(15, 23, 42, 0.8);
-        border: 1px solid var(--border);
-      }
-    `;
-    document.head.appendChild(st);
+  function hasState() { return typeof state !== 'undefined' && state && typeof state === 'object'; }
+  function isAm() { return !hasState() || state.lang !== 'en'; }
+  function tl(am, en) { return isAm() ? am : en; }
+  function safeEsc(s) { return typeof esc === 'function' ? esc(s) : String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+  function safeNum(n) { return typeof fmtNum === 'function' ? fmtNum(n) : Number(n || 0).toLocaleString(); }
+  function activeBr() {
+    if (!hasState()) return '';
+    if (state.branchScope && state.branchScope !== 'all') return state.branchScope;
+    return state.branches?.[0]?.name || '';
+  }
+  function itemStock(it, br) {
+    if (!it) return 0;
+    if (typeof getItemStock === 'function') return Number(getItemStock(it, br || 'all') || 0);
+    if (it.branchStock && br && br !== 'all') return Number(it.branchStock[br] || 0);
+    return Number(it.stock ?? it.qty ?? 0);
+  }
+  function unitLbl(it) {
+    if (!it) return '';
+    if (typeof getUnitLabel === 'function') return getUnitLabel(it);
+    return it.unit || '';
   }
 
-  // ---------------------------------------------------------------------------
-  // 2. የቆጠራ ፕሮ ሁኔታ (State) እና የStroke ቅርጸት አዋቂ
-  // ---------------------------------------------------------------------------
-  let detectedStrokeFmt = null;
-
-  function detectStrokeFormat() {
+  function detectStrokeFmt() {
     if (detectedStrokeFmt) return detectedStrokeFmt;
-    if (typeof global.sumStrokes === 'function') {
+    if (typeof sumStrokes === 'function') {
       try {
-        if (global.sumStrokes([5]) === 5) return (detectedStrokeFmt = 'number');
-        if (global.sumStrokes([{ qty: 5 }]) === 5) return (detectedStrokeFmt = 'qty');
-        if (global.sumStrokes([{ v: 5 }]) === 5) return (detectedStrokeFmt = 'v');
-        if (global.sumStrokes([{ val: 5 }]) === 5) return (detectedStrokeFmt = 'val');
-        if (global.sumStrokes([{ count: 5 }]) === 5) return (detectedStrokeFmt = 'count');
+        if (sumStrokes([5]) === 5) return (detectedStrokeFmt = 'number');
+        if (sumStrokes([{ qty: 5 }]) === 5) return (detectedStrokeFmt = 'qty');
+        if (sumStrokes([{ v: 5 }]) === 5) return (detectedStrokeFmt = 'v');
+        if (sumStrokes([{ val: 5 }]) === 5) return (detectedStrokeFmt = 'val');
+        if (sumStrokes([{ count: 5 }]) === 5) return (detectedStrokeFmt = 'count');
       } catch {}
     }
     return (detectedStrokeFmt = 'number');
@@ -584,25 +102,37 @@
     return 0;
   }
 
-  function sumAnyStrokes(arr) {
+  function sumAny(arr) {
     return (arr || []).reduce((a, s) => a + strokeVal(s), 0);
   }
 
-  function ensureTallyProState() {
-    if (!global.state) return;
+  function makeStroke(qty, carrierId) {
+    const fmt = detectStrokeFmt();
+    const n = Number(qty || 0);
+    if (fmt === 'number') return n;
+    const o = { ts: Date.now() };
+    o[fmt] = n;
+    if (carrierId) o.carrierId = carrierId;
+    return o;
+  }
+
+  function ensureState() {
+    if (!hasState()) return;
     if (!state.tally) state.tally = {};
     if (!Array.isArray(state.tally.tickets)) state.tally.tickets = [];
     if (!Array.isArray(state.tally.history)) state.tally.history = [];
     if (!state.tally.free) state.tally.free = { note: '', target: 0, strokes: [] };
     if (!state.tally.audit) state.tally.audit = { itemId: state.inventory?.[0]?.id || null, strokes: [] };
+    if (!state.activeSubTab) state.activeSubTab = {};
+    if (!state.activeSubTab.tally) state.activeSubTab.tally = 'tickets';
 
-    const defaults = {
-      mode: 'tap',              // tap | swipe | carriers | mixed | clicker | weight | camera
-      loadSize: 10,
+    const defs = {
+      mode: 'tap',
+      loadSize: Number(state.tally.loadSize || state.tally.step || 10),
       locked: false,
       voiceEnabled: true,
-      voiceRead: 'qty',         // qty | clicks | both | beep
-      voiceLang: 'am-pack',     // am-pack | en-US | ar-SA | fr-FR | dev:<URI>
+      voiceRead: 'qty',      // qty | clicks | both | beep
+      voiceLang: 'am-pack',  // am-pack | en-US | ar-SA | om-pack | ti-pack | dev:...
       voiceRate: 1.05,
       debounceMs: 500,
       showTimer: true,
@@ -615,268 +145,755 @@
         { id: 'c3', name: 'ጫኝ 3', color: '#f59e0b' },
         { id: 'c4', name: 'ጫኝ 4', color: '#a855f7' }
       ],
-      camSensitivity: 30,
+      camSensitivity: 26,
       camCooldownMs: 1100,
-      camDir: 'LR',             // LR: ግራ->ቀኝ = +1, RL: ቀኝ->ግራ = +1
-      metaLogs: {},             // key -> [{ ts, dt, qty, carrierId }]
-      weightPerUnit: 1,
-      itemsPerPack: 10
+      camDir: 'LR',
+      metaLogs: {}
     };
-    state.tallyPro = Object.assign(defaults, state.tallyPro || {});
+    state.tallyPro = Object.assign(defs, state.tallyPro || {});
     if (!state.tallyPro.metaLogs) state.tallyPro.metaLogs = {};
   }
 
-  function isAm() {
-    return (global.state?.cfg?.lang || 'am') === 'am';
-  }
-  function tl(amTxt, enTxt) {
-    return isAm() ? amTxt : enTxt;
+  // ---------------------------------------------------------------------------
+  // 2. ባለ 1-ስክሪን የሻርፕ ሜታል CSS
+  // ---------------------------------------------------------------------------
+  function injectCss() {
+    if (document.getElementById('koraTallyProCss')) return;
+    const st = document.createElement('style');
+    st.id = 'koraTallyProCss';
+    st.textContent = `
+      body.ktp-active .search-wrap { display: none !important; }
+      body.ktp-active #subTabsBar { display: none !important; }
+      body.ktp-active .viewport { padding: 4px 8px 6px !important; overflow: hidden !important; display: flex !important; flex-direction: column !important; }
+      body.ktp-active #viewRoot { flex: 1 !important; min-height: 0 !important; display: flex !important; flex-direction: column !important; gap: 5px !important; overflow: hidden !important; }
+
+      .ktp-shell { display: flex; flex-direction: column; flex: 1; min-height: 0; gap: 5px; }
+      .ktp-toprow { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+      .ktp-subtabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; flex: 1; min-width: 0; }
+      .ktp-tab { height: 30px; padding: 0 3px; border-radius: 10px; border: 1px solid var(--border-strong); background: rgba(15,23,42,0.88); color: var(--muted); font-size: 10.5px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
+      .ktp-tab.on { background: rgba(20,184,166,0.22); border-color: var(--teal); color: #5eead4; }
+      .ktp-sq { width: 30px; height: 30px; border-radius: 9px; border: 1px solid var(--border-strong); background: rgba(15,23,42,0.92); color: var(--text); font-size: 14px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; cursor: pointer; }
+      .ktp-sq.locked { background: rgba(245,158,11,0.25); border-color: var(--amber); }
+
+      .ktp-strip { display: flex; align-items: center; gap: 4px; overflow-x: auto; flex-shrink: 0; padding: 1px 0; }
+      .ktp-chip { height: 26px; padding: 0 9px; border-radius: 13px; border: 1px solid var(--border-strong); background: rgba(15,23,42,0.85); color: var(--text); font-size: 11px; font-weight: 800; white-space: nowrap; flex-shrink: 0; cursor: pointer; }
+      .ktp-chip.on { background: var(--teal); border-color: var(--teal); color: #041b1a; }
+      .ktp-chip.done { background: rgba(16,185,129,0.22); border-color: var(--emerald); color: #6ee7b7; }
+      .ktp-chip.add { border-style: dashed; border-color: var(--amber); color: var(--amber); background: transparent; }
+
+      .ktp-bar { display: grid; gap: 4px; align-items: center; flex-shrink: 0; }
+      .ktp-bar.ticket { grid-template-columns: 50px 76px 1fr 28px; }
+      .ktp-bar.free   { grid-template-columns: 1fr 82px 30px; }
+      .ktp-bar.audit  { grid-template-columns: 1fr 78px; }
+      .ktp-inp { height: 29px; padding: 0 8px; border-radius: 8px; border: 1px solid var(--border-strong); background: rgba(11,18,32,0.95); color: var(--text); font-size: 11.5px; font-weight: 700; min-width: 0; width: 100%; }
+      .ktp-dir { height: 29px; border-radius: 8px; border: 1px solid rgba(239,68,68,0.55); background: rgba(239,68,68,0.2); color: #fca5a5; font-size: 11px; font-weight: 900; cursor: pointer; }
+      .ktp-dir.in { border-color: rgba(16,185,129,0.55); background: rgba(16,185,129,0.22); color: #6ee7b7; }
+
+      .ktp-loadbox { background: rgba(15,23,42,0.82); border: 1px solid var(--border); border-radius: 10px; padding: 4px 6px; display: flex; flex-direction: column; gap: 4px; flex-shrink: 0; }
+      .ktp-loadhead { display: flex; align-items: center; justify-content: space-between; font-size: 10px; color: var(--muted); font-weight: 700; }
+      .ktp-presets { display: grid; grid-template-columns: repeat(8, 1fr); gap: 3px; }
+      .ktp-pbtn { height: 26px; border-radius: 7px; border: 1px solid var(--border-strong); background: rgba(11,18,32,0.92); color: var(--text); font-size: 11px; font-weight: 800; font-family: ui-monospace, monospace; cursor: pointer; }
+      .ktp-pbtn.on { background: var(--teal); border-color: var(--teal); color: #032220; }
+
+      .ktp-board { flex: 1; min-height: 0; display: flex; flex-direction: column; background: rgba(11,18,32,0.94); border: 1px solid var(--border-strong); border-radius: 13px; padding: 6px; gap: 6px; position: relative; overflow: hidden; }
+      .ktp-prog { height: 4px; border-radius: 4px; background: rgba(51,65,85,0.65); overflow: hidden; flex-shrink: 0; }
+      .ktp-prog-fill { height: 100%; background: linear-gradient(90deg, var(--teal), var(--emerald)); transition: width 0.15s ease; }
+      .ktp-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; flex-shrink: 0; }
+      .ktp-kpi { background: rgba(15,23,42,0.88); border: 1px solid var(--border); border-radius: 9px; padding: 4px 3px; text-align: center; }
+      .ktp-kpi span { display: block; font-size: 9px; color: var(--muted); font-weight: 700; }
+      .ktp-kpi b { display: block; font-size: 16px; font-family: ui-monospace, monospace; font-weight: 900; line-height: 1.15; margin-top: 1px; }
+      .ktp-kpi.c-teal b { color: #2dd4bf; }
+      .ktp-kpi.c-em b { color: #34d399; }
+      .ktp-kpi.c-amb b { color: #fbbf24; }
+      .ktp-kpi.c-sky b { color: #38bdf8; }
+      .ktp-kpi.c-rose b { color: #fb7185; }
+
+      .ktp-ok-bar { background: rgba(16,185,129,0.22); border: 1px solid var(--emerald); color: #6ee7b7; font-size: 11px; font-weight: 900; text-align: center; padding: 3px 6px; border-radius: 8px; flex-shrink: 0; }
+      .ktp-stage { flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: center; position: relative; overflow: hidden; }
+      .ktp-rbox { background: rgba(15,23,42,0.72); border: 1px solid var(--border); border-radius: 11px; padding: 7px; display: flex; flex-direction: column; gap: 6px; }
+      .ktp-rhead { display: flex; justify-content: space-between; font-size: 10.5px; font-weight: 800; color: var(--muted); font-family: ui-monospace, monospace; }
+      .ktp-g10 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; }
+      .ktp-cell { height: 35px; border-radius: 9px; border: 1px solid var(--border-strong); background: rgba(6,10,18,0.65); color: var(--muted); font-family: ui-monospace, monospace; font-size: 12px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+      .ktp-cell.hit { background: rgba(20,184,166,0.2); border-color: var(--teal); color: #5eead4; }
+      .ktp-cell.last { border-width: 2px; border-color: #2dd4bf; box-shadow: 0 0 10px rgba(45,212,191,0.35); }
+
+      .ktp-lock-ov { position: absolute; inset: 0; background: rgba(6,10,18,0.78); backdrop-filter: blur(2px); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; border-radius: 10px; z-index: 5; }
+      .ktp-mfoot { display: flex; align-items: center; justify-content: space-between; gap: 6px; font-size: 10px; color: var(--muted); font-family: ui-monospace, monospace; flex-shrink: 0; overflow: hidden; }
+      .ktp-sp { padding: 1px 6px; border-radius: 99px; border: 1px solid rgba(245,158,11,0.45); background: rgba(245,158,11,0.12); color: #fcd34d; font-size: 9.5px; font-weight: 800; white-space: nowrap; }
+
+      .ktp-dock { display: flex; flex-direction: column; gap: 5px; flex-shrink: 0; }
+      .ktp-tap { height: 50px; border-radius: 13px; border: 2px solid var(--teal); background: linear-gradient(180deg, rgba(20,184,166,0.3), rgba(13,148,136,0.16)); color: #f0fdfa; font-size: 17px; font-weight: 900; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent; }
+      .ktp-tap:active { transform: scale(0.97); background: rgba(20,184,166,0.48); }
+      .ktp-tap.locked { opacity: 0.45; border-color: var(--amber); }
+
+      .ktp-slide { height: 50px; border-radius: 13px; border: 2px solid var(--teal); background: rgba(11,18,32,0.95); position: relative; overflow: hidden; touch-action: none; user-select: none; display: flex; align-items: center; justify-content: center; }
+      .ktp-sfill { position: absolute; left: 0; top: 0; bottom: 0; width: 0%; background: rgba(20,184,166,0.32); pointer-events: none; }
+      .ktp-sthumb { position: absolute; left: 3px; top: 3px; width: 58px; height: 40px; border-radius: 10px; background: var(--teal); color: #032220; font-size: 16px; font-weight: 900; display: flex; align-items: center; justify-content: center; cursor: grab; }
+
+      .ktp-cgrid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
+      .ktp-cbtn { height: 50px; border-radius: 12px; border: 2px solid var(--teal); background: rgba(15,23,42,0.92); color: var(--text); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; cursor: pointer; user-select: none; }
+      .ktp-cbtn:active { transform: scale(0.96); }
+
+      .ktp-mgrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; }
+      .ktp-mbtn { height: 42px; border-radius: 10px; border: 1.5px solid var(--teal); background: rgba(20,184,166,0.14); color: #5eead4; font-size: 15px; font-weight: 900; font-family: ui-monospace, monospace; cursor: pointer; }
+      .ktp-mbtn:active { transform: scale(0.95); background: rgba(20,184,166,0.35); }
+
+      .ktp-cam { position: relative; width: 100%; flex: 1; min-height: 118px; border-radius: 10px; overflow: hidden; background: #020617; border: 1px solid var(--teal); }
+      .ktp-cam video { width: 100%; height: 100%; object-fit: cover; display: block; }
+      .ktp-cline { position: absolute; top: 0; bottom: 0; left: 50%; width: 3px; background: #f59e0b; box-shadow: 0 0 12px #f59e0b; pointer-events: none; }
+      .ktp-chud { position: absolute; top: 6px; left: 6px; right: 6px; display: flex; justify-content: space-between; pointer-events: none; }
+
+      .ktp-acts { display: grid; grid-template-columns: 1fr 1fr 1fr 1.65fr; gap: 5px; }
+      .ktp-act { height: 37px; border-radius: 10px; border: 1px solid var(--border-strong); background: rgba(15,23,42,0.92); color: var(--text); font-size: 11px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 3px; cursor: pointer; white-space: nowrap; }
+      .ktp-act.primary { background: var(--teal); border-color: var(--teal); color: #032220; font-weight: 900; }
+
+      .ktp-vrow { display: grid; grid-template-columns: 1fr auto auto auto; gap: 5px; align-items: center; padding: 5px 7px; border-radius: 9px; background: rgba(15,23,42,0.85); border: 1px solid var(--border); }
+    `;
+    document.head.appendChild(st);
   }
 
   // ---------------------------------------------------------------------------
-  // 3. ኦፍላይን የድምፅ ጥቅል ማከማቻ (IndexedDB) + አማርኛ/ዓለም አቀፍ ድምፅ ሞተር
+  // 3. የድምፅ ሞተር + ኦፍላይን የድምፅ ጥቅል ስቱዲዮ (IndexedDB)
   // ---------------------------------------------------------------------------
-  let voiceDbPromise = null;
-  const cachedPacks = {};
-  let activeAudioQueue = [];
-  let isPlayingAudio = false;
-  let mediaRecorder = null;
-  let recordingKey = '';
+  let vDbProm = null;
+  const packCache = {};
+  let audQueue = [];
+  let audPlaying = false;
+  let recorder = null;
+  let recKey = '';
   let recChunks = [];
 
-  function openVoiceDb() {
-    if (voiceDbPromise) return voiceDbPromise;
-    voiceDbPromise = new Promise((resolve, reject) => {
+  function openVDb() {
+    if (vDbProm) return vDbProm;
+    vDbProm = new Promise((res, rej) => {
       try {
-        const req = indexedDB.open(VOICE_DB_NAME, 1);
+        const req = indexedDB.open(VOICE_DB, 1);
         req.onupgradeneeded = () => {
-          const db = req.result;
-          if (!db.objectStoreNames.contains(VOICE_STORE)) {
-            db.createObjectStore(VOICE_STORE, { keyPath: 'id' });
-          }
+          if (!req.result.objectStoreNames.contains(VOICE_STORE)) req.result.createObjectStore(VOICE_STORE, { keyPath: 'id' });
         };
-        req.onsuccess = () => resolve(req.result);
-        req.onerror = () => reject(req.error);
-      } catch (err) { reject(err); }
+        req.onsuccess = () => res(req.result);
+        req.onerror = () => rej(req.error);
+      } catch (e) { rej(e); }
     });
-    return voiceDbPromise;
+    return vDbProm;
   }
 
-  async function loadVoicePack(packId) {
-    if (cachedPacks[packId]) return cachedPacks[packId];
+  async function loadPack(id) {
+    if (packCache[id]) return packCache[id];
     try {
-      const db = await openVoiceDb();
-      return await new Promise((resolve) => {
-        const tx = db.transaction(VOICE_STORE, 'readonly');
-        const req = tx.objectStore(VOICE_STORE).get(packId);
-        req.onsuccess = () => {
-          cachedPacks[packId] = req.result || { id: packId, name: packId, clips: {} };
-          resolve(cachedPacks[packId]);
-        };
-        req.onerror = () => resolve({ id: packId, name: packId, clips: {} });
+      const db = await openVDb();
+      return await new Promise((res) => {
+        const req = db.transaction(VOICE_STORE, 'readonly').objectStore(VOICE_STORE).get(id);
+        req.onsuccess = () => res((packCache[id] = req.result || { id, clips: {} }));
+        req.onerror = () => res({ id, clips: {} });
       });
-    } catch {
-      return { id: packId, name: packId, clips: {} };
-    }
+    } catch { return { id, clips: {} }; }
   }
 
-  async function saveVoicePack(pack) {
-    cachedPacks[pack.id] = pack;
+  async function savePack(pack) {
+    packCache[pack.id] = pack;
     try {
-      const db = await openVoiceDb();
-      await new Promise((resolve, reject) => {
+      const db = await openVDb();
+      await new Promise((res, rej) => {
         const tx = db.transaction(VOICE_STORE, 'readwrite');
         tx.objectStore(VOICE_STORE).put(pack);
-        tx.oncomplete = () => resolve();
-        tx.onerror = () => reject(tx.error);
+        tx.oncomplete = res;
+        tx.onerror = () => rej(tx.error);
       });
     } catch {}
   }
 
-  async function listVoicePacks() {
-    try {
-      const db = await openVoiceDb();
-      return await new Promise((resolve) => {
-        const tx = db.transaction(VOICE_STORE, 'readonly');
-        const req = tx.objectStore(VOICE_STORE).getAll();
-        req.onsuccess = () => resolve(req.result || []);
-        req.onerror = () => resolve([]);
-      });
-    } catch { return []; }
+  function playNextAud() {
+    if (audPlaying || !audQueue.length) return;
+    audPlaying = true;
+    const a = new Audio(audQueue.shift());
+    a.playbackRate = Number(state.tallyPro?.voiceRate || 1.05);
+    const done = () => { audPlaying = false; playNextAud(); };
+    a.onended = done;
+    a.onerror = done;
+    a.play().catch(done);
   }
 
-  function playNextClip() {
-    if (isPlayingAudio || !activeAudioQueue.length) return;
-    const src = activeAudioQueue.shift();
-    isPlayingAudio = true;
-    const aud = new Audio(src);
-    aud.playbackRate = Number(state.tallyPro?.voiceRate || 1.05);
-    const done = () => { isPlayingAudio = false; playNextClip(); };
-    aud.onended = done;
-    aud.onerror = done;
-    aud.play().catch(done);
-  }
+  function qAud(src) { if (src) { audQueue.push(src); playNextAud(); } }
 
-  function queueAudioClip(dataUrl) {
-    if (!dataUrl) return;
-    activeAudioQueue.push(dataUrl);
-    playNextClip();
-  }
-
-  function decomposeNumberClips(n, clips) {
-    const out = [];
+  function numClips(n, clips) {
     const num = Math.max(0, Math.round(Number(n || 0)));
-    if (clips[String(num)]) { out.push(clips[String(num)]); return out; }
+    if (clips[String(num)]) return [clips[String(num)]];
+    const out = [];
     if (num >= 100 && clips['100']) {
       const h = Math.floor(num / 100);
       if (h > 1 && clips[String(h)]) out.push(clips[String(h)]);
       out.push(clips['100']);
-      const rem = num % 100;
-      if (rem > 0) out.push(...decomposeNumberClips(rem, clips));
+      if (num % 100 > 0) out.push(...numClips(num % 100, clips));
       return out;
     }
     if (num > 10 && num < 100) {
-      const tens = Math.floor(num / 10) * 10;
-      const ones = num % 10;
-      if (clips[String(tens)]) {
-        out.push(clips[String(tens)]);
-        if (ones > 0 && clips[String(ones)]) out.push(clips[String(ones)]);
+      const t = Math.floor(num / 10) * 10, o = num % 10;
+      if (clips[String(t)]) {
+        out.push(clips[String(t)]);
+        if (o > 0 && clips[String(o)]) out.push(clips[String(o)]);
         return out;
       }
     }
-    // ቁጥሩ ካልተቀረጸ አሃዝ በአሃዝ ማንበብ (ለምሳሌ 2, 5)
-    for (const ch of String(num)) {
-      if (clips[ch]) out.push(clips[ch]);
-    }
+    for (const ch of String(num)) if (clips[ch]) out.push(clips[ch]);
     return out;
   }
 
-  function numToAmPhonetic(n) {
+  function amPhon(n) {
     const num = Math.max(0, Math.round(Number(n || 0)));
     if (AM_PHONETIC[num]) return AM_PHONETIC[num];
     if (num > 20 && num < 100) {
-      const tens = Math.floor(num / 10) * 10;
-      const ones = num % 10;
-      return `${AM_PHONETIC[tens] || tens} ${AM_PHONETIC[ones] || ones}`;
+      const t = Math.floor(num / 10) * 10, o = num % 10;
+      return `${AM_PHONETIC[t] || t} ${AM_PHONETIC[o] || o}`;
     }
     if (num >= 100 && num < 1000) {
-      const h = Math.floor(num / 100);
-      const rem = num % 100;
-      const hStr = h === 1 ? 'meto' : `${AM_PHONETIC[h] || h} meto`;
-      return rem ? `${hStr} ${numToAmPhonetic(rem)}` : hStr;
+      const h = Math.floor(num / 100), r = num % 100;
+      const hs = h === 1 ? 'meto' : `${AM_PHONETIC[h] || h} meto`;
+      return r ? `${hs} ${amPhon(r)}` : hs;
     }
     return String(num);
   }
 
-  function speakWebSpeech(text, langCode) {
+  function speakTts(text, langCode) {
     if (!('speechSynthesis' in global)) return;
     try {
       global.speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(String(text));
       u.rate = Number(state.tallyPro?.voiceRate || 1.05);
-      const voices = global.speechSynthesis.getVoices() || [];
+      const vs = global.speechSynthesis.getVoices() || [];
       if (langCode.startsWith('dev:')) {
-        const uri = langCode.slice(4);
-        const v = voices.find((x) => x.voiceURI === uri);
+        const v = vs.find((x) => x.voiceURI === langCode.slice(4));
         if (v) { u.voice = v; u.lang = v.lang; }
       } else {
         u.lang = langCode;
-        const v = voices.find((x) => (x.lang || '').toLowerCase().startsWith(langCode.slice(0, 2).toLowerCase()));
+        const v = vs.find((x) => (x.lang || '').toLowerCase().startsWith(langCode.slice(0, 2).toLowerCase()));
         if (v) u.voice = v;
       }
       global.speechSynthesis.speak(u);
     } catch {}
   }
 
-  async function announceCount(totalQty, clickCount, targetReached = false) {
+  async function announce(totalQty, clicks, reached) {
     const cfg = state.tallyPro;
     if (!cfg || !cfg.voiceEnabled) return;
-
     if (cfg.voiceRead === 'beep') {
-      if (typeof global.playTone === 'function') {
-        global.playTone(targetReached ? 880 : 620, targetReached ? 0.18 : 0.06, 'sine');
-      }
+      if (typeof playTone === 'function') playTone(reached ? 880 : 620, reached ? 0.16 : 0.06, 'sine');
       return;
     }
-
     const lang = cfg.voiceLang || 'am-pack';
-
-    // 1. የተቀረጸ ወይም የወረደ የድምፅ ጥቅል (አማርኛ / ኦሮምኛ / ትግርኛ / ሌላ)
-    if (lang.endsWith('-pack') || lang.startsWith('pack:')) {
-      const packId = lang.startsWith('pack:') ? lang.slice(5) : lang;
-      const pack = await loadVoicePack(packId);
+    if (lang.endsWith('-pack')) {
+      const pack = await loadPack(lang);
       const clips = pack.clips || {};
-      const hasClips = Object.keys(clips).length > 0;
-
-      if (hasClips) {
-        activeAudioQueue = [];
-        isPlayingAudio = false;
-        if (cfg.voiceRead === 'clicks') {
-          decomposeNumberClips(clickCount, clips).forEach(queueAudioClip);
-        } else if (cfg.voiceRead === 'both') {
-          if (clips.load) queueAudioClip(clips.load);
-          decomposeNumberClips(clickCount, clips).forEach(queueAudioClip);
-          decomposeNumberClips(totalQty, clips).forEach(queueAudioClip);
-        } else {
-          decomposeNumberClips(totalQty, clips).forEach(queueAudioClip);
-        }
-        if (targetReached && clips.done) queueAudioClip(clips.done);
+      if (Object.keys(clips).length > 0) {
+        audQueue = []; audPlaying = false;
+        if (cfg.voiceRead === 'clicks') numClips(clicks, clips).forEach(qAud);
+        else if (cfg.voiceRead === 'both') {
+          if (clips.load) qAud(clips.load);
+          numClips(clicks, clips).forEach(qAud);
+          numClips(totalQty, clips).forEach(qAud);
+        } else numClips(totalQty, clips).forEach(qAud);
+        if (reached && clips.done) qAud(clips.done);
         return;
       }
-
-      // ጥቅሉ ገና ካልተቀረጸ/ካልወረደ: የስልኩን አማርኛ (ካለ) ወይም የአማርኛ ድምፀት fallback ይጠቀማል
-      const voices = ('speechSynthesis' in global) ? global.speechSynthesis.getVoices() : [];
-      const amVoice = voices.find((v) => (v.lang || '').toLowerCase().startsWith('am'));
-      if (amVoice) {
-        const txt = cfg.voiceRead === 'clicks'
-          ? String(clickCount)
-          : (cfg.voiceRead === 'both' ? `ሸክም ${clickCount}፣ ${totalQty}` : String(totalQty));
-        speakWebSpeech(targetReached ? `${txt}፣ ግቡ ሞልቷል` : txt, 'am-ET');
+      const vs = ('speechSynthesis' in global) ? global.speechSynthesis.getVoices() : [];
+      const amV = vs.find((v) => (v.lang || '').toLowerCase().startsWith('am'));
+      if (amV) {
+        const txt = cfg.voiceRead === 'clicks' ? String(clicks) : (cfg.voiceRead === 'both' ? `ሸክም ${clicks}፣ ${totalQty}` : String(totalQty));
+        speakTts(reached ? `${txt}፣ ግቡ ሞልቷል` : txt, 'am-ET');
       } else {
-        const txt = cfg.voiceRead === 'clicks'
-          ? numToAmPhonetic(clickCount)
-          : (cfg.voiceRead === 'both' ? `shekim ${numToAmPhonetic(clickCount)}, ${numToAmPhonetic(totalQty)}` : numToAmPhonetic(totalQty));
-        speakWebSpeech(targetReached ? `${txt}, mol-twal` : txt, 'en-US');
+        const txt = cfg.voiceRead === 'clicks' ? amPhon(clicks) : (cfg.voiceRead === 'both' ? `shekim ${amPhon(clicks)}, ${amPhon(totalQty)}` : amPhon(totalQty));
+        speakTts(reached ? `${txt}, mol-twal` : txt, 'en-US');
       }
       return;
     }
-
-    // 2. የስልኩ ዓለም አቀፍ ቋንቋዎች (እንግሊዝኛ፣ አረብኛ፣ ፈረንሳይኛ፣ ቻይንኛ...)
-    let phrase = '';
-    if (cfg.voiceRead === 'clicks') phrase = String(clickCount);
-    else if (cfg.voiceRead === 'both') phrase = `Load ${clickCount}, total ${totalQty}`;
-    else phrase = String(totalQty);
-    if (targetReached) phrase += ', target reached';
-    speakWebSpeech(phrase, lang);
+    let phrase = cfg.voiceRead === 'clicks' ? String(clicks) : (cfg.voiceRead === 'both' ? `Load ${clicks}, total ${totalQty}` : String(totalQty));
+    if (reached) phrase += ', target reached';
+    speakTts(phrase, lang);
   }
 
   // ---------------------------------------------------------------------------
-  // 4. የቆጠራ ቅንብር ሞዳል (⚙️) እና ኦፍላይን የድምፅ ስቱዲዮ
+  // 4. ንቁ የቆጠራ አውድ (ቲኬት / ነጻ / ኦዲት / ታሪክ)
   // ---------------------------------------------------------------------------
-  function openTallyProSettings() {
-    ensureTallyProState();
+  function getSub() {
+    ensureState();
+    const s = state.activeSubTab.tally || 'tickets';
+    return ['tickets', 'free', 'audit', 'history'].includes(s) ? s : 'tickets';
+  }
+
+  function setSub(sub) {
+    ensureState();
+    state.activeSubTab.tally = sub;
+    if (sub === 'history') stopCamera();
+    saveState();
+    renderTallyPro();
+  }
+
+  function ensureTicket() {
+    ensureState();
+    const list = state.tally.tickets;
+    if (!list.length) {
+      const id = 'tk_' + Date.now();
+      const br = activeBr();
+      list.push({
+        id,
+        dir: 'OUT',
+        docNo: typeof nextBranchDoc === 'function' ? nextBranchDoc(br) : 'WH1-01',
+        party: '',
+        branch: br,
+        activeItemId: null,
+        items: []
+      });
+      state.tally.activeTicketId = id;
+    }
+    let tk = list.find((x) => x.id === state.tally.activeTicketId) || list[0];
+    state.tally.activeTicketId = tk.id;
+    if (!Array.isArray(tk.items)) tk.items = [];
+    if (tk.items.length && !tk.items.some((x) => String(x.itemId) === String(tk.activeItemId))) {
+      tk.activeItemId = tk.items[0].itemId;
+    }
+    return tk;
+  }
+
+  function getCtx() {
+    ensureState();
+    const sub = getSub();
+    if (sub === 'tickets') {
+      const tk = ensureTicket();
+      const it = tk.items.find((x) => String(x.itemId) === String(tk.activeItemId)) || tk.items[0] || null;
+      return {
+        sub,
+        key: it ? `tk:${tk.id}:${it.itemId}` : `tk:${tk.id}:none`,
+        ticket: tk,
+        item: it,
+        strokes: it ? (it.strokes = it.strokes || []) : [],
+        target: it ? Number(it.target || 0) : 0,
+        sysQty: 0,
+        ready: Boolean(it)
+      };
+    }
+    if (sub === 'free') {
+      const f = state.tally.free;
+      f.strokes = f.strokes || [];
+      return { sub, key: 'free:main', free: f, strokes: f.strokes, target: Number(f.target || 0), sysQty: 0, ready: true };
+    }
+    if (sub === 'audit') {
+      const a = state.tally.audit;
+      a.strokes = a.strokes || [];
+      const inv = (state.inventory || []).find((x) => String(x.id) === String(a.itemId)) || (state.inventory || [])[0] || null;
+      if (inv && !a.itemId) a.itemId = inv.id;
+      const sys = itemStock(inv, state.branchScope || 'all');
+      return { sub, key: `aud:${inv ? inv.id : 'none'}`, audit: a, inv, strokes: a.strokes, target: 0, sysQty: sys, ready: Boolean(inv) };
+    }
+    return { sub: 'history', key: 'hist', strokes: [], target: 0, sysQty: 0, ready: false };
+  }
+
+  function metaLog(key) {
+    ensureState();
+    if (!Array.isArray(state.tallyPro.metaLogs[key])) state.tallyPro.metaLogs[key] = [];
+    return state.tallyPro.metaLogs[key];
+  }
+
+  function fmtAgo(ts) {
+    if (!ts) return tl('ገና አልተጀመረም', 'Not started yet');
+    const sec = Math.max(0, Math.floor((Date.now() - ts) / 1000));
+    if (sec < 60) return tl(`ከ${sec}ሰ በፊት`, `${sec}s ago`);
+    return tl(`ከ${Math.floor(sec / 60)}ደ ${sec % 60}ሰ በፊት`, `${Math.floor(sec / 60)}m ${sec % 60}s ago`);
+  }
+
+  // ---------------------------------------------------------------------------
+  // 5. የቆጠራ እርምጃዎች
+  // ---------------------------------------------------------------------------
+  function doCount(qtyOvr = null, carrierId = null, bypassDeb = false) {
+    ensureState();
     const cfg = state.tallyPro;
-    const voices = ('speechSynthesis' in global) ? global.speechSynthesis.getVoices() : [];
-    const devOpts = voices.slice(0, 35).map((v) =>
-      `<option value="dev:${esc(v.voiceURI)}" ${cfg.voiceLang === 'dev:' + v.voiceURI ? 'selected' : ''}>${esc(v.name)} (${esc(v.lang)})</option>`
+    const ctx = getCtx();
+    if (!ctx.ready) { showToast(tl('መጀመሪያ «+ ዕቃ ጨምር» ይጫኑ', 'Add an item first'), true); return false; }
+    if (cfg.locked) { showToast(tl('ቆጠራው ተቆልፏል — መጀመሪያ ይክፈቱት', 'Tally is locked'), true); return false; }
+    const now = Date.now();
+    if (!bypassDeb && cfg.debounceMs > 0 && now - lastTapTs < cfg.debounceMs) return false;
+
+    const qty = Number(qtyOvr !== null ? qtyOvr : cfg.loadSize || 1);
+    if (!(qty > 0)) return false;
+
+    const meta = metaLog(ctx.key);
+    const prev = meta.length ? meta[meta.length - 1].ts : 0;
+    const dt = prev ? Number(((now - prev) / 1000).toFixed(1)) : 0;
+
+    ctx.strokes.push(makeStroke(qty, carrierId));
+    meta.push({ ts: now, dt, qty, carrierId: carrierId || null });
+    lastTapTs = now;
+
+    const tot = sumAny(ctx.strokes);
+    const clicks = ctx.strokes.length;
+    const reached = ctx.target > 0 && tot >= ctx.target;
+
+    if (cfg.haptic && navigator.vibrate) navigator.vibrate(reached ? [80, 50, 120] : 26);
+    announce(tot, clicks, reached);
+    saveState();
+
+    if (cfg.mode === 'camera' && camStream) updateLiveNums();
+    else renderTallyPro();
+    return true;
+  }
+
+  function doUndo() {
+    const ctx = getCtx();
+    if (!ctx.ready || !ctx.strokes.length || state.tallyPro.locked) return;
+    ctx.strokes.pop();
+    const m = metaLog(ctx.key);
+    if (m.length) m.pop();
+    if (state.tallyPro.haptic && navigator.vibrate) navigator.vibrate(15);
+    saveState();
+    if (state.tallyPro.mode === 'camera' && camStream) updateLiveNums();
+    else renderTallyPro();
+  }
+
+  function openPartial() {
+    const ctx = getCtx();
+    if (!ctx.ready) { showToast(tl('መጀመሪያ ዕቃ ይምረጡ', 'Select an item first'), true); return; }
+    openModal(`➕ ${tl('ጎዶሎ / የተለየ ብዛት', 'Add Partial Qty')}`, `
+      <div class="sub-card">
+        <label class="lbl">${safeEsc(tl('የተቆጠረው ጎዶሎ ብዛት', 'Partial quantity'))}</label>
+        <input id="ktpPartInp" type="number" min="1" step="any" class="inp mono" placeholder="4" onkeydown="if(event.key==='Enter') KoraTallyPro.confirmPartial()">
+      </div>`, `
+      <button type="button" class="btn muted" onclick="closeModal()">${safeEsc(tl('ተው', 'Cancel'))}</button>
+      <button type="button" class="btn teal" onclick="KoraTallyPro.confirmPartial()">${safeEsc(tl('ጨምር', 'Add'))}</button>`);
+    setTimeout(() => document.getElementById('ktpPartInp')?.focus(), 40);
+  }
+
+  function confirmPartial() {
+    const v = Number(document.getElementById('ktpPartInp')?.value || 0);
+    if (!(v > 0)) return;
+    closeModal();
+    doCount(v, null, true);
+  }
+
+  function askClear() {
+    const ctx = getCtx();
+    if (!ctx.ready || !ctx.strokes.length) return;
+    openModal(`🧹 ${tl('ቆጠራውን አጽዳ?', 'Clear Counts?')}`, `
+      <p style="font-size:12.5px;color:var(--muted);">${safeEsc(tl('እስካሁን የተቆጠረው ወደ 0 ይመለሳል። እርግጠኛ ነህ?', 'Reset all counts to 0?'))}</p>`, `
+      <button type="button" class="btn muted" onclick="closeModal()">${safeEsc(tl('ተው', 'Cancel'))}</button>
+      <button type="button" class="btn danger" onclick="KoraTallyPro.confirmClear()">${safeEsc(tl('አጽዳ', 'Clear'))}</button>`);
+  }
+
+  function confirmClear() {
+    const ctx = getCtx();
+    if (ctx.ready) {
+      ctx.strokes.length = 0;
+      state.tallyPro.metaLogs[ctx.key] = [];
+      saveState();
+    }
+    closeModal();
+    if (state.tallyPro.mode === 'camera' && camStream) updateLiveNums();
+    else renderTallyPro();
+  }
+
+  function setLoad(n) {
+    ensureState();
+    if (n === 'other') {
+      openModal(`⚙️ ${tl('የአንድ ሸክም መጠን', 'Custom Load Size')}`, `
+        <div class="sub-card">
+          <label class="lbl">${safeEsc(tl('በአንድ ሸክም ስንት ፍሬ?', 'Units per load'))}</label>
+          <input id="ktpCustLoad" type="number" min="1" class="inp mono" value="${state.tallyPro.loadSize}">
+        </div>`, `
+        <button type="button" class="btn muted" onclick="closeModal()">${safeEsc(tl('ተው', 'Cancel'))}</button>
+        <button type="button" class="btn teal" onclick="KoraTallyPro.confirmLoad()">${safeEsc(tl('አስቀምጥ', 'Save'))}</button>`);
+      return;
+    }
+    state.tallyPro.loadSize = Math.max(1, Number(n || 1));
+    state.tally.loadSize = state.tallyPro.loadSize;
+    saveState();
+    renderTallyPro();
+  }
+
+  function confirmLoad() {
+    const v = Math.max(1, Number(document.getElementById('ktpCustLoad')?.value || 1));
+    state.tallyPro.loadSize = v;
+    state.tally.loadSize = v;
+    saveState();
+    closeModal();
+    renderTallyPro();
+  }
+
+  function toggleLock() {
+    ensureState();
+    state.tallyPro.locked = !state.tallyPro.locked;
+    if (state.tallyPro.locked) stopCamera();
+    saveState();
+    renderTallyPro();
+  }
+
+  // ---------------------------------------------------------------------------
+  // 6. የቲኬት አስተዳደር እና ቀጥታ ምዝገባ
+  // ---------------------------------------------------------------------------
+  function selTicket(id) { state.tally.activeTicketId = id; saveState(); renderTallyPro(); }
+
+  function newTicket() {
+    const br = activeBr();
+    const id = 'tk_' + Date.now();
+    state.tally.tickets.push({
+      id, dir: 'OUT', docNo: 'WH-' + String(state.tally.tickets.length + 1).padStart(2, '0'),
+      party: '', branch: br, activeItemId: null, items: []
+    });
+    state.tally.activeTicketId = id;
+    saveState();
+    renderTallyPro();
+  }
+
+  function delTicket() {
+    const tk = ensureTicket();
+    if (state.tally.tickets.length <= 1) { tk.items = []; tk.party = ''; tk.activeItemId = null; }
+    else {
+      state.tally.tickets = state.tally.tickets.filter((x) => x.id !== tk.id);
+      state.tally.activeTicketId = state.tally.tickets[0]?.id || null;
+    }
+    saveState();
+    renderTallyPro();
+  }
+
+  function toggleDir() {
+    const tk = ensureTicket();
+    tk.dir = String(tk.dir || 'OUT').toUpperCase() === 'IN' ? 'OUT' : 'IN';
+    saveState();
+    renderTallyPro();
+  }
+
+  function setTkField(k, v) { const tk = ensureTicket(); tk[k] = v; saveState(); }
+  function selTkItem(itemId) { const tk = ensureTicket(); tk.activeItemId = itemId; saveState(); renderTallyPro(); }
+
+  function openAddItem() {
+    const br = state.branchScope || 'all';
+    const opts = (state.inventory || []).map((it) =>
+      `<option value="${safeEsc(it.id)}">${safeEsc(it.name)} (${safeNum(itemStock(it, br))})</option>`
+    ).join('');
+    openModal(`➕ ${tl('ወደ ቲኬቱ ዕቃ ጨምር', 'Add Item to Ticket')}`, `
+      <div class="sub-card">
+        <label class="lbl">${safeEsc(tl('ዕቃ ይምረጡ', 'Select Item'))}</label>
+        <select id="ktpInvSel" class="sel">${opts}</select>
+        <label class="lbl" style="margin-top:6px;">${safeEsc(tl('ግብ / የሚጫን ብዛት (አማራጭ)', 'Target Qty (optional)'))}</label>
+        <input id="ktpInvTgt" type="number" min="0" class="inp mono" placeholder="0 = ገደብ የለም">
+      </div>`, `
+      <button type="button" class="btn muted" onclick="closeModal()">${safeEsc(tl('ተው', 'Cancel'))}</button>
+      <button type="button" class="btn teal" onclick="KoraTallyPro.confirmAddItem()">${safeEsc(tl('ጨምር', 'Add'))}</button>`);
+  }
+
+  function confirmAddItem() {
+    const rawId = document.getElementById('ktpInvSel')?.value;
+    const target = Math.max(0, Number(document.getElementById('ktpInvTgt')?.value || 0));
+    const inv = (state.inventory || []).find((x) => String(x.id) === String(rawId));
+    if (!inv) return;
+    const tk = ensureTicket();
+    const ex = tk.items.find((x) => String(x.itemId) === String(inv.id));
+    if (ex) {
+      if (target > 0) ex.target = target;
+      tk.activeItemId = inv.id;
+    } else {
+      tk.items.push({ itemId: inv.id, name: inv.name, unit: unitLbl(inv), loc: inv.zoneCode || 'A-01', target, strokes: [] });
+      tk.activeItemId = inv.id;
+    }
+    saveState();
+    closeModal();
+    renderTallyPro();
+  }
+
+  function doCommit(btn) {
+    const ctx = getCtx();
+    if (!ctx.ready) { showToast(tl('የሚመዘገብ ቆጠራ የለም', 'Nothing to submit'), true); return; }
+
+    // ነባሩ commitActiveTally ካለ (የሽያጭ ቲኬቶችንና ኦዲትን በትክክል የሚያዋህድ) እሱን መጠቀም
+    if (typeof origCommitFn === 'function') {
+      try {
+        origCommitFn(btn);
+        setTimeout(() => { if (isTallyActive()) renderTallyPro(); }, 120);
+        return;
+      } catch {}
+    }
+
+    // Fallback ምዝገባ
+    const today = new Date().toISOString().slice(0, 10);
+    if (ctx.sub === 'tickets') {
+      const tk = ctx.ticket;
+      const br = tk.branch || activeBr();
+      const nonZero = tk.items.filter((x) => sumAny(x.strokes) > 0);
+      if (!nonZero.length) { showToast(tl('መጀመሪያ ቆጠራ ያድርጉ', 'Count first'), true); return; }
+      const isIn = String(tk.dir).toUpperCase() === 'IN';
+      nonZero.forEach((x, idx) => {
+        const qty = sumAny(x.strokes);
+        const inv = (state.inventory || []).find((z) => String(z.id) === String(x.itemId));
+        if (inv && inv.branchStock) {
+          const op = itemStock(inv, br);
+          const en = Math.max(0, op + (isIn ? qty : -qty));
+          inv.branchStock[br] = en;
+          if (Array.isArray(state.warehouseLedger)) {
+            state.warehouseLedger.push({
+              id: Date.now() + idx, docNo: tk.docNo, type: isIn ? 'IN' : 'OUT', status: 'valid',
+              branch: br, itemId: inv.id, itemName: inv.name, unit: unitLbl(inv), loc: inv.zoneCode || '-',
+              openBal: op, inQty: isIn ? qty : 0, outQty: isIn ? 0 : qty, endBal: en,
+              party: tk.party || '-', ref: 'Tally', date: today
+            });
+          }
+        }
+      });
+      state.tally.history.unshift({
+        id: Date.now(), type: isIn ? 'IN' : 'OUT', docNo: tk.docNo, party: tk.party || '-',
+        summary: nonZero.map((x) => `${x.name}: ${sumAny(x.strokes)}`).join(' · '),
+        total: nonZero.reduce((a, x) => a + sumAny(x.strokes), 0), date: new Date().toLocaleString()
+      });
+      tk.items = []; tk.activeItemId = null;
+      saveState(); renderAll(); showToast(tl('በስቶክ ላይ ተመዝግቧል!', 'Committed to stock!'));
+    } else if (ctx.sub === 'free') {
+      const tot = sumAny(ctx.strokes);
+      if (!(tot > 0)) return;
+      state.tally.history.unshift({
+        id: Date.now(), type: 'FREE', docNo: tl('ነጻ ቆጠራ', 'Free'), party: ctx.free.note || '-',
+        summary: `${tot} (${ctx.strokes.length})`, total: tot, date: new Date().toLocaleString()
+      });
+      ctx.free.strokes = [];
+      saveState(); renderTallyPro(); showToast(tl('ተቀምጧል!', 'Saved!'));
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // 7. የካሜራ በር መሻገሪያ ቆጣሪ (Virtual Tripwire)
+  // ---------------------------------------------------------------------------
+  async function startCamera() {
+    if (camStream) return;
+    if (!navigator.mediaDevices?.getUserMedia) { showToast(tl('ካሜራ አይደገፍም', 'Camera unsupported'), true); return; }
+    try {
+      camStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' }, width: { ideal: 640 }, height: { ideal: 360 } }, audio: false });
+      const vid = document.getElementById('ktpCamVid');
+      if (vid) { vid.srcObject = camStream; await vid.play().catch(() => {}); }
+      camCanvas = document.createElement('canvas');
+      camCanvas.width = 64; camCanvas.height = 48;
+      camCtx = camCanvas.getContext('2d', { willReadFrequently: true });
+      camPrevL = null; camPrevR = null; camLastZone = null;
+      const st = document.getElementById('ktpCamSt');
+      if (st) st.textContent = tl('🟢 በመቁጠር ላይ', '🟢 Live');
+      camLoop();
+    } catch { showToast(tl('የካሜራ ፍቃድ ያስፈልጋል', 'Camera permission denied'), true); }
+  }
+
+  function stopCamera() {
+    if (camRafId) { cancelAnimationFrame(camRafId); camRafId = null; }
+    if (camStream) { camStream.getTracks().forEach((t) => t.stop()); camStream = null; }
+    camPrevL = null; camPrevR = null;
+  }
+
+  function toggleCam() {
+    if (camStream) { stopCamera(); renderTallyPro(); }
+    else startCamera();
+  }
+
+  function toggleCamDir() {
+    state.tallyPro.camDir = state.tallyPro.camDir === 'LR' ? 'RL' : 'LR';
+    saveState();
+    const b = document.getElementById('ktpCamDir');
+    if (b) b.textContent = state.tallyPro.camDir === 'LR' ? '➡️ ግራ➔ቀኝ (+)' : '⬅️ ቀኝ➔ግራ (+)';
+  }
+
+  function camLoop() {
+    if (!camStream) return;
+    const vid = document.getElementById('ktpCamVid');
+    if (vid && vid.readyState >= 2 && camCtx) {
+      camCtx.drawImage(vid, 0, 0, 64, 48);
+      const d = camCtx.getImageData(0, 0, 64, 48).data;
+      const L = [], R = [];
+      for (let y = 8; y < 40; y += 2) {
+        for (let x = 16; x < 28; x += 2) { const i = (y * 64 + x) * 4; L.push((d[i] + d[i + 1] + d[i + 2]) / 3); }
+        for (let x = 36; x < 48; x += 2) { const i = (y * 64 + x) * 4; R.push((d[i] + d[i + 1] + d[i + 2]) / 3); }
+      }
+      if (camPrevL && camPrevR) {
+        let dL = 0, dR = 0;
+        for (let i = 0; i < L.length; i++) { dL += Math.abs(L[i] - camPrevL[i]); dR += Math.abs(R[i] - camPrevR[i]); }
+        dL /= L.length; dR /= R.length;
+        const th = Number(state.tallyPro.camSensitivity || 26);
+        const now = Date.now(), cool = Number(state.tallyPro.camCooldownMs || 1100);
+        if (dL > th && dL > dR * 1.15) {
+          if (camLastZone === 'R' && now - camLastZoneTs < 1200 && now - camLastTrig > cool) {
+            camLastTrig = now; camLastZone = null;
+            if (state.tallyPro.camDir === 'RL') doCount(null, null, true);
+          } else { camLastZone = 'L'; camLastZoneTs = now; }
+        } else if (dR > th && dR > dL * 1.15) {
+          if (camLastZone === 'L' && now - camLastZoneTs < 1200 && now - camLastTrig > cool) {
+            camLastTrig = now; camLastZone = null;
+            if (state.tallyPro.camDir === 'LR') doCount(null, null, true);
+          } else { camLastZone = 'R'; camLastZoneTs = now; }
+        }
+      }
+      camPrevL = L; camPrevR = R;
+    }
+    camRafId = requestAnimationFrame(() => setTimeout(camLoop, 110));
+  }
+
+  // ---------------------------------------------------------------------------
+  // 8. የክብደት/ጥቅል ቀያሪ እና የመንሸራተቻ ቆጣሪ
+  // ---------------------------------------------------------------------------
+  function updWeight() {
+    const m = document.getElementById('ktpWM')?.value || 'weight';
+    const a = Number(document.getElementById('ktpWA')?.value || 0);
+    const b = Number(document.getElementById('ktpWB')?.value || 1);
+    const q = (a > 0 && b > 0) ? (m === 'weight' ? Math.round(a / b) : Math.round(a * b)) : 0;
+    const o = document.getElementById('ktpWO');
+    if (o) o.textContent = `= ${safeNum(q)}`;
+  }
+
+  function applyWeight() {
+    const m = document.getElementById('ktpWM')?.value || 'weight';
+    const a = Number(document.getElementById('ktpWA')?.value || 0);
+    const b = Number(document.getElementById('ktpWB')?.value || 1);
+    const q = (a > 0 && b > 0) ? (m === 'weight' ? Math.round(a / b) : Math.round(a * b)) : 0;
+    if (q > 0) { doCount(q, null, true); showToast(`+${q}`); }
+  }
+
+  function bindSlide() {
+    const track = document.getElementById('ktpSlide'), thumb = document.getElementById('ktpSThumb'), fill = document.getElementById('ktpSFill');
+    if (!track || !thumb) return;
+    let drag = false, sx = 0, mx = 0;
+    const rst = () => { drag = false; thumb.style.transition = 'transform 0.16s ease'; thumb.style.transform = 'translateX(0px)'; if (fill) fill.style.width = '0%'; };
+    thumb.onpointerdown = (e) => {
+      if (state.tallyPro.locked) return;
+      drag = true; thumb.setPointerCapture(e.pointerId);
+      sx = e.clientX; mx = Math.max(40, track.clientWidth - thumb.clientWidth - 8);
+      thumb.style.transition = 'none';
+    };
+    thumb.onpointermove = (e) => {
+      if (!drag) return;
+      const dx = Math.max(0, Math.min(mx, e.clientX - sx));
+      thumb.style.transform = `translateX(${dx}px)`;
+      if (fill) fill.style.width = `${Math.round((dx / mx) * 100)}%`;
+      if (dx >= mx * 0.82) { rst(); doCount(null, null, false); }
+    };
+    thumb.onpointerup = rst; thumb.onpointercancel = rst;
+  }
+
+  // ---------------------------------------------------------------------------
+  // 9. ቅንብር ሞዳል (⚙️) እና ኦፍላይን የድምፅ ስቱዲዮ
+  // ---------------------------------------------------------------------------
+  function openSettings() {
+    ensureState();
+    const cfg = state.tallyPro;
+    const vs = ('speechSynthesis' in global) ? global.speechSynthesis.getVoices() : [];
+    const devOpts = vs.slice(0, 35).map((v) =>
+      `<option value="dev:${safeEsc(v.voiceURI)}" ${cfg.voiceLang === 'dev:' + v.voiceURI ? 'selected' : ''}>${safeEsc(v.name)} (${safeEsc(v.lang)})</option>`
     ).join('');
 
     openModal(`⚙️ ${tl('የቆጠራ እና የድምፅ ቅንብር', 'Tally & Voice Settings')}`, `
       <div class="sub-card">
-        <label class="lbl">${esc(tl('የቆጠራ ሲስተም (Mode)', 'Counting Style / Mode'))}</label>
+        <label class="lbl">${safeEsc(tl('የቆጠራ ሲስተም (Mode)', 'Counting Style / Mode'))}</label>
         <select id="ktpModeSel" class="sel">
-          ${TALLY_MODES.map((m) => `<option value="${m.id}" ${cfg.mode === m.id ? 'selected' : ''}>${m.icon} ${esc(isAm() ? m.am : m.en)}</option>`).join('')}
+          ${TALLY_MODES.map((m) => `<option value="${m.id}" ${cfg.mode === m.id ? 'selected' : ''}>${m.icon} ${safeEsc(isAm() ? m.am : m.en)}</option>`).join('')}
         </select>
         <div class="grid-2" style="margin-top:6px;">
           <div>
-            <label class="lbl">${esc(tl('የድጋሚ ንኪኪ መከላከያ', 'Anti-Double Tap'))}</label>
+            <label class="lbl">${safeEsc(tl('የድጋሚ ንኪኪ መከላከያ', 'Anti-Double Tap'))}</label>
             <select id="ktpDebSel" class="sel">
               ${[0, 250, 400, 500, 700, 1000].map((ms) => `<option value="${ms}" ${Number(cfg.debounceMs) === ms ? 'selected' : ''}>${ms === 0 ? tl('ጠፍቷል', 'Off') : (ms / 1000) + 's'}</option>`).join('')}
             </select>
           </div>
           <div>
-            <label class="lbl">${esc(tl('የተሸካሚዎች ብዛት', 'Carriers Count'))}</label>
-            <select id="ktpCarCnt" class="sel">
+            <label class="lbl">${safeEsc(tl('የተሸካሚዎች ብዛት', 'Carriers Count'))}</label>
+            <select id="ktpCarSel" class="sel">
               ${[2, 3, 4].map((n) => `<option value="${n}" ${Number(cfg.carrierCount) === n ? 'selected' : ''}>${n} ${tl('ጫኞች', 'Carriers')}</option>`).join('')}
             </select>
           </div>
@@ -885,23 +902,23 @@
 
       <div class="sub-card">
         <div class="switch-row">
-          <b>🔊 ${esc(tl('የድምፅ ንባብ', 'Voice Readout'))}</b>
-          <div id="ktpVoiceTog" class="toggle ${cfg.voiceEnabled ? 'on' : ''}" onclick="this.classList.toggle('on')"></div>
+          <b>🔊 ${safeEsc(tl('የድምፅ ንባብ', 'Voice Readout'))}</b>
+          <div id="ktpVTog" class="toggle ${cfg.voiceEnabled ? 'on' : ''}" onclick="this.classList.toggle('on')"></div>
         </div>
         <div class="grid-2" style="margin-top:6px;">
           <div>
-            <label class="lbl">${esc(tl('ምን ይናገር?', 'Readout Target'))}</label>
-            <select id="ktpVoiceRead" class="sel">
-              <option value="qty" ${cfg.voiceRead === 'qty' ? 'selected' : ''}>${esc(tl('የተጫነ ብዛት (5, 10, 15...)', 'Total Qty (5, 10, 15...)'))}</option>
-              <option value="clicks" ${cfg.voiceRead === 'clicks' ? 'selected' : ''}>${esc(tl('የክሊክ / ሸክም ቁጥር (1, 2, 3...)', 'Click / Load # (1, 2, 3...)'))}</option>
-              <option value="both" ${cfg.voiceRead === 'both' ? 'selected' : ''}>${esc(tl('ሁለቱንም (ሸክም 2 — 10)', 'Both (Load 2 — 10)'))}</option>
-              <option value="beep" ${cfg.voiceRead === 'beep' ? 'selected' : ''}>${esc(tl('ቢፕ ድምፅ ብቻ', 'Beep Tone Only'))}</option>
+            <label class="lbl">${safeEsc(tl('ምን ይናገር?', 'Readout Target'))}</label>
+            <select id="ktpVRead" class="sel">
+              <option value="qty" ${cfg.voiceRead === 'qty' ? 'selected' : ''}>${safeEsc(tl('የተጫነ ብዛት (5, 10, 15...)', 'Total Qty (5, 10, 15...)'))}</option>
+              <option value="clicks" ${cfg.voiceRead === 'clicks' ? 'selected' : ''}>${safeEsc(tl('የክሊክ / ሸክም ቁጥር (1, 2, 3...)', 'Click / Load # (1, 2, 3...)'))}</option>
+              <option value="both" ${cfg.voiceRead === 'both' ? 'selected' : ''}>${safeEsc(tl('ሁለቱንም (ሸክም 2 — 10)', 'Both (Load 2 — 10)'))}</option>
+              <option value="beep" ${cfg.voiceRead === 'beep' ? 'selected' : ''}>${safeEsc(tl('ቢፕ ድምፅ ብቻ', 'Beep Tone Only'))}</option>
             </select>
           </div>
           <div>
-            <label class="lbl">${esc(tl('የድምፅ ቋንቋ', 'Voice Language'))}</label>
-            <select id="ktpVoiceLang" class="sel">
-              <option value="am-pack" ${cfg.voiceLang === 'am-pack' ? 'selected' : ''}>🇪🇹 ${esc(tl('አማርኛ (ጥቅል / ድምፅ)', 'Amharic (Pack / Voice)'))}</option>
+            <label class="lbl">${safeEsc(tl('የድምፅ ቋንቋ', 'Voice Language'))}</label>
+            <select id="ktpVLang" class="sel">
+              <option value="am-pack" ${cfg.voiceLang === 'am-pack' ? 'selected' : ''}>🇪🇹 ${safeEsc(tl('አማርኛ (ጥቅል / ድምፅ)', 'Amharic (Pack / Voice)'))}</option>
               <option value="en-US" ${cfg.voiceLang === 'en-US' ? 'selected' : ''}>🇬🇧 English (US/UK)</option>
               <option value="ar-SA" ${cfg.voiceLang === 'ar-SA' ? 'selected' : ''}>🇸🇦 العربية (Arabic)</option>
               <option value="om-pack" ${cfg.voiceLang === 'om-pack' ? 'selected' : ''}>🇪🇹 Afaan Oromo (Pack)</option>
@@ -911,1335 +928,514 @@
           </div>
         </div>
         <div class="grid-2" style="margin-top:6px;">
-          <button type="button" class="btn muted sm" onclick="KoraTallyPro.testVoice()">▶️ ${esc(tl('ድምፅ ሞክር', 'Test Voice'))}</button>
-          <button type="button" class="btn teal sm" onclick="KoraTallyPro.openVoiceStudio()">🎙️ ${esc(tl('ቋንቋ ቅረጽ / አውርድ', 'Voice Studio / Download'))}</button>
+          <button type="button" class="btn muted sm" onclick="KoraTallyPro.testVoice()">▶️ ${safeEsc(tl('ድምፅ ሞክር', 'Test Voice'))}</button>
+          <button type="button" class="btn teal sm" onclick="KoraTallyPro.openStudio()">🎙️ ${safeEsc(tl('ቋንቋ ቅረጽ / አውርድ', 'Voice Studio'))}</button>
         </div>
       </div>
 
       <div class="sub-card">
-        <div class="switch-row">
-          <span>⏱ ${esc(tl('የመጨረሻ ንኪኪ ሰዓት ቆጣሪ', 'Last Tap Timer'))}</span>
-          <div id="ktpTimerTog" class="toggle ${cfg.showTimer ? 'on' : ''}" onclick="this.classList.toggle('on')"></div>
-        </div>
-        <div class="switch-row">
-          <span>🔒 ${esc(tl('በስልክ ጥሪ ጊዜ ራስ-ሰር መቆለፊያ', 'Auto-Lock on Call/Switch'))}</span>
-          <div id="ktpCallTog" class="toggle ${cfg.autoLockCall ? 'on' : ''}" onclick="this.classList.toggle('on')"></div>
-        </div>
-        <div class="switch-row">
-          <span>📳 ${esc(tl('ጠንካራ ንዝረት', 'Strong Haptic'))}</span>
-          <div id="ktpHapTog" class="toggle ${cfg.haptic ? 'on' : ''}" onclick="this.classList.toggle('on')"></div>
-        </div>
+        <div class="switch-row"><span>⏱ ${safeEsc(tl('የመጨረሻ ንኪኪ ሰዓት ቆጣሪ', 'Last Tap Timer'))}</span><div id="ktpTTog" class="toggle ${cfg.showTimer ? 'on' : ''}" onclick="this.classList.toggle('on')"></div></div>
+        <div class="switch-row"><span>🔒 ${safeEsc(tl('በስልክ ጥሪ ጊዜ ራስ-ሰር መቆለፊያ', 'Auto-Lock on Call'))}</span><div id="ktpCTog" class="toggle ${cfg.autoLockCall ? 'on' : ''}" onclick="this.classList.toggle('on')"></div></div>
+        <div class="switch-row"><span>📳 ${safeEsc(tl('ጠንካራ ንዝረት', 'Strong Haptic'))}</span><div id="ktpHTog" class="toggle ${cfg.haptic ? 'on' : ''}" onclick="this.classList.toggle('on')"></div></div>
       </div>`, `
-      <button type="button" class="btn muted" onclick="closeModal()">${esc(tl('ተው', 'Cancel'))}</button>
-      <button type="button" class="btn teal" onclick="KoraTallyPro.saveSettingsModal()">${esc(tl('አስቀምጥ', 'Save'))}</button>`);
+      <button type="button" class="btn muted" onclick="closeModal()">${safeEsc(tl('ተው', 'Cancel'))}</button>
+      <button type="button" class="btn teal" onclick="KoraTallyPro.saveSettings()">${safeEsc(tl('አስቀምጥ', 'Save'))}</button>`);
   }
 
-  function saveSettingsModal() {
+  function saveSettings() {
     const cfg = state.tallyPro;
-    const prevMode = cfg.mode;
+    const prev = cfg.mode;
     cfg.mode = document.getElementById('ktpModeSel')?.value || 'tap';
     cfg.debounceMs = Number(document.getElementById('ktpDebSel')?.value || 500);
-    cfg.carrierCount = Number(document.getElementById('ktpCarCnt')?.value || 2);
-    cfg.voiceEnabled = document.getElementById('ktpVoiceTog')?.classList.contains('on') || false;
-    cfg.voiceRead = document.getElementById('ktpVoiceRead')?.value || 'qty';
-    cfg.voiceLang = document.getElementById('ktpVoiceLang')?.value || 'am-pack';
-    cfg.showTimer = document.getElementById('ktpTimerTog')?.classList.contains('on') || false;
-    cfg.autoLockCall = document.getElementById('ktpCallTog')?.classList.contains('on') || false;
-    cfg.haptic = document.getElementById('ktpHapTog')?.classList.contains('on') || false;
-    if (prevMode === 'camera' && cfg.mode !== 'camera') {
-      if (global.KoraTallyPro?.stopCamera) global.KoraTallyPro.stopCamera();
-    }
-    saveState();
-    closeModal();
-    renderView();
-    showToast(tl('ተቀምጧል', 'Saved'));
+    cfg.carrierCount = Number(document.getElementById('ktpCarSel')?.value || 2);
+    cfg.voiceEnabled = document.getElementById('ktpVTog')?.classList.contains('on') || false;
+    cfg.voiceRead = document.getElementById('ktpVRead')?.value || 'qty';
+    cfg.voiceLang = document.getElementById('ktpVLang')?.value || 'am-pack';
+    cfg.showTimer = document.getElementById('ktpTTog')?.classList.contains('on') || false;
+    cfg.autoLockCall = document.getElementById('ktpCTog')?.classList.contains('on') || false;
+    cfg.haptic = document.getElementById('ktpHTog')?.classList.contains('on') || false;
+    if (prev === 'camera' && cfg.mode !== 'camera') stopCamera();
+    saveState(); closeModal(); renderTallyPro(); showToast(tl('ተቀምጧል', 'Saved'));
   }
 
-  async function openVoiceStudio(packId = null) {
-    ensureTallyProState();
-    const curLang = state.tallyPro.voiceLang || 'am-pack';
-    const targetPackId = packId || (curLang.endsWith('-pack') ? curLang : 'am-pack');
-    const pack = await loadVoicePack(targetPackId);
-    const clips = pack.clips || {};
-    const doneCnt = Object.keys(clips).length;
+  function testVoice() {
+    ensureState();
+    const cfg = state.tallyPro;
+    const bak = { e: cfg.voiceEnabled, r: cfg.voiceRead, l: cfg.voiceLang };
+    cfg.voiceEnabled = true;
+    const r = document.getElementById('ktpVRead'), l = document.getElementById('ktpVLang');
+    if (r) cfg.voiceRead = r.value;
+    if (l) cfg.voiceLang = l.value;
+    announce(10, 2, false);
+    cfg.voiceEnabled = bak.e; cfg.voiceRead = bak.r; cfg.voiceLang = bak.l;
+  }
 
-    openModal(`🎙️ ${tl('የድምፅ ጥቅል ስቱዲዮ (ኦፍላይን)', 'Offline Voice Pack Studio')}`, `
+  async function openStudio(pid = null) {
+    ensureState();
+    const cur = state.tallyPro.voiceLang || 'am-pack';
+    const packId = pid || (cur.endsWith('-pack') ? cur : 'am-pack');
+    const pack = await loadPack(packId);
+    const clips = pack.clips || {};
+
+    openModal(`🎙️ ${tl('ኦፍላይን የድምፅ ጥቅል ስቱዲዮ', 'Offline Voice Pack Studio')}`, `
       <div class="sub-card">
         <div class="card-row">
-          <select id="ktpStudioPackSel" class="sel" style="height:30px;flex:1;" onchange="KoraTallyPro.openVoiceStudio(this.value)">
-            <option value="am-pack" ${targetPackId === 'am-pack' ? 'selected' : ''}>🇪🇹 አማርኛ (am-pack)</option>
-            <option value="om-pack" ${targetPackId === 'om-pack' ? 'selected' : ''}>🇪🇹 Afaan Oromo (om-pack)</option>
-            <option value="ti-pack" ${targetPackId === 'ti-pack' ? 'selected' : ''}>🇪🇹 ትግርኛ (ti-pack)</option>
-            <option value="custom-pack" ${targetPackId === 'custom-pack' ? 'selected' : ''}>🌍 ሌላ ቋንቋ (custom-pack)</option>
+          <select class="sel" style="height:30px;flex:1;" onchange="KoraTallyPro.openStudio(this.value)">
+            <option value="am-pack" ${packId === 'am-pack' ? 'selected' : ''}>🇪🇹 አማርኛ (am-pack)</option>
+            <option value="om-pack" ${packId === 'om-pack' ? 'selected' : ''}>🇪🇹 Afaan Oromo (om-pack)</option>
+            <option value="ti-pack" ${packId === 'ti-pack' ? 'selected' : ''}>🇪🇹 ትግርኛ (ti-pack)</option>
+            <option value="custom-pack" ${packId === 'custom-pack' ? 'selected' : ''}>🌍 ሌላ ቋንቋ (custom-pack)</option>
           </select>
-          <span class="pill teal">${doneCnt}/${VOICE_KEYS.length}</span>
+          <span class="pill teal">${Object.keys(clips).length}/${VOICE_KEYS.length}</span>
         </div>
         <div class="grid-2" style="margin-top:6px;">
-          <button type="button" class="btn muted sm" onclick="KoraTallyPro.exportVoicePack('${esc(targetPackId)}')">⬇️ ${esc(tl('ጥቅሉን ላክ (JSON)', 'Export Pack'))}</button>
-          <label class="btn teal sm" style="text-align:center;">⬆️ ${esc(tl('ጥቅል ጫን (Import)', 'Load Pack'))}<input type="file" accept=".json" style="display:none;" onchange="KoraTallyPro.importVoicePack(this,'${esc(targetPackId)}')"></label>
+          <button type="button" class="btn muted sm" onclick="KoraTallyPro.expPack('${safeEsc(packId)}')">⬇️ ${safeEsc(tl('ጥቅሉን አውርድ', 'Export'))}</button>
+          <label class="btn teal sm" style="text-align:center;">⬆️ ${safeEsc(tl('ጥቅል ጫን', 'Import'))}<input type="file" accept=".json" style="display:none;" onchange="KoraTallyPro.impPack(this,'${safeEsc(packId)}')"></label>
         </div>
         <div style="display:flex;gap:4px;margin-top:6px;">
-          <input id="ktpPackUrl" class="inp sm" placeholder="${esc(tl('የድምፅ ጥቅል ሊንክ (URL) ካለ...', 'Voice pack JSON URL...'))}">
-          <button type="button" class="btn muted sm" onclick="KoraTallyPro.downloadVoicePackUrl('${esc(targetPackId)}')">🌐 ${esc(tl('አውርድ', 'Download'))}</button>
+          <input id="ktpPUrl" class="inp sm" placeholder="${safeEsc(tl('የድምፅ ጥቅል ሊንክ (URL)...', 'Voice pack URL...'))}">
+          <button type="button" class="btn muted sm" onclick="KoraTallyPro.dlPack('${safeEsc(packId)}')">🌐 ${safeEsc(tl('አውርድ', 'Fetch'))}</button>
         </div>
       </div>
-
-      <div style="display:flex;flex-direction:column;gap:4px;max-height:270px;overflow-y:auto;">
+      <div style="display:flex;flex-direction:column;gap:4px;max-height:260px;overflow-y:auto;">
         ${VOICE_KEYS.map((vk) => {
-          const has = Boolean(clips[vk.k]);
-          const isRec = recordingKey === vk.k;
+          const has = Boolean(clips[vk.k]), isR = recKey === vk.k;
           return `
             <div class="ktp-vrow">
-              <b style="font-size:11.5px;color:${has ? '#5eead4' : 'var(--text)'};">${has ? '✓ ' : ''}${esc(vk.am)}</b>
-              <button type="button" class="btn sm ${isRec ? 'danger' : 'teal'}" onclick="KoraTallyPro.toggleRecKey('${esc(targetPackId)}','${vk.k}')">${isRec ? '⏹️' : '🎙️'}</button>
-              <button type="button" class="btn sm muted" ${has ? '' : 'disabled'} onclick="KoraTallyPro.playKeyClip('${esc(targetPackId)}','${vk.k}')">▶️</button>
-              <button type="button" class="btn sm ghost" ${has ? '' : 'disabled'} style="color:var(--rose);" onclick="KoraTallyPro.delKeyClip('${esc(targetPackId)}','${vk.k}')">✕</button>
+              <b style="font-size:11.5px;color:${has ? '#5eead4' : 'var(--text)'};">${has ? '✓ ' : ''}${safeEsc(vk.am)}</b>
+              <button type="button" class="btn sm ${isR ? 'danger' : 'teal'}" onclick="KoraTallyPro.recClip('${safeEsc(packId)}','${vk.k}')">${isR ? '⏹️' : '🎙️'}</button>
+              <button type="button" class="btn sm muted" ${has ? '' : 'disabled'} onclick="KoraTallyPro.playClip('${safeEsc(packId)}','${vk.k}')">▶️</button>
+              <button type="button" class="btn sm ghost" ${has ? '' : 'disabled'} style="color:var(--rose);" onclick="KoraTallyPro.delClip('${safeEsc(packId)}','${vk.k}')">✕</button>
             </div>`;
         }).join('')}
       </div>`, `
-      <button type="button" class="btn teal" onclick="closeModal();KoraTallyPro.openSettings()">${esc(tl('ጨርስ', 'Done'))}</button>`);
+      <button type="button" class="btn teal" onclick="closeModal();KoraTallyPro.openSettings()">${safeEsc(tl('ጨርስ', 'Done'))}</button>`);
   }
 
-  async function toggleRecKey(packId, key) {
-    if (mediaRecorder && mediaRecorder.state === 'recording') {
-      mediaRecorder.stop();
-      return;
-    }
-    if (!navigator.mediaDevices?.getUserMedia) {
-      showToast(tl('ማይክሮፎን አልተገኘም', 'Microphone unavailable'), true);
-      return;
-    }
+  async function recClip(packId, key) {
+    if (recorder && recorder.state === 'recording') { recorder.stop(); return; }
+    if (!navigator.mediaDevices?.getUserMedia) { showToast(tl('ማይክሮፎን አልተገኘም', 'No mic'), true); return; }
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      recChunks = [];
-      recordingKey = key;
-      mediaRecorder = new MediaRecorder(stream);
-      mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) recChunks.push(e.data); };
-      mediaRecorder.onstop = async () => {
-        stream.getTracks().forEach((tr) => tr.stop());
-        const blob = new Blob(recChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
-        const reader = new FileReader();
-        reader.onload = async () => {
-          const pack = await loadVoicePack(packId);
-          pack.clips = pack.clips || {};
-          pack.clips[key] = reader.result;
-          await saveVoicePack(pack);
-          recordingKey = '';
-          openVoiceStudio(packId);
-          showToast(tl('ድምፁ ተቀምጧል', 'Clip saved'));
+      recChunks = []; recKey = key;
+      recorder = new MediaRecorder(stream);
+      recorder.ondataavailable = (e) => { if (e.data.size > 0) recChunks.push(e.data); };
+      recorder.onstop = () => {
+        stream.getTracks().forEach((t) => t.stop());
+        const rd = new FileReader();
+        rd.onload = async () => {
+          const p = await loadPack(packId);
+          p.clips = p.clips || {}; p.clips[key] = rd.result;
+          await savePack(p);
+          recKey = ''; openStudio(packId); showToast(tl('ተቀርጿል', 'Recorded'));
         };
-        reader.readAsDataURL(blob);
+        rd.readAsDataURL(new Blob(recChunks, { type: recorder.mimeType || 'audio/webm' }));
       };
-      mediaRecorder.start();
-      openVoiceStudio(packId);
-      // ከ2.2 ሰከንድ በኋላ በራሱ እንዲቆም (ፈጣን ቀረጻ)
-      setTimeout(() => {
-        if (mediaRecorder && mediaRecorder.state === 'recording' && recordingKey === key) {
-          mediaRecorder.stop();
-        }
-      }, 2200);
-    } catch {
-      recordingKey = '';
-      showToast(tl('የማይክሮፎን ፍቃድ ያስፈልጋል', 'Mic permission denied'), true);
-    }
+      recorder.start();
+      openStudio(packId);
+      setTimeout(() => { if (recorder && recorder.state === 'recording' && recKey === key) recorder.stop(); }, 2200);
+    } catch { recKey = ''; showToast(tl('የማይክሮፎን ፍቃድ ያስፈልጋል', 'Mic denied'), true); }
   }
 
-  async function playKeyClip(packId, key) {
-    const pack = await loadVoicePack(packId);
-    if (pack.clips?.[key]) queueAudioClip(pack.clips[key]);
+  async function playClip(packId, key) { const p = await loadPack(packId); if (p.clips?.[key]) qAud(p.clips[key]); }
+  async function delClip(packId, key) { const p = await loadPack(packId); if (p.clips) delete p.clips[key]; await savePack(p); openStudio(packId); }
+  async function expPack(packId) {
+    const p = await loadPack(packId);
+    const url = URL.createObjectURL(new Blob([JSON.stringify(p)], { type: 'application/json' }));
+    const a = document.createElement('a'); a.href = url; a.download = `kora-voice-${packId}.json`; a.click();
+    URL.revokeObjectURL(url); showToast(tl('ወርዷል', 'Exported'));
   }
-
-  async function delKeyClip(packId, key) {
-    const pack = await loadVoicePack(packId);
-    if (pack.clips) delete pack.clips[key];
-    await saveVoicePack(pack);
-    openVoiceStudio(packId);
-  }
-
-  async function exportVoicePack(packId) {
-    const pack = await loadVoicePack(packId);
-    const blob = new Blob([JSON.stringify(pack)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `kora-voice-${packId}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-    showToast(tl('የድምፅ ጥቅሉ ወርዷል', 'Voice pack exported'));
-  }
-
-  function importVoicePack(inp, packId) {
-    const file = inp.files?.[0];
-    if (!file) return;
+  function impPack(inp, packId) {
+    const f = inp.files?.[0]; if (!f) return;
     const r = new FileReader();
     r.onload = async () => {
       try {
-        const parsed = JSON.parse(String(r.result || '{}'));
-        if (!parsed || typeof parsed.clips !== 'object') throw new Error();
-        parsed.id = packId;
-        await saveVoicePack(parsed);
-        state.tallyPro.voiceLang = packId;
-        saveState();
-        openVoiceStudio(packId);
-        showToast(tl('የድምፅ ጥቅሉ ተጭኗል', 'Voice pack installed'));
-      } catch {
-        showToast(tl('ትክክለኛ የድምፅ ፋይል አይደለም', 'Invalid voice pack file'), true);
-      }
+        const p = JSON.parse(String(r.result || '{}'));
+        if (!p || typeof p.clips !== 'object') throw 0;
+        p.id = packId; await savePack(p);
+        state.tallyPro.voiceLang = packId; saveState(); openStudio(packId); showToast(tl('ተጭኗል', 'Installed'));
+      } catch { showToast(tl('ትክክለኛ ፋይል አይደለም', 'Invalid file'), true); }
     };
-    r.readAsText(file);
+    r.readAsText(f);
   }
-
-  async function downloadVoicePackUrl(packId) {
-    const url = (document.getElementById('ktpPackUrl')?.value || '').trim();
-    if (!url) return;
+  async function dlPack(packId) {
+    const u = (document.getElementById('ktpPUrl')?.value || '').trim(); if (!u) return;
     try {
-      const res = await fetch(url);
-      if (!res.ok) throw new Error();
-      const parsed = await res.json();
-      if (!parsed || typeof parsed.clips !== 'object') throw new Error();
-      parsed.id = packId;
-      await saveVoicePack(parsed);
-      state.tallyPro.voiceLang = packId;
-      saveState();
-      openVoiceStudio(packId);
-      showToast(tl('ከኢንተርኔት ወርዶ ተቀምጧል', 'Downloaded & saved offline'));
-    } catch {
-      showToast(tl('ሊንኩን ማውረድ አልተቻለም', 'Download failed'), true);
-    }
-  }
-
-  // መጋራት ለክፍል 2
-  global._KTP_INTERNAL = {
-    TALLY_MODES,
-    injectTallyProStyles,
-    detectStrokeFormat,
-    strokeVal,
-    sumAnyStrokes,
-    ensureTallyProState,
-    isAm,
-    tl,
-    announceCount,
-    openTallyProSettings,
-    saveSettingsModal,
-    openVoiceStudio,
-    toggleRecKey,
-    playKeyClip,
-    delKeyClip,
-    exportVoicePack,
-    importVoicePack,
-    downloadVoicePackUrl
-  };
-
-// === የkora-tally-pro.js ክፍል 1 መጨረሻ (ክፍል 2 ከዚህ ቀጥሎ ይገባል) ===
-  // ===========================================================================
-  // ኮራ ስቶክ — kora-tally-pro.js (ክፍል 2 ከ 2)
-  // ===========================================================================
-  let lastTapTs = 0;
-  let camStream = null;
-  let camRafId = null;
-  let camCanvas = null;
-  let camCtx = null;
-  let camPrevLeft = null;
-  let camPrevRight = null;
-  let camLastTrigTs = 0;
-  let camLastZone = null;
-  let camLastZoneTs = 0;
-  let timerIntervalId = null;
-  let hooksInstalled = false;
-
-  const PRESETS = [1, 2, 3, 5, 10, 15, 20];
-
-  function makeStrokeObj(qty, carrierId) {
-    const fmt = detectStrokeFormat();
-    const n = Number(qty || 0);
-    if (fmt === 'number') return n;
-    const obj = { ts: Date.now() };
-    obj[fmt] = n;
-    if (carrierId) obj.carrierId = carrierId;
-    return obj;
-  }
-
-  function getSubTab() {
-    ensureTallyProState();
-    if (!state.tallyPro.subTab) {
-      const s = String(state.sub || '').toLowerCase();
-      if (['tickets', 'free', 'audit', 'history'].includes(s)) state.tallyPro.subTab = s;
-      else state.tallyPro.subTab = 'tickets';
-    }
-    return state.tallyPro.subTab;
-  }
-
-  function setSubTab(sub) {
-    ensureTallyProState();
-    state.tallyPro.subTab = sub;
-    if (typeof state.sub !== 'undefined') state.sub = sub;
-    if (sub === 'history') stopCamera();
-    saveState();
-    renderTallyPro();
-  }
-
-  function ensureActiveTicket() {
-    ensureTallyProState();
-    const list = state.tally.tickets;
-    if (!list.length) {
-      const id = 'TK-' + String(Date.now()).slice(-4);
-      list.push({
-        id,
-        code: 'WH1-01',
-        dir: 'out',
-        party: '',
-        pad: '',
-        items: [],
-        activeItemIdx: 0,
-        createdAt: new Date().toISOString()
-      });
-      state.tally.activeTicketId = id;
-    }
-    let tk = list.find((t) => t.id === state.tally.activeTicketId) || list[0];
-    state.tally.activeTicketId = tk.id;
-    if (!Array.isArray(tk.items)) tk.items = [];
-    if (typeof tk.activeItemIdx !== 'number' || tk.activeItemIdx >= tk.items.length) {
-      tk.activeItemIdx = Math.max(0, tk.items.length - 1);
-    }
-    return tk;
-  }
-
-  function getActiveContext() {
-    ensureTallyProState();
-    const sub = getSubTab();
-    if (sub === 'tickets') {
-      const tk = ensureActiveTicket();
-      const it = tk.items[tk.activeItemIdx] || null;
-      return {
-        sub,
-        key: it ? `tk:${tk.id}:${tk.activeItemIdx}` : `tk:${tk.id}:none`,
-        ticket: tk,
-        item: it,
-        strokes: it ? (it.strokes = it.strokes || []) : [],
-        target: it ? Number(it.target || 0) : 0,
-        systemQty: 0,
-        ready: Boolean(it)
-      };
-    }
-    if (sub === 'free') {
-      const f = state.tally.free;
-      f.strokes = f.strokes || [];
-      return {
-        sub,
-        key: 'free:main',
-        free: f,
-        strokes: f.strokes,
-        target: Number(f.target || 0),
-        systemQty: 0,
-        ready: true
-      };
-    }
-    if (sub === 'audit') {
-      const a = state.tally.audit;
-      a.strokes = a.strokes || [];
-      const inv = (state.inventory || []).find((x) => x.id === a.itemId) || (state.inventory || [])[0] || null;
-      if (inv && !a.itemId) a.itemId = inv.id;
-      const sysQty = inv ? Number(inv.stock ?? inv.qty ?? inv.quantity ?? 0) : 0;
-      return {
-        sub,
-        key: `audit:${inv ? inv.id : 'none'}`,
-        audit: a,
-        inv,
-        strokes: a.strokes,
-        target: 0,
-        systemQty: sysQty,
-        ready: Boolean(inv)
-      };
-    }
-    return { sub: 'history', key: 'history', strokes: [], target: 0, systemQty: 0, ready: false };
-  }
-
-  function getMetaLog(key) {
-    ensureTallyProState();
-    if (!Array.isArray(state.tallyPro.metaLogs[key])) state.tallyPro.metaLogs[key] = [];
-    return state.tallyPro.metaLogs[key];
-  }
-
-  function formatAgo(ts) {
-    if (!ts) return tl('ገና አልተጀመረም', 'Not started yet');
-    const sec = Math.max(0, Math.floor((Date.now() - ts) / 1000));
-    if (sec < 60) return tl(`ከ${sec}ሰ በፊት`, `${sec}s ago`);
-    const m = Math.floor(sec / 60);
-    const s = sec % 60;
-    return tl(`ከ${m}ደ ${s}ሰ በፊት`, `${m}m ${s}s ago`);
+      const res = await fetch(u); if (!res.ok) throw 0;
+      const p = await res.json(); if (!p || typeof p.clips !== 'object') throw 0;
+      p.id = packId; await savePack(p);
+      state.tallyPro.voiceLang = packId; saveState(); openStudio(packId); showToast(tl('ወርዶ ተቀምጧል', 'Downloaded'));
+    } catch { showToast(tl('ማውረድ አልተቻለም', 'Download failed'), true); }
   }
 
   // ---------------------------------------------------------------------------
-  // 5. የቆጠራ ዋና ተግባራት (+ ቁጠር፣ መልስ፣ ጎዶሎ፣ አጽዳ፣ መዝግብ)
+  // 10. ባለ 1-ስክሪን የቆጠራ UI ሠሪ
   // ---------------------------------------------------------------------------
-  function recordCount(qtyOverride = null, carrierId = null, bypassDebounce = false) {
-    ensureTallyProState();
-    const cfg = state.tallyPro;
-    const ctx = getActiveContext();
-    if (!ctx.ready) {
-      showToast(tl('መጀመሪያ «+ ዕቃ ጨምር» ይጫኑ', 'Add an item first'), true);
-      return false;
-    }
-    if (cfg.locked) {
-      showToast(tl('ቆጠራው ተቆልፏል — መጀመሪያ ይክፈቱት', 'Tally is locked'), true);
-      return false;
-    }
-    const now = Date.now();
-    if (!bypassDebounce && cfg.debounceMs > 0 && now - lastTapTs < cfg.debounceMs) {
-      return false;
-    }
-
-    const qty = Number(qtyOverride !== null ? qtyOverride : cfg.loadSize || 1);
-    if (!(qty > 0)) return false;
-
-    const meta = getMetaLog(ctx.key);
-    const prevTs = meta.length ? meta[meta.length - 1].ts : 0;
-    const dt = prevTs ? Number(((now - prevTs) / 1000).toFixed(1)) : 0;
-
-    ctx.strokes.push(makeStrokeObj(qty, carrierId));
-    meta.push({ ts: now, dt, qty, carrierId: carrierId || null });
-    lastTapTs = now;
-
-    const total = sumAnyStrokes(ctx.strokes);
-    const clicks = ctx.strokes.length;
-    const reached = ctx.target > 0 && total >= ctx.target;
-
-    if (cfg.haptic && navigator.vibrate) {
-      navigator.vibrate(reached ? [80, 50, 120] : 28);
-    }
-    announceCount(total, clicks, reached);
-    saveState();
-
-    // ካሜራ እየሠራ ከሆነ ቪዲዮው እንዳይቋረጥ ቁጥሮቹን ብቻ በቀጥታ ማደስ
-    if (cfg.mode === 'camera' && camStream) {
-      updateLiveBoardOnly();
-    } else {
-      renderTallyPro();
-    }
-    return true;
-  }
-
-  function undoCount() {
-    const ctx = getActiveContext();
-    if (!ctx.ready || !ctx.strokes.length) return;
-    if (state.tallyPro.locked) {
-      showToast(tl('መጀመሪያ ቆጠራውን ይክፈቱ', 'Unlock tally first'), true);
-      return;
-    }
-    ctx.strokes.pop();
-    const meta = getMetaLog(ctx.key);
-    if (meta.length) meta.pop();
-    if (state.tallyPro.haptic && navigator.vibrate) navigator.vibrate(15);
-    saveState();
-    if (state.tallyPro.mode === 'camera' && camStream) updateLiveBoardOnly();
-    else renderTallyPro();
-  }
-
-  function openPartialModal() {
-    const ctx = getActiveContext();
-    if (!ctx.ready) {
-      showToast(tl('መጀመሪያ ዕቃ ይምረጡ', 'Select an item first'), true);
-      return;
-    }
-    openModal(`➕ ${tl('ጎዶሎ / የተለየ ብዛት ጨምር', 'Add Partial / Custom Qty')}`, `
-      <div class="sub-card">
-        <label class="lbl">${esc(tl('የተቆጠረው ጎዶሎ ብዛት', 'Partial quantity to add'))}</label>
-        <input id="ktpPartialInp" type="number" min="1" step="any" class="inp" placeholder="ለምሳሌ 4" autofocus>
-      </div>`, `
-      <button type="button" class="btn muted" onclick="closeModal()">${esc(tl('ተው', 'Cancel'))}</button>
-      <button type="button" class="btn teal" onclick="KoraTallyPro.confirmPartial()">${esc(tl('ጨምር', 'Add'))}</button>`);
-  }
-
-  function confirmPartial() {
-    const val = Number(document.getElementById('ktpPartialInp')?.value || 0);
-    if (!(val > 0)) return;
-    closeModal();
-    recordCount(val, null, true);
-  }
-
-  function clearCounts() {
-    const ctx = getActiveContext();
-    if (!ctx.ready || !ctx.strokes.length) return;
-    openModal(`🧹 ${tl('ቆጠራውን አጽዳ?', 'Clear Counts?')}`, `
-      <p style="font-size:12.5px;color:var(--muted);line-height:1.5;">
-        ${esc(tl('እስካሁን የተቆጠረው ሙሉ በሙሉ ወደ 0 ይመለሳል። እርግጠኛ ነህ?', 'All current counts will reset to 0. Are you sure?'))}
-      </p>`, `
-      <button type="button" class="btn muted" onclick="closeModal()">${esc(tl('ተው', 'Cancel'))}</button>
-      <button type="button" class="btn danger" onclick="KoraTallyPro.confirmClear()">${esc(tl('አጽዳ', 'Clear'))}</button>`);
-  }
-
-  function confirmClear() {
-    const ctx = getActiveContext();
-    if (ctx.ready) {
-      ctx.strokes.length = 0;
-      state.tallyPro.metaLogs[ctx.key] = [];
-      saveState();
-    }
-    closeModal();
-    if (state.tallyPro.mode === 'camera' && camStream) updateLiveBoardOnly();
-    else renderTallyPro();
-  }
-
-  function setLoadSize(n) {
-    ensureTallyProState();
-    if (n === 'other') {
-      openModal(`⚙️ ${tl('የአንድ ሸክም መጠን', 'Custom Load Size')}`, `
-        <div class="sub-card">
-          <label class="lbl">${esc(tl('በአንድ ሸክም ስንት ፍሬ?', 'Units per single load'))}</label>
-          <input id="ktpCustomLoad" type="number" min="1" class="inp" value="${Number(state.tallyPro.loadSize || 10)}">
-        </div>`, `
-        <button type="button" class="btn muted" onclick="closeModal()">${esc(tl('ተው', 'Cancel'))}</button>
-        <button type="button" class="btn teal" onclick="KoraTallyPro.confirmCustomLoad()">${esc(tl('አስቀምጥ', 'Set'))}</button>`);
-      return;
-    }
-    state.tallyPro.loadSize = Math.max(1, Number(n || 1));
-    saveState();
-    renderTallyPro();
-  }
-
-  function confirmCustomLoad() {
-    const v = Math.max(1, Number(document.getElementById('ktpCustomLoad')?.value || 1));
-    state.tallyPro.loadSize = v;
-    saveState();
-    closeModal();
-    renderTallyPro();
-  }
-
-  function toggleLock() {
-    ensureTallyProState();
-    state.tallyPro.locked = !state.tallyPro.locked;
-    if (state.tallyPro.locked) stopCamera();
-    saveState();
-    renderTallyPro();
-  }
-
-  // ---------------------------------------------------------------------------
-  // 6. የቲኬት፣ የዕቃ፣ የነጻ ቆጠራ እና የኦዲት አስተዳደር
-  // ---------------------------------------------------------------------------
-  function selectTicket(id) {
-    state.tally.activeTicketId = id;
-    saveState();
-    renderTallyPro();
-  }
-
-  function addTicket() {
-    const num = state.tally.tickets.length + 1;
-    const id = 'TK-' + String(Date.now()).slice(-4);
-    state.tally.tickets.push({
-      id,
-      code: `WH1-0${num}`,
-      dir: 'out',
-      party: '',
-      pad: '',
-      items: [],
-      activeItemIdx: 0,
-      createdAt: new Date().toISOString()
-    });
-    state.tally.activeTicketId = id;
-    saveState();
-    renderTallyPro();
-  }
-
-  function removeActiveTicket() {
-    const tk = ensureActiveTicket();
-    if (state.tally.tickets.length <= 1) {
-      tk.items = [];
-      tk.party = '';
-      tk.pad = '';
-    } else {
-      state.tally.tickets = state.tally.tickets.filter((t) => t.id !== tk.id);
-      state.tally.activeTicketId = state.tally.tickets[0]?.id || null;
-    }
-    saveState();
-    renderTallyPro();
-  }
-
-  function toggleTicketDir() {
-    const tk = ensureActiveTicket();
-    tk.dir = (tk.dir === 'in') ? 'out' : 'in';
-    saveState();
-    renderTallyPro();
-  }
-
-  function updateTicketField(field, val) {
-    const tk = ensureActiveTicket();
-    tk[field] = val;
-    saveState();
-  }
-
-  function selectTicketItem(idx) {
-    const tk = ensureActiveTicket();
-    tk.activeItemIdx = idx;
-    saveState();
-    renderTallyPro();
-  }
-
-  function openAddTicketItemModal() {
-    const invOpts = (state.inventory || []).map((it) =>
-      `<option value="${esc(it.id)}">${esc(it.name)} (${Number(it.stock ?? it.qty ?? 0)})</option>`
-    ).join('');
-    openModal(`➕ ${tl('ወደ ቲኬቱ ዕቃ ጨምር', 'Add Item to Ticket')}`, `
-      <div class="sub-card">
-        <label class="lbl">${esc(tl('ዕቃ ይምረጡ', 'Select Product'))}</label>
-        <select id="ktpAddInvSel" class="sel">${invOpts}</select>
-        <label class="lbl" style="margin-top:6px;">${esc(tl('የሚጫን / የሚወርድ ግብ (አማራጭ)', 'Target Qty (optional)'))}</label>
-        <input id="ktpAddTarget" type="number" min="0" class="inp" placeholder="ለምሳሌ 50 (0 = ገደብ የለም)">
-      </div>`, `
-      <button type="button" class="btn muted" onclick="closeModal()">${esc(tl('ተው', 'Cancel'))}</button>
-      <button type="button" class="btn teal" onclick="KoraTallyPro.confirmAddTicketItem()">${esc(tl('ጨምር', 'Add'))}</button>`);
-  }
-
-  function confirmAddTicketItem() {
-    const invId = document.getElementById('ktpAddInvSel')?.value;
-    const target = Math.max(0, Number(document.getElementById('ktpAddTarget')?.value || 0));
-    const inv = (state.inventory || []).find((x) => x.id === invId);
-    if (!inv) return;
-    const tk = ensureActiveTicket();
-    tk.items.push({
-      itemId: inv.id,
-      name: inv.name,
-      unit: inv.unit || '',
-      target,
-      strokes: []
-    });
-    tk.activeItemIdx = tk.items.length - 1;
-    saveState();
-    closeModal();
-    renderTallyPro();
-  }
-
-  function commitPrimaryAction() {
-    const ctx = getActiveContext();
-    if (!ctx.ready) {
-      showToast(tl('የሚመዘገብ ቆጠራ የለም', 'Nothing to submit'), true);
-      return;
-    }
-    const nowStr = new Date().toLocaleString();
-
-    if (ctx.sub === 'tickets') {
-      const tk = ctx.ticket;
-      const nonZero = tk.items.filter((it) => sumAnyStrokes(it.strokes) > 0);
-      if (!nonZero.length) {
-        showToast(tl('መጀመሪያ ቆጠራ ያድርጉ', 'Count at least one load first'), true);
-        return;
-      }
-      const isIn = tk.dir === 'in';
-      const summaryLines = [];
-      nonZero.forEach((it) => {
-        const qty = sumAnyStrokes(it.strokes);
-        summaryLines.push(`${it.name}: ${qty}`);
-        const inv = (state.inventory || []).find((x) => x.id === it.itemId);
-        if (inv) {
-          if (typeof inv.stock === 'number') inv.stock = Math.max(0, inv.stock + (isIn ? qty : -qty));
-          else if (typeof inv.qty === 'number') inv.qty = Math.max(0, inv.qty + (isIn ? qty : -qty));
-        }
-      });
-      state.tally.history.unshift({
-        id: 'H-' + Date.now(),
-        type: isIn ? 'in' : 'out',
-        ref: tk.code || tk.id,
-        party: tk.party || tl('ያልተገለጸ', 'Walk-in'),
-        itemsSummary: summaryLines.join(' · '),
-        total: nonZero.reduce((a, x) => a + sumAnyStrokes(x.strokes), 0),
-        loads: nonZero.reduce((a, x) => a + (x.strokes?.length || 0), 0),
-        date: nowStr
-      });
-      // ቲኬቱን አጽድቶ ለቀጣይ ማዘጋጀት
-      tk.items = [];
-      tk.activeItemIdx = 0;
-      saveState();
-      renderTallyPro();
-      showToast(tl('ቆጠራው በስቶክ ላይ ተመዝግቧል!', 'Ticket committed to stock!'));
-      return;
-    }
-
-    if (ctx.sub === 'free') {
-      const total = sumAnyStrokes(ctx.strokes);
-      if (!(total > 0)) {
-        showToast(tl('የተቆጠረ ቁጥር የለም', 'No counts yet'), true);
-        return;
-      }
-      state.tally.history.unshift({
-        id: 'H-' + Date.now(),
-        type: 'free',
-        ref: tl('ነጻ ቆጠራ', 'Free Tally'),
-        party: ctx.free.note || tl('ማስታወሻ የለም', 'No note'),
-        itemsSummary: `${total} (${ctx.strokes.length} ${tl('ሸክም', 'loads')})`,
-        total,
-        loads: ctx.strokes.length,
-        date: nowStr
-      });
-      ctx.free.strokes = [];
-      state.tallyPro.metaLogs[ctx.key] = [];
-      saveState();
-      renderTallyPro();
-      showToast(tl('ወደ ታሪክ/መመዝገቢያ ተቀምጧል!', 'Saved to tally history!'));
-      return;
-    }
-
-    if (ctx.sub === 'audit') {
-      const total = sumAnyStrokes(ctx.strokes);
-      const inv = ctx.inv;
-      if (!inv) return;
-      const diff = total - ctx.systemQty;
-      if (typeof inv.stock === 'number') inv.stock = total;
-      else if (typeof inv.qty === 'number') inv.qty = total;
-      state.tally.history.unshift({
-        id: 'H-' + Date.now(),
-        type: 'audit',
-        ref: tl('ስቶክ ኦዲት', 'Stock Audit'),
-        party: inv.name,
-        itemsSummary: `${tl('ሲስተም', 'Sys')}: ${ctx.systemQty} ➔ ${tl('አዲስ', 'New')}: ${total} (${diff >= 0 ? '+' : ''}${diff})`,
-        total,
-        loads: ctx.strokes.length,
-        date: nowStr
-      });
-      ctx.audit.strokes = [];
-      state.tallyPro.metaLogs[ctx.key] = [];
-      saveState();
-      renderTallyPro();
-      showToast(tl('የስቶክ ማስተካከያ ተልኳል!', 'Stock audit applied!'));
-    }
-  }
-
-  // ---------------------------------------------------------------------------
-  // 7. የካሜራ በር መሻገሪያ ቆጣሪ (Virtual Tripwire)
-  // ---------------------------------------------------------------------------
-  async function startCamera() {
-    if (camStream) return;
-    if (!navigator.mediaDevices?.getUserMedia) {
-      showToast(tl('ካሜራ በዚህ ስልክ ላይ አይሠራም', 'Camera not supported'), true);
-      return;
-    }
-    try {
-      camStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: { ideal: 'environment' }, width: { ideal: 640 }, height: { ideal: 360 } },
-        audio: false
-      });
-      const vid = document.getElementById('ktpCamVideo');
-      if (vid) {
-        vid.srcObject = camStream;
-        await vid.play().catch(() => {});
-      }
-      camCanvas = document.createElement('canvas');
-      camCanvas.width = 64;
-      camCanvas.height = 48;
-      camCtx = camCanvas.getContext('2d', { willReadFrequently: true });
-      camPrevLeft = null;
-      camPrevRight = null;
-      camLastZone = null;
-      const stEl = document.getElementById('ktpCamStatus');
-      if (stEl) stEl.textContent = tl('🟢 በመቁጠር ላይ', '🟢 Live');
-      runCameraLoop();
-    } catch {
-      showToast(tl('የካሜራ ፍቃድ ያስፈልጋል', 'Camera permission denied'), true);
-    }
-  }
-
-  function stopCamera() {
-    if (camRafId) { cancelAnimationFrame(camRafId); camRafId = null; }
-    if (camStream) {
-      camStream.getTracks().forEach((tr) => tr.stop());
-      camStream = null;
-    }
-    camPrevLeft = null;
-    camPrevRight = null;
-    const stEl = document.getElementById('ktpCamStatus');
-    if (stEl) stEl.textContent = tl('⏸️ ቆሟል', '⏸️ Stopped');
-  }
-
-  function toggleCamera() {
-    if (camStream) { stopCamera(); renderTallyPro(); }
-    else startCamera();
-  }
-
-  function toggleCameraDir() {
-    state.tallyPro.camDir = state.tallyPro.camDir === 'LR' ? 'RL' : 'LR';
-    saveState();
-    const btn = document.getElementById('ktpCamDirBtn');
-    if (btn) btn.textContent = state.tallyPro.camDir === 'LR' ? '➡️ ግራ➔ቀኝ (+)' : '⬅️ ቀኝ➔ግራ (+)';
-  }
-
-  function runCameraLoop() {
-    if (!camStream) return;
-    const vid = document.getElementById('ktpCamVideo');
-    if (vid && vid.readyState >= 2 && camCtx) {
-      camCtx.drawImage(vid, 0, 0, 64, 48);
-      const data = camCtx.getImageData(0, 0, 64, 48).data;
-      // መሃሉን መስመር (x=32) ተከትሎ ግራ ዞን (x: 16..28) እና ቀኝ ዞን (x: 36..48)
-      const leftBuf = [];
-      const rightBuf = [];
-      for (let y = 8; y < 40; y += 2) {
-        for (let x = 16; x < 28; x += 2) {
-          const i = (y * 64 + x) * 4;
-          leftBuf.push((data[i] + data[i + 1] + data[i + 2]) / 3);
-        }
-        for (let x = 36; x < 48; x += 2) {
-          const i = (y * 64 + x) * 4;
-          rightBuf.push((data[i] + data[i + 1] + data[i + 2]) / 3);
-        }
-      }
-      if (camPrevLeft && camPrevRight) {
-        let diffL = 0, diffR = 0;
-        for (let i = 0; i < leftBuf.length; i++) {
-          diffL += Math.abs(leftBuf[i] - camPrevLeft[i]);
-          diffR += Math.abs(rightBuf[i] - camPrevRight[i]);
-        }
-        diffL /= leftBuf.length;
-        diffR /= rightBuf.length;
-
-        const thresh = Number(state.tallyPro.camSensitivity || 26);
-        const now = Date.now();
-        const cool = Number(state.tallyPro.camCooldownMs || 1100);
-
-        if (diffL > thresh && diffL > diffR * 1.15) {
-          if (camLastZone === 'R' && now - camLastZoneTs < 1200 && now - camLastTrigTs > cool) {
-            camLastTrigTs = now;
-            camLastZone = null;
-            if (state.tallyPro.camDir === 'RL') recordCount(null, null, true);
-          } else {
-            camLastZone = 'L';
-            camLastZoneTs = now;
-          }
-        } else if (diffR > thresh && diffR > diffL * 1.15) {
-          if (camLastZone === 'L' && now - camLastZoneTs < 1200 && now - camLastTrigTs > cool) {
-            camLastTrigTs = now;
-            camLastZone = null;
-            if (state.tallyPro.camDir === 'LR') recordCount(null, null, true);
-          } else {
-            camLastZone = 'R';
-            camLastZoneTs = now;
-          }
-        }
-      }
-      camPrevLeft = leftBuf;
-      camPrevRight = rightBuf;
-    }
-    camRafId = requestAnimationFrame(() => setTimeout(runCameraLoop, 110));
-  }
-
-  // ---------------------------------------------------------------------------
-  // 8. የክብደት/ጥቅል ቀያሪ እና የመንሸራተቻ ቆጣሪ (Slide-to-Count)
-  // ---------------------------------------------------------------------------
-  function applyWeightCalc() {
-    const mode = document.getElementById('ktpWMode')?.value || 'weight';
-    const a = Number(document.getElementById('ktpWValA')?.value || 0);
-    const b = Number(document.getElementById('ktpWValB')?.value || 1);
-    if (!(a > 0) || !(b > 0)) return;
-    const qty = mode === 'weight' ? Math.round(a / b) : Math.round(a * b);
-    if (qty > 0) {
-      recordCount(qty, null, true);
-      showToast(`+${qty} ${tl('ተጨምሯል', 'added')}`);
-    }
-  }
-
-  function updateWeightPreview() {
-    const mode = document.getElementById('ktpWMode')?.value || 'weight';
-    const a = Number(document.getElementById('ktpWValA')?.value || 0);
-    const b = Number(document.getElementById('ktpWValB')?.value || 1);
-    const qty = (a > 0 && b > 0) ? (mode === 'weight' ? Math.round(a / b) : Math.round(a * b)) : 0;
-    const out = document.getElementById('ktpWOut');
-    if (out) out.textContent = `= ${qty.toLocaleString()}`;
-  }
-
-  function bindSlideTrack() {
-    const track = document.getElementById('ktpSlideTrack');
-    const thumb = document.getElementById('ktpSlideThumb');
-    const fill = document.getElementById('ktpSlideFill');
-    if (!track || !thumb) return;
-    let dragging = false, startX = 0, maxX = 0;
-
-    const reset = () => {
-      dragging = false;
-      thumb.style.transition = 'transform 0.16s ease';
-      thumb.style.transform = 'translateX(0px)';
-      if (fill) fill.style.width = '0%';
-    };
-
-    thumb.onpointerdown = (e) => {
-      if (state.tallyPro.locked) return;
-      dragging = true;
-      thumb.setPointerCapture(e.pointerId);
-      startX = e.clientX;
-      maxX = Math.max(40, track.clientWidth - thumb.clientWidth - 8);
-      thumb.style.transition = 'none';
-    };
-    thumb.onpointermove = (e) => {
-      if (!dragging) return;
-      const dx = Math.max(0, Math.min(maxX, e.clientX - startX));
-      thumb.style.transform = `translateX(${dx}px)`;
-      if (fill) fill.style.width = `${Math.round((dx / maxX) * 100)}%`;
-      if (dx >= maxX * 0.82) {
-        reset();
-        recordCount(null, null, false);
-      }
-    };
-    thumb.onpointerup = reset;
-    thumb.onpointercancel = reset;
-  }
-
-  // ---------------------------------------------------------------------------
-  // 9. ባለ 1-ስክሪን የሻርፕ ሜታል ገጽ ሠሪ (Renderer)
-  // ---------------------------------------------------------------------------
-  function buildRound10Html(strokes, loadSize) {
-    const totalClicks = strokes.length;
-    const fullRounds = Math.floor(totalClicks / 10);
-    const inRound = totalClicks % 10;
-    const fullQty = sumAnyStrokes(strokes.slice(0, fullRounds * 10));
-    const curRoundStrokes = strokes.slice(fullRounds * 10);
-    const curRoundQty = sumAnyStrokes(curRoundStrokes);
-
+  function build10Grid(strokes) {
+    const clicks = strokes.length;
+    const full = Math.floor(clicks / 10), inR = clicks % 10;
+    const fullQ = sumAny(strokes.slice(0, full * 10));
+    const curS = strokes.slice(full * 10), curQ = sumAny(curS);
     let cells = '';
     for (let i = 0; i < 10; i++) {
-      const s = curRoundStrokes[i];
-      const hit = s !== undefined;
-      const isLast = hit && i === curRoundStrokes.length - 1;
-      const label = hit ? `+${strokeVal(s)}` : String(i + 1);
-      cells += `<div class="ktp-cell ${hit ? 'hit' : ''} ${isLast ? 'last' : ''}">${label}</div>`;
+      const s = curS[i], hit = s !== undefined, last = hit && i === curS.length - 1;
+      cells += `<div class="ktp-cell ${hit ? 'hit' : ''} ${last ? 'last' : ''}">${hit ? '+' + strokeVal(s) : (i + 1)}</div>`;
     }
     return `
-      <div class="ktp-round-box">
-        <div class="ktp-round-head">
-          <span>${esc(tl('የተጠናቀቁ', 'Done'))}: ${fullRounds}×10 (${fullQty.toLocaleString()})</span>
-          <span>${esc(tl('የአሁኑ ዙር', 'Round'))}: ${inRound}/10 (+${curRoundQty})</span>
+      <div class="ktp-rbox">
+        <div class="ktp-rhead">
+          <span>${safeEsc(tl('የተጠናቀቁ', 'Done'))}: ${full}×10 (${safeNum(fullQ)})</span>
+          <span>${safeEsc(tl('የአሁኑ ዙር', 'Round'))}: ${inR}/10 (+${safeNum(curQ)})</span>
         </div>
-        <div class="ktp-grid10">${cells}</div>
+        <div class="ktp-g10">${cells}</div>
       </div>`;
   }
 
-  function buildMetaFootHtml(ctx) {
-    const meta = getMetaLog(ctx.key);
-    const lastTs = meta.length ? meta[meta.length - 1].ts : 0;
-    const speeds = meta.slice(-3).reverse().map((m, idx) => {
-      const num = meta.length - idx;
-      return `<span class="ktp-speed-pill">#${num} (${m.dt || '0.0'}s)</span>`;
-    }).join(' ');
-    return `
-      <div class="ktp-meta-foot">
-        <span id="ktpAgoTxt">⏱ ${esc(formatAgo(lastTs))}</span>
-        <div style="display:flex;gap:3px;overflow:hidden;">${speeds}</div>
-      </div>`;
-  }
-
-  function updateLiveBoardOnly() {
-    const ctx = getActiveContext();
-    const total = sumAnyStrokes(ctx.strokes);
-    const loads = ctx.strokes.length;
-    const rem = ctx.target > 0 ? Math.max(0, ctx.target - total) : null;
-    const remLoads = rem !== null ? Math.ceil(rem / Math.max(1, state.tallyPro.loadSize || 1)) : null;
-
-    const k1 = document.getElementById('ktpKpi1');
-    const k2 = document.getElementById('ktpKpi2');
-    const k3 = document.getElementById('ktpKpi3');
-    const k4 = document.getElementById('ktpKpi4');
-    if (k1) k1.textContent = total.toLocaleString();
-    if (k2) k2.textContent = loads.toLocaleString();
+  function updateLiveNums() {
+    const ctx = getCtx(), tot = sumAny(ctx.strokes), loads = ctx.strokes.length;
+    const ls = Math.max(1, Number(state.tallyPro.loadSize || 1));
+    const k1 = document.getElementById('ktpK1'), k2 = document.getElementById('ktpK2');
+    const k3 = document.getElementById('ktpK3'), k4 = document.getElementById('ktpK4');
+    if (k1) k1.textContent = safeNum(tot);
+    if (k2) k2.textContent = safeNum(loads);
     if (ctx.sub === 'audit') {
-      const diff = total - ctx.systemQty;
-      if (k3) k3.textContent = (diff > 0 ? '+' : '') + diff.toLocaleString();
-      if (k4) k4.textContent = ctx.systemQty.toLocaleString();
+      const d = tot - ctx.sysQty;
+      if (k3) k3.textContent = (d > 0 ? '+' : '') + safeNum(d);
+      if (k4) k4.textContent = safeNum(ctx.sysQty);
     } else {
-      if (k3) k3.textContent = rem !== null ? rem.toLocaleString() : '∞';
-      if (k4) k4.textContent = remLoads !== null ? remLoads.toLocaleString() : '∞';
+      const rem = ctx.target > 0 ? Math.max(0, ctx.target - tot) : null;
+      if (k3) k3.textContent = rem !== null ? safeNum(rem) : '∞';
+      if (k4) k4.textContent = rem !== null ? safeNum(Math.ceil(rem / ls)) : '∞';
     }
-    const pf = document.getElementById('ktpProgFill');
-    if (pf && ctx.target > 0) {
-      pf.style.width = `${Math.min(100, Math.round((total / ctx.target) * 100))}%`;
-    }
+    const pf = document.getElementById('ktpPF');
+    if (pf && ctx.target > 0) pf.style.width = `${Math.min(100, Math.round((tot / ctx.target) * 100))}%`;
   }
 
   function renderTallyPro() {
     const root = document.getElementById('viewRoot');
-    if (!root) return;
-    ensureTallyProState();
-    injectTallyProStyles();
+    if (!root || !hasState()) return;
+    ensureState();
+    injectCss();
     document.body.classList.add('ktp-active');
 
-    const cfg = state.tallyPro;
-    const sub = getSubTab();
-    const ctx = getActiveContext();
-    const loadSize = Number(cfg.loadSize || 10);
-    const total = sumAnyStrokes(ctx.strokes);
-    const loads = ctx.strokes.length;
-    const modeInfo = TALLY_MODES.find((m) => m.id === cfg.mode) || TALLY_MODES[0];
+    const cfg = state.tallyPro, sub = getSub(), ctx = getCtx();
+    const ls = Number(cfg.loadSize || 10);
+    const tot = sumAny(ctx.strokes), loads = ctx.strokes.length;
+    const mInfo = TALLY_MODES.find((m) => m.id === cfg.mode) || TALLY_MODES[0];
 
-    // ረድፍ 1: ታቦች + ቁልፍ + ቅንብር በአንድ መስመር (ልክ እንደ ሻርፕ ሜታል)
-    const topRowHtml = `
+    const topRow = `
       <div class="ktp-toprow">
         <div class="ktp-subtabs">
-          <button type="button" class="ktp-tab ${sub === 'tickets' ? 'on' : ''}" onclick="KoraTallyPro.setSubTab('tickets')">${esc(tl('የጭነት ቲኬት', 'Tickets'))}</button>
-          <button type="button" class="ktp-tab ${sub === 'free' ? 'on' : ''}" onclick="KoraTallyPro.setSubTab('free')">${esc(tl('ነጻ ቆጠራ', 'Free Count'))}</button>
-          <button type="button" class="ktp-tab ${sub === 'audit' ? 'on' : ''}" onclick="KoraTallyPro.setSubTab('audit')">${esc(tl('ስቶክ ኦዲት', 'Audit'))}</button>
-          <button type="button" class="ktp-tab ${sub === 'history' ? 'on' : ''}" onclick="KoraTallyPro.setSubTab('history')">${esc(tl('ታሪክ', 'History'))}</button>
+          <button type="button" class="ktp-tab ${sub === 'tickets' ? 'on' : ''}" onclick="KoraTallyPro.setSub('tickets')">${safeEsc(tl('የጭነት ቲኬት', 'Tickets'))}</button>
+          <button type="button" class="ktp-tab ${sub === 'free' ? 'on' : ''}" onclick="KoraTallyPro.setSub('free')">${safeEsc(tl('ነጻ ቆጠራ', 'Free'))}</button>
+          <button type="button" class="ktp-tab ${sub === 'audit' ? 'on' : ''}" onclick="KoraTallyPro.setSub('audit')">${safeEsc(tl('ኦዲት', 'Audit'))}</button>
+          <button type="button" class="ktp-tab ${sub === 'history' ? 'on' : ''}" onclick="KoraTallyPro.setSub('history')">${safeEsc(tl('ታሪክ', 'History'))}</button>
         </div>
-        <button type="button" class="ktp-sqbtn ${cfg.locked ? 'locked' : ''}" onclick="KoraTallyPro.toggleLock()" title="Lock">${cfg.locked ? '🔒' : '🔓'}</button>
-        <button type="button" class="ktp-sqbtn" onclick="KoraTallyPro.openSettings()" title="Settings">⚙️</button>
+        <button type="button" class="ktp-sq ${cfg.locked ? 'locked' : ''}" onclick="KoraTallyPro.toggleLock()">${cfg.locked ? '🔒' : '🔓'}</button>
+        <button type="button" class="ktp-sq" onclick="KoraTallyPro.openSettings()">⚙️</button>
       </div>`;
 
-    // የታሪክ ገጽ (History)
     if (sub === 'history') {
       const rows = (state.tally.history || []).map((h) => `
         <div class="sub-card" style="padding:8px 10px;">
           <div class="card-row">
-            <b style="font-size:12px;">${esc(h.ref || '')} · ${esc(h.party || '')}</b>
-            <span class="pill teal">${Number(h.total || 0).toLocaleString()}</span>
+            <b style="font-size:12px;">${safeEsc(h.docNo || h.ref || '')} · ${safeEsc(h.party || '')}</b>
+            <span class="pill teal">${safeNum(h.total || h.qty || 0)}</span>
           </div>
-          <div style="font-size:11px;color:var(--muted);margin-top:3px;">${esc(h.itemsSummary || '')}</div>
-          <div style="font-size:10px;color:var(--muted);margin-top:2px;">🕒 ${esc(h.date || '')}</div>
-        </div>`).join('') || `<div class="sub-card" style="text-align:center;color:var(--muted);padding:24px;">${esc(tl('የተመዘገበ የቆጠራ ታሪክ የለም', 'No tally history yet'))}</div>`;
-
-      root.innerHTML = `<div class="ktp-shell">${topRowHtml}<div style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:6px;">${rows}</div></div>`;
+          <div style="font-size:11px;color:var(--muted);margin-top:2px;">${safeEsc(h.summary || h.itemName || '')}</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px;">🕒 ${safeEsc(h.date || '')}</div>
+        </div>`).join('') || `<div class="sub-card" style="text-align:center;color:var(--muted);padding:24px;">${safeEsc(tl('የቆጠራ ታሪክ የለም', 'No history yet'))}</div>`;
+      root.innerHTML = `<div class="ktp-shell">${topRow}<div style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:6px;">${rows}</div></div>`;
       return;
     }
 
-    // ረድፍ 2: እንደ ንዑስ ታቡ የሚቀየር ቀጭን ራስጌ
-    let headerHtml = '';
+    let headHtml = '';
     if (sub === 'tickets') {
       const tk = ctx.ticket;
-      const tkChips = state.tally.tickets.map((t) =>
-        `<button type="button" class="ktp-chip ${t.id === tk.id ? 'on' : ''}" onclick="KoraTallyPro.selectTicket('${esc(t.id)}')">🚛 ${esc(t.code || t.id)}</button>`
-      ).join('');
-      const itemChips = tk.items.map((it, idx) => {
-        const q = sumAnyStrokes(it.strokes);
-        const done = it.target > 0 && q >= it.target;
-        const txt = it.target > 0 ? `${it.name} (${q}/${it.target})` : `${it.name} (${q})`;
-        return `<button type="button" class="ktp-chip ${idx === tk.activeItemIdx ? 'on' : (done ? 'done' : '')}" onclick="KoraTallyPro.selectTicketItem(${idx})">${done ? '✓ ' : ''}${esc(txt)}</button>`;
-      }).join('');
-      headerHtml = `
+      const isIn = String(tk.dir || 'OUT').toUpperCase() === 'IN';
+      headHtml = `
         <div class="ktp-strip no-scrollbar">
-          ${tkChips}
-          <button type="button" class="ktp-chip add" onclick="KoraTallyPro.addTicket()">+ ${esc(tl('አዲስ', 'New'))}</button>
+          ${state.tally.tickets.map((t) => `<button type="button" class="ktp-chip ${t.id === tk.id ? 'on' : ''}" onclick="KoraTallyPro.selTicket('${safeEsc(t.id)}')">🚛 ${safeEsc(t.docNo || t.id)}</button>`).join('')}
+          <button type="button" class="ktp-chip add" onclick="KoraTallyPro.newTicket()">+ ${safeEsc(tl('አዲስ', 'New'))}</button>
         </div>
         <div class="ktp-bar ticket">
-          <button type="button" class="ktp-dir-btn ${tk.dir === 'in' ? 'in' : ''}" onclick="KoraTallyPro.toggleTicketDir()">${tk.dir === 'in' ? tl('ገቢ', 'IN') : tl('ወጪ', 'OUT')}</button>
-          <input class="ktp-mini-inp" value="${esc(tk.code || '')}" placeholder="ኮድ" onchange="KoraTallyPro.updateTicketField('code',this.value)">
-          <input class="ktp-mini-inp" value="${esc(tk.party || '')}" placeholder="${esc(tl('ደንበኛ / አቅራቢ', 'Customer / Party'))}" onchange="KoraTallyPro.updateTicketField('party',this.value)">
-          <button type="button" class="ktp-sqbtn" style="width:28px;height:29px;color:#fb7185;" onclick="KoraTallyPro.removeActiveTicket()">✕</button>
+          <button type="button" class="ktp-dir ${isIn ? 'in' : ''}" onclick="KoraTallyPro.toggleDir()">${isIn ? tl('ገቢ', 'IN') : tl('ወጪ', 'OUT')}</button>
+          <input class="ktp-inp mono" value="${safeEsc(tk.docNo || '')}" placeholder="ኮድ" onchange="KoraTallyPro.setTkField('docNo',this.value)">
+          <input class="ktp-inp" value="${safeEsc(tk.party || '')}" placeholder="${safeEsc(tl('ደንበኛ / አቅራቢ', 'Party'))}" onchange="KoraTallyPro.setTkField('party',this.value)">
+          <button type="button" class="ktp-sq" style="width:28px;height:29px;color:#fb7185;" onclick="KoraTallyPro.delTicket()">✕</button>
         </div>
         <div class="ktp-strip no-scrollbar">
-          ${itemChips}
-          <button type="button" class="ktp-chip add" onclick="KoraTallyPro.openAddTicketItemModal()">+ ${esc(tl('ዕቃ ጨምር', 'Add Item'))}</button>
+          ${tk.items.map((x) => {
+            const q = sumAny(x.strokes), done = x.target > 0 && q >= x.target;
+            const lbl = x.target > 0 ? `${x.name} (${q}/${x.target})` : `${x.name} (${q})`;
+            const act = String(x.itemId) === String(tk.activeItemId);
+            return `<button type="button" class="ktp-chip ${act ? 'on' : (done ? 'done' : '')}" onclick="KoraTallyPro.selTkItem('${safeEsc(x.itemId)}')">${done ? '✓ ' : ''}${safeEsc(lbl)}</button>`;
+          }).join('')}
+          <button type="button" class="ktp-chip add" onclick="KoraTallyPro.openAddItem()">+ ${safeEsc(tl('ዕቃ ጨምር', 'Add Item'))}</button>
         </div>`;
     } else if (sub === 'free') {
-      headerHtml = `
+      headHtml = `
         <div class="ktp-bar free">
-          <input class="ktp-mini-inp" value="${esc(ctx.free.note || '')}" placeholder="${esc(tl('ማስታወሻ (አማራጭ)', 'Note (optional)'))}" oninput="state.tally.free.note=this.value;saveState();">
-          <input class="ktp-mini-inp" type="number" min="0" style="text-align:center;color:#38bdf8;" value="${ctx.free.target || ''}" placeholder="${esc(tl('ግብ', 'Target'))}" onchange="state.tally.free.target=Math.max(0,Number(this.value||0));saveState();KoraTallyPro.render();">
-          <button type="button" class="ktp-sqbtn" onclick="KoraTallyPro.openSettings()" title="Mode">${modeInfo.icon}</button>
+          <input class="ktp-inp" value="${safeEsc(ctx.free.note || '')}" placeholder="${safeEsc(tl('ማስታወሻ (አማራጭ)', 'Note'))}" oninput="state.tally.free.note=this.value;saveState();">
+          <input class="ktp-inp mono" type="number" min="0" style="text-align:center;color:#38bdf8;" value="${ctx.free.target || ''}" placeholder="${safeEsc(tl('ግብ', 'Target'))}" onchange="state.tally.free.target=Math.max(0,Number(this.value||0));saveState();KoraTallyPro.render();">
+          <button type="button" class="ktp-sq" onclick="KoraTallyPro.openSettings()">${mInfo.icon}</button>
         </div>`;
     } else if (sub === 'audit') {
-      const opts = (state.inventory || []).map((it) =>
-        `<option value="${esc(it.id)}" ${ctx.inv && ctx.inv.id === it.id ? 'selected' : ''}>${esc(it.name)} (${Number(it.stock ?? it.qty ?? 0)})</option>`
-      ).join('');
-      headerHtml = `
+      const br = state.branchScope || 'all';
+      headHtml = `
         <div class="ktp-bar audit">
-          <select class="ktp-mini-inp" onchange="state.tally.audit.itemId=this.value;state.tally.audit.strokes=[];saveState();KoraTallyPro.render();">${opts}</select>
-          <div class="ktp-mini-inp" style="display:flex;align-items:center;justify-content:center;color:#38bdf8;">${ctx.systemQty.toLocaleString()}</div>
+          <select class="ktp-inp" onchange="state.tally.audit.itemId=this.value;state.tally.audit.strokes=[];saveState();KoraTallyPro.render();">
+            ${(state.inventory || []).map((it) => `<option value="${safeEsc(it.id)}" ${ctx.inv && String(ctx.inv.id) === String(it.id) ? 'selected' : ''}>${safeEsc(it.name)} (${safeNum(itemStock(it, br))})</option>`).join('')}
+          </select>
+          <div class="ktp-inp mono" style="display:flex;align-items:center;justify-content:center;color:#38bdf8;">${safeNum(ctx.sysQty)}</div>
         </div>`;
     }
 
-    // ረድፍ 3: የአንድ ሸክም መጠን + የቆጠራ ሲስተም ባጅ
     const presetHtml = `
       <div class="ktp-loadbox">
         <div class="ktp-loadhead">
-          <span>${esc(tl('በአንድ ሸክም', 'Per Load'))}: <b style="color:#5eead4;">1 = ${loadSize}</b></span>
-          <button type="button" style="background:none;border:none;color:#fbbf24;font-size:10px;font-weight:800;cursor:pointer;" onclick="KoraTallyPro.openSettings()">${modeInfo.icon} ${esc(isAm() ? modeInfo.am : modeInfo.en)} ▾</button>
+          <span>${safeEsc(tl('በአንድ ሸክም', 'Per Load'))}: <b style="color:#5eead4;">1 = ${ls}</b></span>
+          <button type="button" style="background:none;border:none;color:#fbbf24;font-size:10px;font-weight:800;cursor:pointer;" onclick="KoraTallyPro.openSettings()">${mInfo.icon} ${safeEsc(isAm() ? mInfo.am : mInfo.en)} ▾</button>
         </div>
         <div class="ktp-presets">
-          ${PRESETS.map((n) => `<button type="button" class="ktp-pbtn ${loadSize === n ? 'on' : ''}" onclick="KoraTallyPro.setLoadSize(${n})">+${n}</button>`).join('')}
-          <button type="button" class="ktp-pbtn ${!PRESETS.includes(loadSize) ? 'on' : ''}" onclick="KoraTallyPro.setLoadSize('other')">${esc(tl('ሌላ', 'Oth'))}</button>
+          ${PRESETS.map((n) => `<button type="button" class="ktp-pbtn ${ls === n ? 'on' : ''}" onclick="KoraTallyPro.setLoad(${n})">+${n}</button>`).join('')}
+          <button type="button" class="ktp-pbtn ${!PRESETS.includes(ls) ? 'on' : ''}" onclick="KoraTallyPro.setLoad('other')">${safeEsc(tl('ሌላ', 'Oth'))}</button>
         </div>
       </div>`;
 
-    // ረድፍ 4: 4ቱ ቁጥሮች (ሲቆለፍም ሳይደበቁ የሚታዩ) + የመሃል መድረክ
-    let kpiHtml = '';
-    let pct = 0;
-    const targetReached = ctx.target > 0 && total >= ctx.target;
+    let kpiHtml = '', pct = 0;
+    const reached = ctx.target > 0 && tot >= ctx.target;
     if (sub === 'audit') {
-      const diff = total - ctx.systemQty;
-      pct = ctx.systemQty > 0 ? Math.min(100, Math.round((total / ctx.systemQty) * 100)) : 0;
+      const diff = tot - ctx.sysQty;
+      pct = ctx.sysQty > 0 ? Math.min(100, Math.round((tot / ctx.sysQty) * 100)) : 0;
       kpiHtml = `
         <div class="ktp-kpis">
-          <div class="ktp-kpi c-teal"><span>${esc(tl('የተቆጠረ', 'Counted'))}</span><b id="ktpKpi1">${total.toLocaleString()}</b></div>
-          <div class="ktp-kpi c-em"><span>${esc(tl('ሸክም', 'Loads'))}</span><b id="ktpKpi2">${loads.toLocaleString()}</b></div>
-          <div class="ktp-kpi ${diff === 0 ? 'c-em' : (diff < 0 ? 'c-rose' : 'c-amb')}"><span>${esc(tl('ልዩነት', 'Diff'))}</span><b id="ktpKpi3">${diff > 0 ? '+' : ''}${diff.toLocaleString()}</b></div>
-          <div class="ktp-kpi c-sky"><span>${esc(tl('ሲስተም', 'System'))}</span><b id="ktpKpi4">${ctx.systemQty.toLocaleString()}</b></div>
+          <div class="ktp-kpi c-teal"><span>${safeEsc(tl('የተቆጠረ', 'Counted'))}</span><b id="ktpK1">${safeNum(tot)}</b></div>
+          <div class="ktp-kpi c-em"><span>${safeEsc(tl('ሸክም', 'Loads'))}</span><b id="ktpK2">${safeNum(loads)}</b></div>
+          <div class="ktp-kpi ${diff === 0 ? 'c-em' : (diff < 0 ? 'c-rose' : 'c-amb')}"><span>${safeEsc(tl('ልዩነት', 'Diff'))}</span><b id="ktpK3">${diff > 0 ? '+' : ''}${safeNum(diff)}</b></div>
+          <div class="ktp-kpi c-sky"><span>${safeEsc(tl('ሲስተም', 'System'))}</span><b id="ktpK4">${safeNum(ctx.sysQty)}</b></div>
         </div>`;
     } else {
-      const rem = ctx.target > 0 ? Math.max(0, ctx.target - total) : null;
-      const remLoads = rem !== null ? Math.ceil(rem / Math.max(1, loadSize)) : null;
-      pct = ctx.target > 0 ? Math.min(100, Math.round((total / ctx.target) * 100)) : 0;
+      const rem = ctx.target > 0 ? Math.max(0, ctx.target - tot) : null;
+      const remL = rem !== null ? Math.ceil(rem / Math.max(1, ls)) : null;
+      pct = ctx.target > 0 ? Math.min(100, Math.round((tot / ctx.target) * 100)) : 0;
       kpiHtml = `
         <div class="ktp-kpis">
-          <div class="ktp-kpi c-teal"><span>${esc(tl('የተቆጠረ', 'Counted'))}</span><b id="ktpKpi1">${total.toLocaleString()}</b></div>
-          <div class="ktp-kpi c-em"><span>${esc(tl('ሸክም', 'Loads'))}</span><b id="ktpKpi2">${loads.toLocaleString()}</b></div>
-          <div class="ktp-kpi c-amb"><span>${esc(tl('ቀሪ ብዛት', 'Rem Qty'))}</span><b id="ktpKpi3">${rem !== null ? rem.toLocaleString() : '∞'}</b></div>
-          <div class="ktp-kpi c-sky"><span>${esc(tl('ቀሪ ሸክም', 'Rem Loads'))}</span><b id="ktpKpi4">${remLoads !== null ? remLoads.toLocaleString() : '∞'}</b></div>
+          <div class="ktp-kpi c-teal"><span>${safeEsc(tl('የተቆጠረ', 'Counted'))}</span><b id="ktpK1">${safeNum(tot)}</b></div>
+          <div class="ktp-kpi c-em"><span>${safeEsc(tl('ሸክም', 'Loads'))}</span><b id="ktpK2">${safeNum(loads)}</b></div>
+          <div class="ktp-kpi c-amb"><span>${safeEsc(tl('ቀሪ ብዛት', 'Rem Qty'))}</span><b id="ktpK3">${rem !== null ? safeNum(rem) : '∞'}</b></div>
+          <div class="ktp-kpi c-sky"><span>${safeEsc(tl('ቀሪ ሸክም', 'Rem Loads'))}</span><b id="ktpK4">${remL !== null ? safeNum(remL) : '∞'}</b></div>
         </div>`;
     }
 
-    // የመሃል መድረክ (እንደ ተመረጠው ሲስተም)
-    let stageInner = '';
+    let stage = '';
     if (!ctx.ready) {
-      stageInner = `<div style="text-align:center;color:var(--muted);font-size:12.5px;padding:12px;">${esc(tl('ዕቃ ለመቁጠር ከላይ «+ ዕቃ ጨምር» ይጫኑ', 'Tap "+ Add Item" above to begin counting'))}</div>`;
+      stage = `<div style="text-align:center;color:var(--muted);font-size:12px;padding:12px;">${safeEsc(tl('ዕቃ ለመቁጠር ከላይ «+ ዕቃ ጨምር» ይጫኑ', 'Tap "+ Add Item" above'))}</div>`;
     } else if (cfg.mode === 'camera') {
-      stageInner = `
-        <div class="ktp-cam-wrap">
-          <video id="ktpCamVideo" playsinline muted autoplay></video>
-          <div class="ktp-cam-line"></div>
-          <div class="ktp-cam-hud">
-            <span id="ktpCamStatus" class="pill ${camStream ? 'teal' : 'amber'}">${camStream ? tl('🟢 በመቁጠር ላይ', '🟢 Live') : tl('⏸️ ቆሟል', '⏸️ Stopped')}</span>
-            <button id="ktpCamDirBtn" type="button" style="pointer-events:auto;height:24px;padding:0 8px;border-radius:12px;border:1px solid var(--amber);background:rgba(15,23,42,0.85);color:#fcd34d;font-size:10px;font-weight:800;" onclick="KoraTallyPro.toggleCameraDir()">${cfg.camDir === 'LR' ? '➡️ ግራ➔ቀኝ (+)' : '⬅️ ቀኝ➔ግራ (+)'}</button>
+      stage = `
+        <div class="ktp-cam">
+          <video id="ktpCamVid" playsinline muted autoplay></video>
+          <div class="ktp-cline"></div>
+          <div class="ktp-chud">
+            <span id="ktpCamSt" class="pill ${camStream ? 'teal' : 'amber'}">${camStream ? tl('🟢 በመቁጠር ላይ', '🟢 Live') : tl('⏸️ ቆሟል', '⏸️ Stopped')}</span>
+            <button id="ktpCamDir" type="button" style="pointer-events:auto;height:24px;padding:0 8px;border-radius:12px;border:1px solid var(--amber);background:rgba(15,23,42,0.88);color:#fcd34d;font-size:10px;font-weight:800;" onclick="KoraTallyPro.toggleCamDir()">${cfg.camDir === 'LR' ? '➡️ ግራ➔ቀኝ (+)' : '⬅️ ቀኝ➔ግራ (+)'}</button>
           </div>
         </div>`;
     } else if (cfg.mode === 'weight') {
-      stageInner = `
-        <div class="ktp-round-box" style="gap:7px;">
+      stage = `
+        <div class="ktp-rbox">
           <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;">
-            <select id="ktpWMode" class="ktp-mini-inp" style="flex:1;" onchange="KoraTallyPro.updateWeightPreview()">
-              <option value="weight">⚖️ ${esc(tl('ጠቅላላ ክብደት ÷ የ1 ፍሬ ክብደት', 'Total Weight ÷ Unit Weight'))}</option>
-              <option value="pack">📦 ${esc(tl('ጥቅል/ካርቶን × በጥቅል ውስጥ ያለ ፍሬ', 'Packs × Units per Pack'))}</option>
+            <select id="ktpWM" class="ktp-inp" style="flex:1;" onchange="KoraTallyPro.updWeight()">
+              <option value="weight">⚖️ ${safeEsc(tl('ጠቅላላ ክብደት ÷ የ1 ፍሬ ክብደት', 'Weight ÷ Unit Wt'))}</option>
+              <option value="pack">📦 ${safeEsc(tl('ጥቅል × በጥቅል ያለ ፍሬ', 'Packs × Units'))}</option>
             </select>
-            <b id="ktpWOut" style="color:#2dd4bf;font-size:16px;font-family:ui-monospace,monospace;">= 0</b>
+            <b id="ktpWO" style="color:#2dd4bf;font-size:16px;font-family:ui-monospace,monospace;">= 0</b>
           </div>
           <div class="grid-2" style="gap:5px;">
-            <input id="ktpWValA" type="number" step="any" class="ktp-mini-inp" placeholder="${esc(tl('ክብደት (ኪ.ግ) / ጥቅል', 'Weight / Packs'))}" oninput="KoraTallyPro.updateWeightPreview()">
-            <input id="ktpWValB" type="number" step="any" class="ktp-mini-inp" value="1" placeholder="${esc(tl('የ1 ፍሬ ክብደት / ፍሬ', 'Unit wt / per pack'))}" oninput="KoraTallyPro.updateWeightPreview()">
+            <input id="ktpWA" type="number" step="any" class="ktp-inp mono" placeholder="${safeEsc(tl('ክብደት / ጥቅል', 'Wt / Packs'))}" oninput="KoraTallyPro.updWeight()">
+            <input id="ktpWB" type="number" step="any" class="ktp-inp mono" value="1" placeholder="${safeEsc(tl('የ1 ፍሬ ክብደት', 'Unit wt'))}" oninput="KoraTallyPro.updWeight()">
           </div>
-          <button type="button" class="btn teal sm" onclick="KoraTallyPro.applyWeightCalc()">➕ ${esc(tl('ውጤቱን ወደ ቆጠራ ጨምር', 'Add Result to Tally'))}</button>
+          <button type="button" class="btn teal sm" onclick="KoraTallyPro.applyWeight()">➕ ${safeEsc(tl('ውጤቱን ጨምር', 'Add to Tally'))}</button>
         </div>`;
     } else if (cfg.mode === 'carriers') {
-      const activeCars = cfg.carriers.slice(0, Number(cfg.carrierCount || 2));
-      const meta = getMetaLog(ctx.key);
-      const carPills = activeCars.map((c) => {
-        const cLogs = meta.filter((m) => m.carrierId === c.id);
-        const cQty = cLogs.reduce((a, m) => a + m.qty, 0);
-        return `<span class="ktp-chip" style="border-color:${c.color};color:${c.color};">${esc(c.name)}: ${cQty} (${cLogs.length})</span>`;
+      const cars = cfg.carriers.slice(0, Number(cfg.carrierCount || 2));
+      const m = metaLog(ctx.key);
+      const chips = cars.map((c) => {
+        const cl = m.filter((x) => x.carrierId === c.id);
+        return `<span class="ktp-chip" style="border-color:${c.color};color:${c.color};">${safeEsc(c.name)}: ${cl.reduce((a, x) => a + x.qty, 0)} (${cl.length})</span>`;
       }).join('');
-      stageInner = `<div class="ktp-strip no-scrollbar" style="margin-bottom:4px;">${carPills}</div>${buildRound10Html(ctx.strokes, loadSize)}`;
+      stage = `<div class="ktp-strip no-scrollbar" style="margin-bottom:4px;">${chips}</div>${build10Grid(ctx.strokes)}`;
     } else if (cfg.mode === 'clicker') {
-      stageInner = `
-        <div style="text-align:center;font-size:10.5px;color:#5eead4;margin-bottom:4px;font-weight:800;">
-          🎮 ${esc(tl('ብሉቱዝ ቁልፍ / Enter / Space ዝግጁ ነው', 'Bluetooth Clicker / Enter / Space Ready'))}
-        </div>
-        ${buildRound10Html(ctx.strokes, loadSize)}`;
+      stage = `<div style="text-align:center;font-size:10.5px;color:#5eead4;margin-bottom:4px;font-weight:800;">🎮 ${safeEsc(tl('ብሉቱዝ ቁልፍ / Enter / Space ዝግጁ ነው', 'Bluetooth Clicker / Enter / Space Ready'))}</div>${build10Grid(ctx.strokes)}`;
     } else {
-      stageInner = buildRound10Html(ctx.strokes, loadSize);
+      stage = build10Grid(ctx.strokes);
     }
 
-    const lockOverlay = cfg.locked ? `
-      <div class="ktp-lock-overlay">
-        <div style="font-size:22px;">🔒</div>
-        <div style="font-size:12px;font-weight:900;color:#fbbf24;">${esc(tl('ቆጠራው ተቆልፏል', 'Tally Locked'))}</div>
-        <button type="button" class="btn teal sm" onclick="KoraTallyPro.toggleLock()">▶ ${esc(tl('ቆጠራ ቀጥል', 'Resume Tally'))}</button>
+    const lockOv = cfg.locked ? `
+      <div class="ktp-lock-ov">
+        <div style="font-size:20px;">🔒</div>
+        <div style="font-size:12px;font-weight:900;color:#fbbf24;">${safeEsc(tl('ቆጠራው ተቆልፏል', 'Tally Locked'))}</div>
+        <button type="button" class="btn teal sm" onclick="KoraTallyPro.toggleLock()">▶ ${safeEsc(tl('ቆጠራ ቀጥል', 'Resume'))}</button>
       </div>` : '';
 
-    // ረድፍ 5: የመቁጠሪያ ዶክ (እንደ ተመረጠው ሲስተም)
-    let dockControlHtml = '';
+    const meta = metaLog(ctx.key);
+    const lastTs = meta.length ? meta[meta.length - 1].ts : 0;
+    const speeds = meta.slice(-3).reverse().map((m, i) => `<span class="ktp-sp">#${meta.length - i} (${m.dt || '0.0'}s)</span>`).join(' ');
+    const mFoot = cfg.showTimer ? `<div class="ktp-mfoot"><span id="ktpAgo">⏱ ${safeEsc(fmtAgo(lastTs))}</span><div style="display:flex;gap:3px;overflow:hidden;">${speeds}</div></div>` : '';
+
+    let dockCtrl = '';
     if (cfg.mode === 'swipe') {
-      dockControlHtml = `
-        <div id="ktpSlideTrack" class="ktp-slider-track">
-          <div id="ktpSlideFill" class="ktp-slider-fill"></div>
-          <span style="font-size:12.5px;font-weight:800;color:#5eead4;pointer-events:none;">👉 ${esc(tl(`ወደ ቀኝ አንሸራትት (+${loadSize})`, `Slide Right (+${loadSize})`))}</span>
-          <div id="ktpSlideThumb" class="ktp-slider-thumb">⚡+${loadSize}</div>
+      dockCtrl = `
+        <div id="ktpSlide" class="ktp-slide">
+          <div id="ktpSFill" class="ktp-sfill"></div>
+          <span style="font-size:12px;font-weight:800;color:#5eead4;pointer-events:none;">👉 ${safeEsc(tl(`ወደ ቀኝ አንሸራትት (+${ls})`, `Slide Right (+${ls})`))}</span>
+          <div id="ktpSThumb" class="ktp-sthumb">⚡+${ls}</div>
         </div>`;
     } else if (cfg.mode === 'carriers') {
-      const activeCars = cfg.carriers.slice(0, Number(cfg.carrierCount || 2));
-      dockControlHtml = `
-        <div class="ktp-carrier-grid">
-          ${activeCars.map((c) => `
-            <button type="button" class="ktp-carrier-btn" style="border-color:${c.color};" onclick="KoraTallyPro.count(null,'${c.id}')">
-              <span style="font-size:11px;font-weight:800;color:${c.color};">👷 ${esc(c.name)}</span>
-              <b style="font-size:15px;">⚡ +${loadSize}</b>
-            </button>`).join('')}
-        </div>`;
+      const cars = cfg.carriers.slice(0, Number(cfg.carrierCount || 2));
+      dockCtrl = `<div class="ktp-cgrid">${cars.map((c) => `<button type="button" class="ktp-cbtn" style="border-color:${c.color};" onclick="KoraTallyPro.count(null,'${c.id}')"><span style="font-size:10.5px;font-weight:800;color:${c.color};">👷 ${safeEsc(c.name)}</span><b style="font-size:15px;">⚡ +${ls}</b></button>`).join('')}</div>`;
     } else if (cfg.mode === 'mixed') {
-      dockControlHtml = `
-        <div class="ktp-mixed-grid">
-          ${[1, 2, 3, 5, 10, 15, 20].map((v) => `<button type="button" class="ktp-mixed-btn" onclick="KoraTallyPro.count(${v})">+${v}</button>`).join('')}
-          <button type="button" class="ktp-mixed-btn" style="border-color:var(--amber);color:#fbbf24;" onclick="KoraTallyPro.openPartialModal()">${esc(tl('ሌላ', 'Oth'))}</button>
-        </div>`;
+      dockCtrl = `<div class="ktp-mgrid">${[1, 2, 3, 5, 10, 15, 20].map((v) => `<button type="button" class="ktp-mbtn" onclick="KoraTallyPro.count(${v})">+${v}</button>`).join('')}<button type="button" class="ktp-mbtn" style="border-color:var(--amber);color:#fbbf24;" onclick="KoraTallyPro.openPartial()">${safeEsc(tl('ሌላ', 'Oth'))}</button></div>`;
     } else if (cfg.mode === 'camera') {
-      dockControlHtml = `
-        <div class="grid-2" style="gap:6px;">
-          <button type="button" class="ktp-main-tap" style="height:46px;font-size:13.5px;border-color:${camStream ? 'var(--rose)' : 'var(--teal)'};" onclick="KoraTallyPro.toggleCamera()">${camStream ? '⏹️ ' + tl('ካሜራ አቁም', 'Stop Cam') : '📷 ' + tl('ካሜራ ጀምር', 'Start Cam')}</button>
-          <button type="button" class="ktp-main-tap ${cfg.locked ? 'locked' : ''}" style="height:46px;font-size:14.5px;" onclick="KoraTallyPro.count()">⚡ +${loadSize} ${esc(tl('ቁጠር', 'Count'))}</button>
-        </div>`;
+      dockCtrl = `<div class="grid-2" style="gap:6px;"><button type="button" class="ktp-tap" style="height:45px;font-size:13px;border-color:${camStream ? 'var(--rose)' : 'var(--teal)'};" onclick="KoraTallyPro.toggleCam()">${camStream ? '⏹️ ' + tl('ካሜራ አቁም', 'Stop') : '📷 ' + tl('ካሜራ ጀምር', 'Start Cam')}</button><button type="button" class="ktp-tap ${cfg.locked ? 'locked' : ''}" style="height:45px;font-size:14px;" onclick="KoraTallyPro.count()">⚡ +${ls} ${safeEsc(tl('ቁጠር', 'Count'))}</button></div>`;
     } else {
-      dockControlHtml = `
-        <button type="button" class="ktp-main-tap ${cfg.locked ? 'locked' : ''}" onclick="KoraTallyPro.count()">
-          ⚡ +${loadSize} ${esc(tl('ቁጠር', 'COUNT'))}
-        </button>`;
+      dockCtrl = `<button type="button" class="ktp-tap ${cfg.locked ? 'locked' : ''}" onclick="KoraTallyPro.count()">⚡ +${ls} ${safeEsc(tl('ቁጠር', 'COUNT'))}</button>`;
     }
 
-    const primaryLbl = sub === 'tickets'
-      ? `✓ ${tl('ቀጥታ መዝግብ', 'Commit Stock')}`
-      : (sub === 'free' ? `💾 ${tl('ወደ መመዝገቢያ', 'Save Log')}` : `⚡ ${tl('ማስተካከያ ላክ', 'Apply Audit')}`);
+    const pLbl = sub === 'tickets' ? `✓ ${tl('ቀጥታ መዝግብ', 'Commit')}` : (sub === 'free' ? `💾 ${tl('አስቀምጥ', 'Save')}` : `⚡ ${tl('ማስተካከያ ላክ', 'Apply')}`);
 
     root.innerHTML = `
       <div class="ktp-shell">
-        ${topRowHtml}
-        ${headerHtml}
+        ${topRow}
+        ${headHtml}
         ${presetHtml}
         <div class="ktp-board">
-          <div class="ktp-prog"><div id="ktpProgFill" class="ktp-prog-fill" style="width:${pct}%"></div></div>
+          <div class="ktp-prog"><div id="ktpPF" class="ktp-prog-fill" style="width:${pct}%"></div></div>
           ${kpiHtml}
-          ${targetReached ? `<div class="ktp-target-ok">✓ ${esc(tl('ግቡ ሞልቷል — ጭነት አስቁም', 'Target Reached — Stop Loading'))}</div>` : ''}
-          <div class="ktp-stage">
-            ${stageInner}
-            ${lockOverlay}
-          </div>
-          ${cfg.showTimer ? buildMetaFootHtml(ctx) : ''}
+          ${reached ? `<div class="ktp-ok-bar">✓ ${safeEsc(tl('ግቡ ሞልቷል — ጭነት አስቁም', 'Target Reached — Stop Loading'))}</div>` : ''}
+          <div class="ktp-stage">${stage}${lockOv}</div>
+          ${mFoot}
         </div>
         <div class="ktp-dock">
-          ${dockControlHtml}
-          <div class="ktp-actions">
-            <button type="button" class="ktp-act" onclick="KoraTallyPro.undo()">↩️ ${esc(tl('መልስ', 'Undo'))}</button>
-            <button type="button" class="ktp-act" onclick="KoraTallyPro.openPartialModal()">+ ${esc(tl('ጎዶሎ', 'Part'))}</button>
-            <button type="button" class="ktp-act" onclick="KoraTallyPro.clear()">🧹 ${esc(tl('አጽዳ', 'Clear'))}</button>
-            <button type="button" class="ktp-act primary" onclick="KoraTallyPro.commit()">${esc(primaryLbl)}</button>
+          ${dockCtrl}
+          <div class="ktp-acts">
+            <button type="button" class="ktp-act" onclick="KoraTallyPro.undo()">↩️ ${safeEsc(tl('መልስ', 'Undo'))}</button>
+            <button type="button" class="ktp-act" onclick="KoraTallyPro.openPartial()">+ ${safeEsc(tl('ጎዶሎ', 'Part'))}</button>
+            <button type="button" class="ktp-act" onclick="KoraTallyPro.clear()">🧹 ${safeEsc(tl('አጽዳ', 'Clear'))}</button>
+            <button type="button" class="ktp-act primary" onclick="KoraTallyPro.commit(this)">${safeEsc(pLbl)}</button>
           </div>
         </div>
       </div>`;
 
-    if (cfg.mode === 'swipe') bindSlideTrack();
+    if (cfg.mode === 'swipe') bindSlide();
     if (cfg.mode === 'camera' && camStream) {
-      const vid = document.getElementById('ktpCamVideo');
-      if (vid && vid.srcObject !== camStream) {
-        vid.srcObject = camStream;
-        vid.play().catch(() => {});
-      }
+      const v = document.getElementById('ktpCamVid');
+      if (v && v.srcObject !== camStream) { v.srcObject = camStream; v.play().catch(() => {}); }
     }
   }
 
   // ---------------------------------------------------------------------------
-  // 10. የስልክ ጥሪ ራስ-ሰር መቆለፊያ፣ የብሉቱዝ ቁልፍ እና የኮራ ስቶክ ውህደት
+  // 11. ውህደት ከኮራ ስቶክ ጋር (Hooks)
   // ---------------------------------------------------------------------------
-  function isTallyScreenActive() {
-    const s = global.state;
-    if (!s) return false;
-    if (s.tab === 'tally' || s.activeTab === 'tally' || s.view === 'tally' || s.nav === 'tally') return true;
-    const activeNav = document.querySelector('.bnav .active, .bnav-btn.active, nav button.active');
-    if (activeNav) {
-      const txt = (activeNav.textContent || '').trim();
-      if (txt.includes('ቆጠራ') || txt.toLowerCase().includes('tally')) return true;
-    }
-    return false;
+  function isTallyActive() {
+    return hasState() && state.activeMainTab === 'tally';
   }
 
   function installHooks() {
-    if (hooksInstalled || typeof global.renderView !== 'function') return;
-    hooksInstalled = true;
-    ensureTallyProState();
-    injectTallyProStyles();
+    if (hooksReady || !hasState()) return;
+    hooksReady = true;
+    ensureState();
+    injectCss();
 
-    const origRenderView = global.renderView;
-    global.renderView = function () {
-      const res = origRenderView.apply(this, arguments);
-      if (isTallyScreenActive()) {
-        renderTallyPro();
-      } else {
-        document.body.classList.remove('ktp-active');
-        stopCamera();
-      }
-      return res;
+    if (typeof global.commitActiveTally === 'function') {
+      origCommitFn = global.commitActiveTally;
+    }
+
+    // 1. renderTally ን በቀጥታ መተካት
+    global.renderTally = function () {
+      renderTallyPro();
     };
 
-    // በስልክ ጥሪ ወይም ወደ ሌላ አፕ ሲቀየር ራስ-ሰር መቆለፊያ
+    // 2. renderView ሲጠራ ከቆጠራ ሲወጣ ክላሱንና ካሜራውን ማጽዳት
+    if (typeof global.renderView === 'function') {
+      const origRV = global.renderView;
+      global.renderView = function () {
+        if (!isTallyActive()) {
+          document.body.classList.remove('ktp-active');
+          stopCamera();
+        }
+        const res = origRV.apply(this, arguments);
+        if (isTallyActive()) renderTallyPro();
+        return res;
+      };
+    }
+
+    // 3. ከጎን ሜኑ «የቆጠራ ቅንብር» ሲነካ አዲሱን ቅንብር መክፈት
+    if (typeof global.renderSetupPage === 'function') {
+      const origSP = global.renderSetupPage;
+      global.renderSetupPage = function (page) {
+        if (page === 'tally' || page === 'tallySettings') {
+          const root = document.getElementById('viewRoot');
+          if (root) {
+            root.innerHTML = `
+              <div class="card">
+                <b style="color:var(--teal);">⚙️ ${safeEsc(tl('የቆጠራ እና የድምፅ ቅንብር', 'Tally & Voice Settings'))}</b>
+                <div class="grid-2" style="margin-top:8px;">
+                  <button type="button" class="btn teal" onclick="KoraTallyPro.openSettings()">⚙️ ${safeEsc(tl('የቆጠራ ቅንብር ክፈት', 'Open Settings'))}</button>
+                  <button type="button" class="btn muted" onclick="KoraTallyPro.openStudio()">🎙️ ${safeEsc(tl('የድምፅ ስቱዲዮ', 'Voice Studio'))}</button>
+                </div>
+              </div>`;
+            return;
+          }
+        }
+        return origSP.apply(this, arguments);
+      };
+    }
+
     document.addEventListener('visibilitychange', () => {
-      if (document.hidden && isTallyScreenActive() && state.tallyPro?.autoLockCall) {
+      if (document.hidden && isTallyActive() && state.tallyPro?.autoLockCall) {
         state.tallyPro.locked = true;
         stopCamera();
         saveState();
-      } else if (!document.hidden && isTallyScreenActive()) {
+      } else if (!document.hidden && isTallyActive()) {
         renderTallyPro();
       }
     });
 
-    // የብሉቱዝ ክሊከር / ኪቦርድ ቆጠራ ማዳመጫ
     document.addEventListener('keydown', (e) => {
-      if (!isTallyScreenActive() || state.tallyPro?.mode !== 'clicker') return;
+      if (!isTallyActive() || state.tallyPro?.mode !== 'clicker') return;
       const tag = (document.activeElement?.tagName || '').toUpperCase();
       if (['INPUT', 'TEXTAREA', 'SELECT'].includes(tag)) return;
       if (['Enter', ' ', 'ArrowUp', 'ArrowRight', 'AudioVolumeUp', 'VolumeUp', 'MediaPlayPause'].includes(e.key)) {
         e.preventDefault();
-        recordCount(null, null, false);
+        doCount(null, null, false);
       }
     });
 
-    // የሰዓት ቆጣሪ (በየ1 ሰከንድ ጽሁፉን ብቻ ማደስ)
-    if (!timerIntervalId) {
-      timerIntervalId = setInterval(() => {
-        if (!isTallyScreenActive() || !state.tallyPro?.showTimer) return;
-        const el = document.getElementById('ktpAgoTxt');
+    if (!timerId) {
+      timerId = setInterval(() => {
+        if (!isTallyActive() || !state.tallyPro?.showTimer) return;
+        const el = document.getElementById('ktpAgo');
         if (!el) return;
-        const ctx = getActiveContext();
-        const meta = getMetaLog(ctx.key);
-        const lastTs = meta.length ? meta[meta.length - 1].ts : 0;
-        el.textContent = '⏱ ' + formatAgo(lastTs);
+        const m = metaLog(getCtx().key);
+        el.textContent = '⏱ ' + fmtAgo(m.length ? m[m.length - 1].ts : 0);
       }, 1000);
     }
 
-    if (isTallyScreenActive()) renderTallyPro();
-  }
-
-  function testVoice() {
-    ensureTallyProState();
-    const cfg = state.tallyPro;
-    const prevEn = cfg.voiceEnabled;
-    const prevRead = cfg.voiceRead;
-    const prevLang = cfg.voiceLang;
-    cfg.voiceEnabled = true;
-    const rSel = document.getElementById('ktpVoiceRead');
-    const lSel = document.getElementById('ktpVoiceLang');
-    if (rSel) cfg.voiceRead = rSel.value;
-    if (lSel) cfg.voiceLang = lSel.value;
-    announceCount(10, 2, false);
-    cfg.voiceEnabled = prevEn;
-    cfg.voiceRead = prevRead;
-    cfg.voiceLang = prevLang;
+    if (isTallyActive()) renderTallyPro();
   }
 
   global.KoraTallyPro = {
-    render: renderTallyPro,
-    setSubTab,
-    count: recordCount,
-    undo: undoCount,
-    clear: clearCounts,
-    confirmClear,
-    openPartialModal,
-    confirmPartial,
-    setLoadSize,
-    confirmCustomLoad,
-    toggleLock,
-    selectTicket,
-    addTicket,
-    removeActiveTicket,
-    toggleTicketDir,
-    updateTicketField,
-    selectTicketItem,
-    openAddTicketItemModal,
-    confirmAddTicketItem,
-    commit: commitPrimaryAction,
-    openSettings: openTallyProSettings,
-    saveSettingsModal,
-    openVoiceStudio,
-    toggleRecKey,
-    playKeyClip,
-    delKeyClip,
-    exportVoicePack,
-    importVoicePack,
-    downloadVoicePackUrl,
-    testVoice,
-    startCamera,
-    stopCamera,
-    toggleCamera,
-    toggleCameraDir,
-    applyWeightCalc,
-    updateWeightPreview
+    render: renderTallyPro, setSub, count: doCount, undo: doUndo,
+    openPartial, confirmPartial, clear: askClear, confirmClear,
+    setLoad, confirmLoad, toggleLock, selTicket, newTicket, delTicket,
+    toggleDir, setTkField, selTkItem, openAddItem, confirmAddItem,
+    commit: doCommit, openSettings, saveSettings, testVoice,
+    openStudio, recClip, playClip, delClip, expPack, impPack, dlPack,
+    toggleCam, toggleCamDir, updWeight, applyWeight
   };
 
   installHooks();
   document.addEventListener('DOMContentLoaded', installHooks);
-  setTimeout(installHooks, 400);
+  setTimeout(installHooks, 300);
 })(window);
