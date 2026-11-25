@@ -1,14 +1,16 @@
 // =============================================================================
-// ኮራ ስቶክ — የኦፍላይን መሸጎጫ (sw.js — v13)
+// ኮራ ስቶክ — የኦፍላይን መሸጎጫ (sw.js — v14)
 // =============================================================================
-const SHELL_CACHE = 'korastock-shell-v13';
-const CDN_CACHE = 'korastock-cdn-v13';
+const SHELL_CACHE = 'korastock-shell-v14';
+const CDN_CACHE = 'korastock-cdn-v14';
 
 const SHELL_ASSETS = [
   './',
   './index.html',
   './manifest.json',
   './icon.svg',
+  './icon-192.png',
+  './icon-512.png',
   './kora-api.js',
   './kora-analytics.js',
   './kora-pro.js'
