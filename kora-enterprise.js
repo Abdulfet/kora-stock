@@ -1,10 +1,9 @@
 // =============================================================================
-// ኮራ ስቶክ — Enterprise Suite (kora-enterprise.js — v23)
-// • 100% የሻርፕ ሜታል ባለ 1-ስክሪን የቆጠራ አቀማመጥ (ረድፍ 1: ብራንድ/ቅርንጫፍ/🔔፣ ረድፍ 2: ታቦች+🔒+⚙️)
-// • Self-Healing ኖቲፊኬሽን ደወል (🔔) — «ለእርስዎ የመጡ ትዕዛዞች» ሁልጊዜ በደወሉ ውስጥ ይከፈታል
-// • የቆጠራ ሙዶች (ፎቶ/ጥቅል/ሚዛን/ካሜራ) + የድምፅ ምርጫ በ«የቆጠራ ቅንብር» (⚙️) ውስጥ
-// • ዘመናዊ ገበያ / ማስታወቂያ (Kora Market)
-// • ዓለም አቀፋዊ ማጓጓዣ: ትዕዛዞች -> Google-Maps Live Map -> QR መውጫ ፈቃድ -> ተሽከርካሪዎች
+// ኮራ ስቶክ — Enterprise Suite (kora-enterprise.js — v24)
+// • የተስተካከለ የድምፅ ሞተር: የተጫነ ብዛት / የሸክም(ክሊክ) ቁጥር / ሁለቱንም + ሙከራ
+// • 100% የሻርፕ ሜታል ባለ 1-ስክሪን የቆጠራ አቀማመጥ + Self-Healing 🔔 ኖቲፊኬሽን
+// • የቆጠራ ሙዶች (ፎቶ/ጥቅል/ሚዛን/ካሜራ) በ«የቆጠራ ቅንብር» (⚙️) ውስጥ
+// • ዘመናዊ ገበያ (Kora Market) + ትዕዛዞች -> Google-Maps Live Map -> QR መውጫ ፈቃድ -> ተሽከርካሪዎች
 // =============================================================================
 (function (global) {
   'use strict';
@@ -51,206 +50,51 @@
       document.head.appendChild(st);
     }
     st.textContent = `
-      /* === 1. ንጹህ ላይኛው አሞሌ (Topbar) እና ኖቲፊኬሽን ደወል (በሁሉም ገጾች) === */
       .ke-hidden-el { display: none !important; }
       .topbar { padding: 5px 8px 4px !important; gap: 5px !important; }
-      .topbar-row {
-        display: flex !important;
-        align-items: center !important;
-        gap: 6px !important;
-        width: 100% !important;
-      }
-      .topbar-row .scope-sel {
-        flex: 0 1 138px !important;
-        max-width: 145px !important;
-        height: 32px !important;
-        font-size: 11.5px !important;
-      }
-      .ke-brand-box {
-        display: none;
-        align-items: center;
-        gap: 6px;
-        flex: 1 1 auto;
-        min-width: 0;
-      }
+      .topbar-row { display: flex !important; align-items: center !important; gap: 6px !important; width: 100% !important; }
+      .topbar-row .scope-sel { flex: 0 1 138px !important; max-width: 145px !important; height: 32px !important; font-size: 11.5px !important; }
+      .ke-brand-box { display: none; align-items: center; gap: 6px; flex: 1 1 auto; min-width: 0; }
       body.ke-tally .ke-brand-box { display: flex !important; }
       body.ke-tally .search-wrap { display: none !important; }
       .ke-brand-txt { display: flex; flex-direction: column; min-width: 0; line-height: 1.15; }
       .ke-brand-txt b { font-size: 13px; font-weight: 900; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
       .ke-brand-txt small { font-size: 9.5px; font-weight: 700; color: var(--teal); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-      .ke-bell-btn {
-        position: relative !important;
-        width: 34px !important;
-        height: 32px !important;
-        border-radius: 10px !important;
-        border: 1px solid var(--border-strong) !important;
-        background: rgba(15, 23, 42, 0.92) !important;
-        color: #fbbf24 !important;
-        font-size: 16px !important;
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        flex-shrink: 0 !important;
-        cursor: pointer;
-      }
-      .ke-bell-badge {
-        position: absolute;
-        top: -4px;
-        right: -4px;
-        min-width: 17px;
-        height: 17px;
-        padding: 0 4px;
-        border-radius: 99px;
-        background: #ef4444;
-        color: #fff;
-        font-size: 10px;
-        font-weight: 900;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border: 1.5px solid #060a12;
-      }
-      .ke-net-dot {
-        width: 7px;
-        height: 7px;
-        border-radius: 50%;
-        flex-shrink: 0;
-        background: #10b981;
-        box-shadow: 0 0 6px #10b981;
-        position: absolute;
-        bottom: 2px;
-        left: 2px;
-      }
+      .ke-bell-btn { position: relative !important; width: 34px !important; height: 32px !important; border-radius: 10px !important; border: 1px solid var(--border-strong) !important; background: rgba(15, 23, 42, 0.92) !important; color: #fbbf24 !important; font-size: 16px !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; flex-shrink: 0 !important; cursor: pointer; }
+      .ke-bell-badge { position: absolute; top: -4px; right: -4px; min-width: 17px; height: 17px; padding: 0 4px; border-radius: 99px; background: #ef4444; color: #fff; font-size: 10px; font-weight: 900; display: flex; align-items: center; justify-content: center; border: 1.5px solid #060a12; }
+      .ke-net-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; background: #10b981; box-shadow: 0 0 6px #10b981; position: absolute; bottom: 2px; left: 2px; }
       .ke-net-dot.off { background: #f59e0b; box-shadow: 0 0 6px #f59e0b; }
 
-      /* === 2. የሻርፕ ሜታል ረድፍ 2: ታቦች + 🔒 + ⚙️ በአንድ መስመር === */
-      .ke-sub-wrap {
-        display: flex !important;
-        align-items: center !important;
-        gap: 5px !important;
-        width: 100% !important;
-      }
-      .ke-sub-wrap > #subTabsBar {
-        flex: 1 1 auto !important;
-        min-width: 0 !important;
-      }
-      .ke-tally-tools {
-        display: none;
-        align-items: center;
-        gap: 4px;
-        flex-shrink: 0;
-      }
+      .ke-sub-wrap { display: flex !important; align-items: center !important; gap: 5px !important; width: 100% !important; }
+      .ke-sub-wrap > #subTabsBar { flex: 1 1 auto !important; min-width: 0 !important; }
+      .ke-tally-tools { display: none; align-items: center; gap: 4px; flex-shrink: 0; }
       body.ke-tally .ke-tally-tools { display: flex !important; }
-      .ke-tool-btn {
-        width: 30px;
-        height: 29px;
-        border-radius: 9px;
-        border: 1px solid var(--border-strong);
-        background: rgba(15, 23, 42, 0.92);
-        color: var(--text);
-        font-size: 14px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-      }
-      .ke-tool-btn.locked {
-        background: rgba(239, 68, 68, 0.22);
-        border-color: rgba(239, 68, 68, 0.65);
-      }
+      .ke-tool-btn { width: 30px; height: 29px; border-radius: 9px; border: 1px solid var(--border-strong); background: rgba(15, 23, 42, 0.92); color: var(--text); font-size: 14px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
+      .ke-tool-btn.locked { background: rgba(239, 68, 68, 0.22); border-color: rgba(239, 68, 68, 0.65); }
 
-      /* === 3. የቆጠራ ገጽ 1-ስክሪን ንጹህ አቀማመጥ (ልክ እንደ ሻርፕ ሜታል) === */
       body.ke-tally .topbar { padding: 4px 8px 3px !important; gap: 4px !important; }
-      body.ke-tally #subTabsBar {
-        display: grid !important;
-        grid-template-columns: repeat(4, 1fr) !important;
-        gap: 4px !important;
-        padding: 0 !important;
-        overflow: visible !important;
-      }
-      body.ke-tally #subTabsBar .subtab {
-        width: 100% !important;
-        height: 29px !important;
-        padding: 0 3px !important;
-        font-size: 10.5px !important;
-        font-weight: 800 !important;
-        border-radius: 9px !important;
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        text-align: center !important;
-        white-space: nowrap !important;
-        overflow: hidden !important;
-        text-overflow: ellipsis !important;
-      }
-      body.ke-tally .viewport {
-        padding-top: 4px !important;
-        padding-left: 7px !important;
-        padding-right: 7px !important;
-        display: flex !important;
-        flex-direction: column !important;
-      }
-      body.ke-tally #viewRoot {
-        display: flex !important;
-        flex-direction: column !important;
-        gap: 5px !important;
-        width: 100% !important;
-      }
+      body.ke-tally #subTabsBar { display: grid !important; grid-template-columns: repeat(4, 1fr) !important; gap: 4px !important; padding: 0 !important; overflow: visible !important; }
+      body.ke-tally #subTabsBar .subtab { width: 100% !important; height: 29px !important; padding: 0 3px !important; font-size: 10.5px !important; font-weight: 800 !important; border-radius: 9px !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; text-align: center !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
+      body.ke-tally .viewport { padding-top: 4px !important; padding-left: 7px !important; padding-right: 7px !important; display: flex !important; flex-direction: column !important; }
+      body.ke-tally #viewRoot { display: flex !important; flex-direction: column !important; gap: 5px !important; width: 100% !important; }
       body.ke-tally #viewRoot > * { flex-shrink: 0; }
-      body.ke-tally #viewRoot .card {
-        padding: 5px 7px !important;
-        gap: 4px !important;
-        border-radius: 11px !important;
-        margin: 0 !important;
-      }
-      body.ke-tally #viewRoot .sub-card {
-        padding: 4px 6px !important;
-        gap: 4px !important;
-        margin: 0 !important;
-      }
-      body.ke-tally #viewRoot .inp,
-      body.ke-tally #viewRoot .sel {
-        height: 28px !important;
-        font-size: 11.5px !important;
-        padding: 0 7px !important;
-      }
+      body.ke-tally #viewRoot .card { padding: 5px 7px !important; gap: 4px !important; border-radius: 11px !important; margin: 0 !important; }
+      body.ke-tally #viewRoot .sub-card { padding: 4px 6px !important; gap: 4px !important; margin: 0 !important; }
+      body.ke-tally #viewRoot .inp, body.ke-tally #viewRoot .sel { height: 28px !important; font-size: 11.5px !important; padding: 0 7px !important; }
       body.ke-tally #viewRoot .seg { gap: 4px !important; }
       body.ke-tally #viewRoot .seg-btn { height: 27px !important; font-size: 11px !important; padding: 0 6px !important; }
       body.ke-tally #viewRoot .kpi { padding: 4px 2px !important; }
       body.ke-tally #viewRoot .kpi-lbl { font-size: 9.5px !important; }
       body.ke-tally #viewRoot .kpi-val { font-size: 16px !important; line-height: 1.15 !important; }
+      body.ke-tally .ke-board-grow { flex: 1 1 auto !important; min-height: 170px !important; display: flex !important; flex-direction: column !important; justify-content: space-between !important; }
+      body.ke-tally .ke-board-grow > .ke-round-center { margin-top: auto !important; margin-bottom: auto !important; }
+      body.ke-tally .ke-dock-flush, body.ke-tally .tally-sticky-dock { position: static !important; bottom: auto !important; margin-top: 0 !important; padding: 1px 0 0 !important; gap: 4px !important; flex-shrink: 0 !important; }
 
-      /* ዋናው የቆጠራ ቦርድ መሃሉን ያለ ባዶ ክፍተት እንዲሞላ */
-      body.ke-tally .ke-board-grow {
-        flex: 1 1 auto !important;
-        min-height: 170px !important;
-        display: flex !important;
-        flex-direction: column !important;
-        justify-content: space-between !important;
-      }
-      body.ke-tally .ke-board-grow > .ke-round-center {
-        margin-top: auto !important;
-        margin-bottom: auto !important;
-      }
-
-      /* የታችኛው +ቁጠር እና 4ቱ ቁልፎች ሁልጊዜ ከዳሰሳው በላይ በሙሉ እንዲታዩ */
-      body.ke-tally .ke-dock-flush,
-      body.ke-tally .tally-sticky-dock {
-        position: static !important;
-        bottom: auto !important;
-        margin-top: 0 !important;
-        padding: 1px 0 0 !important;
-        gap: 4px !important;
-        flex-shrink: 0 !important;
-      }
-
-      /* === 4. የ2-ዓምድ KPI (ለማጓጓዣ) እና ሞዳል === */
       .ke-kpi-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
       .ke-modal-sep { border: 0; border-top: 1px solid var(--border-strong); margin: 7px 0 5px; }
       .ke-modal-hdr { font-size: 10.5px; font-weight: 900; color: var(--teal); letter-spacing: 0.2px; margin-bottom: 2px; }
 
-      /* === 5. ዘመናዊ ገበያ / ማስታወቂያ (Kora Market) === */
       .ke-mkt-hero { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; scroll-snap-type: x mandatory; }
       .ke-hero-card { min-width: 240px; flex-shrink: 0; scroll-snap-align: start; border-radius: 14px; padding: 11px; background: linear-gradient(135deg, rgba(20,184,166,0.22), rgba(15,23,42,0.96)); border: 1px solid rgba(45,212,191,0.45); display: flex; flex-direction: column; gap: 5px; }
       .ke-mkt-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(156px, 1fr)); gap: 8px; }
@@ -264,15 +108,12 @@
       .ke-ad-btn { height: 27px; border-radius: 8px; border: 1px solid var(--border-strong); background: var(--surface-deep); color: var(--text); font-size: 10.5px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 2px; text-decoration: none; cursor: pointer; }
       .ke-ad-btn.buy { background: var(--teal); border-color: var(--teal); color: #041b1a; }
 
-      /* === 6. ዓለም አቀፋዊ ማጓጓዣ (TMS) እና Live Map === */
       .ke-steps { display: grid; grid-template-columns: repeat(6, 1fr); gap: 3px; margin: 4px 0; }
       .ke-st-bar { height: 5px; border-radius: 4px; background: rgba(51,65,85,0.65); }
       .ke-st-bar.on { background: var(--teal); }
       .ke-map-box { width: 100%; height: 390px; border-radius: 14px; overflow: hidden; border: 1px solid var(--border-strong); background: #070d19; position: relative; z-index: 1; }
       .ke-map-ctrl { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; justify-content: space-between; }
       .ke-route-strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
-
-      /* === 7. QR መውጫ ፈቃድ እና ኦዲት === */
       .ke-qr-box { display: flex; align-items: center; gap: 10px; background: #070d19; border: 1px dashed var(--teal); border-radius: 11px; padding: 8px; }
       .ke-qr-svg { width: 74px; height: 74px; background: #fff; border-radius: 8px; padding: 4px; flex-shrink: 0; }
       .ke-aud-row { background: var(--surface-deep); border: 1px solid var(--border); border-left: 3px solid var(--primary); border-radius: 10px; padding: 8px; display: flex; flex-direction: column; gap: 2px; }
@@ -301,7 +142,8 @@
     if (!state.cfg) state.cfg = {};
     const cfgDefs = {
       tallyPhoto: true, tallyPack: true, tallyWeight: true, tallyCamera: true,
-      voiceReadMode: 'qty', voiceLang: 'am',
+      voiceReadMode: 'clicks', // qty | clicks | both
+      voiceLang: 'am',         // am | en-US | ar-SA
       marketShowMine: true, marketShowAds: true, mapLayer: 'street'
     };
     Object.keys(cfgDefs).forEach((k) => {
@@ -354,7 +196,137 @@
   }
 
   // ---------------------------------------------------------------------------
-  // 3. Self-Healing Topbar + Notification Bell (🔔) + Sharp Metal 1-Screen Tally
+  // 3. ትክክለኛ የሸክም (ክሊክ) ብዛት አንባቢ እና የድምፅ መቆጣጠሪያ (FIXED in v24)
+  // ---------------------------------------------------------------------------
+  function getExactActiveLoadClicks(rawSpokenQty) {
+    if (!hasState()) return 0;
+    const t = state.tally || {};
+    const sub = state.activeSubTab?.tally || 'tickets';
+
+    // ዘዴ 1: በቀጥታ ከ state.tally የstrokes/loads ድርድር ርዝመት ማንበብ
+    try {
+      let strokes = null;
+      if (sub === 'tickets' && Array.isArray(t.tickets)) {
+        const tk = t.tickets.find((x) => String(x.id) === String(t.activeTicketId)) || t.tickets[0];
+        if (tk && Array.isArray(tk.items)) {
+          const it = tk.items.find((x) => String(x.itemId) === String(tk.activeItemId)) || tk.items[tk.activeItemIdx || 0] || tk.items[0];
+          strokes = it?.strokes || it?.loads || it?.hits || null;
+        }
+      } else if (sub === 'free' && t.free) {
+        strokes = t.free.strokes || t.free.loads || t.free.hits || null;
+      } else if (sub === 'audit' && t.audit) {
+        strokes = t.audit.strokes || t.audit.loads || t.audit.hits || null;
+      }
+      if (Array.isArray(strokes) && strokes.length > 0) return strokes.length;
+    } catch {}
+
+    // ዘዴ 2: በስክሪኑ ላይ «ሸክም» ወይም «Loads» የሚለውን ሳጥን መፈለግ
+    try {
+      const root = document.getElementById('viewRoot');
+      if (root) {
+        const boxes = root.querySelectorAll('div, span');
+        for (const el of boxes) {
+          if (el.children.length > 3) continue;
+          const txt = (el.textContent || '').trim();
+          if (/^(ሸክም|loads?)\s*\d+/i.test(txt) && !/ቀሪ|rem|በአንድ|per/i.test(txt)) {
+            const m = txt.match(/(\d[\d,]*)/);
+            if (m) {
+              const val = Number(m[1].replace(/,/g, ''));
+              if (val > 0) return val;
+            }
+          }
+        }
+      }
+    } catch {}
+
+    // ዘዴ 3: ከተመረጠው የአንድ ሸክም መጠን (1 = 5 / 1 = 10) ማካፈል
+    try {
+      let step = Number(t.loadSize || t.step || t.perLoad || 0);
+      if (!(step > 0)) {
+        const txt = document.getElementById('viewRoot')?.textContent || '';
+        const m = txt.match(/1\s*=\s*(\d+)/);
+        if (m) step = Number(m[1]);
+      }
+      if (step > 0 && rawSpokenQty > 0) {
+        return Math.max(1, Math.round(rawSpokenQty / step));
+      }
+    } catch {}
+
+    return 0;
+  }
+
+  function formatVoicePhrase(totalQty, clicksNum, mode, lang) {
+    const val = (mode === 'clicks' && clicksNum > 0) ? clicksNum : totalQty;
+    const vs = ('speechSynthesis' in global) ? (global.speechSynthesis.getVoices() || []) : [];
+
+    if (lang === 'am') {
+      const amV = vs.find((v) => (v.lang || '').toLowerCase().startsWith('am'));
+      if (amV) {
+        return {
+          voice: amV,
+          lang: 'am-ET',
+          text: (mode === 'both' && clicksNum > 0) ? `ሸክም ${clicksNum}፣ ${totalQty}` : String(val)
+        };
+      }
+      return {
+        voice: null,
+        lang: 'en-US',
+        text: (mode === 'both' && clicksNum > 0)
+          ? `shekim ${numToAmPhonetic(clicksNum)}, ${numToAmPhonetic(totalQty)}`
+          : numToAmPhonetic(val)
+      };
+    }
+
+    const langPrefix = lang.slice(0, 2).toLowerCase();
+    const matchV = vs.find((v) => (v.lang || '').toLowerCase().startsWith(langPrefix)) || null;
+    return {
+      voice: matchV,
+      lang,
+      text: (mode === 'both' && clicksNum > 0) ? `Load ${clicksNum}, ${totalQty}` : String(val)
+    };
+  }
+
+  function installVoiceInterceptor() {
+    if (!('speechSynthesis' in global)) return;
+    if (!global._keOrigSpeak) {
+      global._keOrigSpeak = global.speechSynthesis.speak.bind(global.speechSynthesis);
+    }
+    global.speechSynthesis.speak = function (utt) {
+      try {
+        if (hasState() && state.activeMainTab === 'tally' && utt && utt.text && !utt._keBypass) {
+          ensureEntState();
+          const mode = state.cfg.voiceReadMode || 'clicks';
+          const lang = state.cfg.voiceLang || 'am';
+          const rawNum = Number(String(utt.text).replace(/[^\d.]/g, ''));
+          if (!Number.isNaN(rawNum) && rawNum > 0) {
+            const clicksNum = getExactActiveLoadClicks(rawNum);
+            const built = formatVoicePhrase(rawNum, clicksNum, mode, lang);
+            if (built.voice) utt.voice = built.voice;
+            utt.lang = built.lang;
+            utt.text = built.text;
+          }
+        }
+      } catch {}
+      return global._keOrigSpeak(utt);
+    };
+  }
+
+  function testVoiceSample() {
+    if (!('speechSynthesis' in global)) { showToast(L('ድምፅ አይደገፍም', 'Speech unsupported'), true); return; }
+    ensureEntState();
+    const mode = state.cfg.voiceReadMode || 'clicks';
+    const lang = state.cfg.voiceLang || 'am';
+    const built = formatVoicePhrase(20, 4, mode, lang);
+    global.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(built.text);
+    u._keBypass = true;
+    if (built.voice) u.voice = built.voice;
+    u.lang = built.lang;
+    (global._keOrigSpeak || global.speechSynthesis.speak.bind(global.speechSynthesis))(u);
+  }
+
+  // ---------------------------------------------------------------------------
+  // 4. Self-Healing Topbar + 🔔 Notification Bell + Sharp Metal 1-Screen Tally
   // ---------------------------------------------------------------------------
   let capturedNotifBtns = [];
   let cachedRealLockBtn = null;
@@ -365,7 +337,6 @@
     const row1 = document.querySelector('.topbar .topbar-row');
     if (!topbar || !row1) return;
 
-    // 1. «እንግሊዝኛ / አማርኛ» ቁልፍን ከላይኛው መስመር መደበቅ (ወደ ጎን ሜኑ ተዛውሯል)
     row1.querySelectorAll('button').forEach((btn) => {
       if (btn.id === 'btnNotifBell' || btn.id === 'keNotifBell') return;
       const txt = (btn.textContent || '').trim();
@@ -375,7 +346,6 @@
       }
     });
 
-    // 2. ለቆጠራ ገጽ የሻርፕ ሜታል ብራንድ ስም (ኮራ ስቶክ) ከ☰ ቀጥሎ ማስቀመጥ
     let brand = document.getElementById('keBrandBox');
     if (!brand) {
       brand = document.createElement('div');
@@ -388,17 +358,12 @@
     const org = (hasState() && state.orgName) ? state.orgName : L('ኮራ ስቶክ', 'Kora Stock');
     brand.innerHTML = `<div class="ke-brand-txt"><b>${sEsc(org)}</b><small>${sEsc(L('ትክክለኛ የስቶክ ቆጠራ', 'Precision Stock Tally'))}</small></div>`;
 
-    // 3. «ሁሉም ቅርንጫፎች» dropdown ሁልጊዜ በረድፍ 1 ውስጥ እንዲሆን (ንዑስ ታቦችን እንዳይጨፈልቅ!)
     const scopeSel = topbar.querySelector('.scope-sel, select[id*="branch" i], select[id*="scope" i]');
-    if (scopeSel && scopeSel.parentElement !== row1) {
-      row1.appendChild(scopeSel);
-    }
+    if (scopeSel && scopeSel.parentElement !== row1) row1.appendChild(scopeSel);
 
-    // 4. ከድሮው ቀርቶ የነበረ ነጠላ 🟢 ነጥብ ካለ ማንሳት (አሁን በደወሉ ጥግ ላይ ይገባል)
     const oldDot = document.getElementById('keNetDot');
     if (oldDot && !oldDot.closest('.ke-bell-btn')) oldDot.remove();
 
-    // 5. «ለእርስዎ የመጡ ትዕዛዞች» ሳጥንን በሁሉም ገጾች ደብቆ ውስጡ ያሉትን ቁልፎች ወደ 🔔 ደወል መሰብሰብ
     capturedNotifBtns = [];
     let notifCount = 0;
     const scanContainers = [document.querySelector('.viewport'), document.getElementById('viewRoot')].filter(Boolean);
@@ -423,14 +388,12 @@
       });
     });
 
-    // ተጨማሪ ንቁ ማሳወቂያዎች (ካሉና ከላይ ካልተቆጠሩ)
     if (notifCount === 0 && hasState()) {
       const openGp = (state.gatePasses || []).filter((g) => g.status !== 'EXITED').length;
       const openDsp = (state.dispatchOrders || []).filter((o) => o.status !== 'delivered').length;
       notifCount = openGp + openDsp;
     }
 
-    // 6. ኖቲፊኬሽን ደወል (🔔) በላይኛው ቀኝ ጥግ ላይ ማረጋገጥ (አንድ ብቻ!)
     const proBell = document.getElementById('btnNotifBell');
     let bell = document.getElementById('keNotifBell');
     if (proBell) {
@@ -441,14 +404,10 @@
     } else {
       if (!bell) {
         bell = document.createElement('button');
-        bell.id = 'keNotifBell';
-        bell.type = 'button';
-        bell.className = 'ke-bell-btn';
+        bell.id = 'keNotifBell'; bell.type = 'button'; bell.className = 'ke-bell-btn';
         bell.onclick = () => openNotifCenterModal();
         row1.appendChild(bell);
-      } else if (bell.parentElement !== row1) {
-        row1.appendChild(bell);
-      }
+      } else if (bell.parentElement !== row1) row1.appendChild(bell);
       bell.innerHTML = `🔔${notifCount > 0 ? `<span class="ke-bell-badge">${notifCount}</span>` : ''}<span class="ke-net-dot ${navigator.onLine ? '' : 'off'}"></span>`;
     }
     if (bell && !bell.querySelector('.ke-net-dot')) {
@@ -457,21 +416,17 @@
     const dotEl = bell?.querySelector('.ke-net-dot');
     if (dotEl) dotEl.classList.toggle('off', !navigator.onLine);
 
-    // 7. ረድፍ 2 (#subTabsBar) ከ🔒 እና ⚙️ ጋር በአንድ መስመር ማዋቀር (ልክ እንደ ሻርፕ ሜታል)
     const subBar = document.getElementById('subTabsBar');
     if (subBar) {
       let wrap = subBar.parentElement;
       if (!wrap || !wrap.classList.contains('ke-sub-wrap')) {
-        wrap = document.createElement('div');
-        wrap.className = 'ke-sub-wrap';
+        wrap = document.createElement('div'); wrap.className = 'ke-sub-wrap';
         subBar.parentElement.insertBefore(wrap, subBar);
         wrap.appendChild(subBar);
       }
       let tools = document.getElementById('keTallyTools');
       if (!tools) {
-        tools = document.createElement('div');
-        tools.id = 'keTallyTools';
-        tools.className = 'ke-tally-tools';
+        tools = document.createElement('div'); tools.id = 'keTallyTools'; tools.className = 'ke-tally-tools';
         tools.innerHTML = `
           <button id="keTopLockBtn" type="button" class="ke-tool-btn" onclick="KoraEnt.triggerTallyLock()">🔓</button>
           <button id="keTopCfgBtn" type="button" class="ke-tool-btn" onclick="KoraEnt.triggerTallyCfg()">⚙️</button>`;
@@ -482,31 +437,18 @@
 
   function openNotifCenterModal() {
     const itemsHtml = capturedNotifBtns.length
-      ? capturedNotifBtns.map((b, idx) => `
-          <button type="button" class="btn primary" style="width:100%;justify-content:space-between;" onclick="KoraEnt.clickNotifBtn(${idx})">
-            <span>🔔 ${sEsc(b.label)}</span><span>➔</span>
-          </button>`).join('')
+      ? capturedNotifBtns.map((b, idx) => `<button type="button" class="btn primary" style="width:100%;justify-content:space-between;" onclick="KoraEnt.clickNotifBtn(${idx})"><span>🔔 ${sEsc(b.label)}</span><span>➔</span></button>`).join('')
       : '';
-
     const openDsp = (state.dispatchOrders || []).filter((o) => o.status !== 'delivered');
     const openGp = (state.gatePasses || []).filter((g) => g.status !== 'EXITED');
 
-    openModal(`🔔 ${L('የማሳወቂያ እና ትዕዛዞች ማዕከል', 'Notifications & Pending Tasks')}`, `
+    openModal(`🔔 ${L('የማሳወቂያ እና ትዕዛዞች ማዕከል', 'Notifications & Tasks')}`, `
       <div style="display:flex;flex-direction:column;gap:7px;">
         ${itemsHtml}
-        ${openDsp.length ? `
-          <div class="sub-card">
-            <div class="card-row"><b>🚚 ${sEsc(L('ክፍት የማጓጓዣ ትዕዛዞች', 'Active Dispatch Orders'))}</b><span class="pill amber">${openDsp.length}</span></div>
-            <button type="button" class="btn muted sm" style="margin-top:4px;width:100%;" onclick="closeModal();switchMainTab('dispatch');">➔ ${sEsc(L('ማጓጓዣ ክፈት', 'Open Dispatch'))}</button>
-          </div>` : ''}
-        ${openGp.length ? `
-          <div class="sub-card">
-            <div class="card-row"><b>🛂 ${sEsc(L('ክፍት የመውጫ ፈቃዶች', 'Open Gate Passes'))}</b><span class="pill teal">${openGp.length}</span></div>
-            <button type="button" class="btn muted sm" style="margin-top:4px;width:100%;" onclick="closeModal();state.activeSubTab.dispatch='gatepass';switchMainTab('dispatch');">➔ ${sEsc(L('መውጫ ፈቃድ ክፈት', 'Open Gate Passes'))}</button>
-          </div>` : ''}
-        ${!itemsHtml && !openDsp.length && !openGp.length ? `<div class="sub-card" style="text-align:center;color:var(--muted);padding:16px;">✅ ${sEsc(L('ሁሉም ሥራዎች ተጠናቀዋል — አዲስ ማሳወቂያ የለም', 'All caught up — no pending alerts'))}</div>` : ''}
-      </div>`, `
-      <button type="button" class="btn teal" onclick="closeModal()">${sEsc(L('ዝጋ', 'Close'))}</button>`);
+        ${openDsp.length ? `<div class="sub-card"><div class="card-row"><b>🚚 ${sEsc(L('ክፍት የማጓጓዣ ትዕዛዞች', 'Active Dispatch'))}</b><span class="pill amber">${openDsp.length}</span></div><button type="button" class="btn muted sm" style="margin-top:4px;width:100%;" onclick="closeModal();switchMainTab('dispatch');">➔ ${sEsc(L('ማጓጓዣ ክፈት', 'Open Dispatch'))}</button></div>` : ''}
+        ${openGp.length ? `<div class="sub-card"><div class="card-row"><b>🛂 ${sEsc(L('ክፍት የመውጫ ፈቃዶች', 'Open Gate Passes'))}</b><span class="pill teal">${openGp.length}</span></div><button type="button" class="btn muted sm" style="margin-top:4px;width:100%;" onclick="closeModal();state.activeSubTab.dispatch='gatepass';switchMainTab('dispatch');">➔ ${sEsc(L('መውጫ ፈቃድ ክፈት', 'Open Gate Passes'))}</button></div>` : ''}
+        ${!itemsHtml && !openDsp.length && !openGp.length ? `<div class="sub-card" style="text-align:center;color:var(--muted);padding:16px;">✅ ${sEsc(L('አዲስ ማሳወቂያ የለም', 'No pending alerts'))}</div>` : ''}
+      </div>`, `<button type="button" class="btn teal" onclick="closeModal()">${sEsc(L('ዝጋ', 'Close'))}</button>`);
   }
 
   function measureBottomNav() {
@@ -538,7 +480,6 @@
     document.body.classList.add('ke-tally');
     if (!root || !vp) return;
 
-    // 1. ፎቶ / ጥቅልና ፍሬ / ሚዛን ሙዶችን በቅንብሩ መሠረት ማሳየት/መደበቅ
     const modeMap = [
       { flag: 'tallyPhoto',  keys: ['ፎቶ', 'photo'] },
       { flag: 'tallyPack',   keys: ['ጥቅል', 'pack'] },
@@ -560,34 +501,22 @@
           if (!on && isAct) disabledWasActive = true;
           btn.style.display = on ? '' : 'none';
           if (on) visibleCount++;
-        } else {
-          visibleCount++;
-        }
+        } else visibleCount++;
       });
       if (matchedAny) {
-        if (disabledWasActive && counterBtn && !switchedBack) {
-          switchedBack = true;
-          setTimeout(() => counterBtn.click(), 0);
-        }
+        if (disabledWasActive && counterBtn && !switchedBack) { switchedBack = true; setTimeout(() => counterBtn.click(), 0); }
         container.style.display = visibleCount <= 1 ? 'none' : '';
       }
     });
 
-    // 2. በ«በአንድ ሸክም» ሳጥን ውስጥ ያሉትን 🔒 እና ⚙️ ቁልፎች ወደ ረድፍ 2 አዛውሮ ቦታ መቆጠብ
-    cachedRealLockBtn = null;
-    cachedRealCfgBtn = null;
+    cachedRealLockBtn = null; cachedRealCfgBtn = null;
     root.querySelectorAll('.card, .sub-card').forEach((card) => {
       const txt = card.textContent || '';
       if (/በአንድ ሸክም|per load/i.test(txt) && /\+10/.test(txt)) {
         card.querySelectorAll('button').forEach((b) => {
           const bt = (b.textContent || '').trim();
-          if (bt.includes('🔒') || bt.includes('🔓')) {
-            cachedRealLockBtn = b;
-            b.classList.add('ke-hidden-el');
-          } else if (bt.includes('⚙')) {
-            cachedRealCfgBtn = b;
-            b.classList.add('ke-hidden-el');
-          }
+          if (bt.includes('🔒') || bt.includes('🔓')) { cachedRealLockBtn = b; b.classList.add('ke-hidden-el'); }
+          else if (bt.includes('⚙')) { cachedRealCfgBtn = b; b.classList.add('ke-hidden-el'); }
         });
       }
     });
@@ -598,29 +527,19 @@
       topLock.classList.toggle('locked', cachedRealLockBtn.classList.contains('locked'));
     }
 
-    // 3. የታችኛውን ዳሰሳ ትክክለኛ ቁመት ለክቶ 1-ስክሪን ቁመት ማስተካከል (ቁልፎቹ በጭራሽ እንዳይሸፈኑ!)
     const { navTop } = measureBottomNav();
     const vpRect = vp.getBoundingClientRect();
     const overlap = Math.max(0, Math.ceil(vpRect.bottom - navTop));
-    const padBot = overlap > 0 ? overlap + 8 : 6;
-    vp.style.paddingBottom = padBot + 'px';
+    vp.style.paddingBottom = (overlap > 0 ? overlap + 8 : 6) + 'px';
 
-    if (state.activeSubTab?.tally === 'history') {
-      root.style.minHeight = '';
-      return;
-    }
+    if (state.activeSubTab?.tally === 'history') { root.style.minHeight = ''; return; }
+    root.style.minHeight = Math.max(320, Math.floor(navTop - vpRect.top - 10)) + 'px';
 
-    const usableH = Math.max(320, Math.floor(navTop - vpRect.top - 10));
-    root.style.minHeight = usableH + 'px';
-
-    // 4. ዋናው ቦርድ መሃሉን እንዲሞላና ዶኩ ከታች እንዲቀመጥ
     let container = root;
     if (root.children.length === 1 && root.firstElementChild.children.length >= 2) {
       container = root.firstElementChild;
-      container.style.display = 'flex';
-      container.style.flexDirection = 'column';
-      container.style.flex = '1 1 auto';
-      container.style.gap = '4px';
+      container.style.display = 'flex'; container.style.flexDirection = 'column';
+      container.style.flex = '1 1 auto'; container.style.gap = '4px';
     }
 
     let dockEl = null, boardEl = null;
@@ -629,12 +548,8 @@
       el.classList.remove('ke-board-grow', 'ke-dock-flush');
       el.querySelectorAll('.ke-round-center').forEach((c) => c.classList.remove('ke-round-center'));
       const txt = el.textContent || '';
-
-      if (el.classList.contains('tally-sticky-dock') || (/(መልስ|undo)/i.test(txt) && /(አጽዳ|clear)/i.test(txt))) {
-        dockEl = el;
-      } else if (/(×10|0\/10|10\s*\(|ቆጠራው ተቆልፏል|tally paused|ለመቁጠር ዝግጁ|የተቆጠረ|የተጫነ|counted)/i.test(txt) && !(/\+15/.test(txt) && /\+20/.test(txt))) {
-        boardEl = el;
-      }
+      if (el.classList.contains('tally-sticky-dock') || (/(መልስ|undo)/i.test(txt) && /(አጽዳ|clear)/i.test(txt))) dockEl = el;
+      else if (/(×10|0\/10|10\s*\(|ቆጠራው ተቆልፏል|tally paused|ለመቁጠር ዝግጁ|የተቆጠረ|የተጫነ|counted)/i.test(txt) && !(/\+15/.test(txt) && /\+20/.test(txt))) boardEl = el;
     });
 
     if (dockEl) dockEl.classList.add('ke-dock-flush');
@@ -642,9 +557,7 @@
       boardEl.classList.add('ke-board-grow');
       Array.from(boardEl.children).forEach((ch) => {
         const t = ch.textContent || '';
-        if (/(×10|\/10|ቆጠራው ተቆልፏል|tally paused)/i.test(t) && !/(የተቆጠረ|የተጫነ|counted)/i.test(t)) {
-          ch.classList.add('ke-round-center');
-        }
+        if (/(×10|\/10|ቆጠራው ተቆልፏል|tally paused)/i.test(t) && !/(የተቆጠረ|የተጫነ|counted)/i.test(t)) ch.classList.add('ke-round-center');
       });
     }
   }
@@ -655,8 +568,7 @@
     const modal = document.querySelector('#modalOverlay.open, .modal-bg.open, .modal-backdrop.open, #modalCard, .modal-card, .modal');
     if (!modal) return;
     const fullText = modal.textContent || '';
-    const isTallyModal = fullText.includes('የቆጠራ ቅንብር') || fullText.toLowerCase().includes('tally setting');
-    if (!isTallyModal || modal.querySelector('[data-ke-tmodes]')) return;
+    if (!(fullText.includes('የቆጠራ ቅንብር') || fullText.toLowerCase().includes('tally setting')) || modal.querySelector('[data-ke-tmodes]')) return;
 
     const swRows = modal.querySelectorAll('.switch-row');
     if (!swRows.length) return;
@@ -680,14 +592,17 @@
         </div>`).join('')}
 
       <hr class="ke-modal-sep">
-      <div class="ke-modal-hdr">🔊 ${sEsc(L('የድምፅ ንባብ ምርጫ እና ቋንቋ', 'Voice Readout & Language'))}</div>
-      <div class="grid-2" style="gap:6px;margin-top:4px;">
+      <div class="card-row" style="margin-bottom:4px;">
+        <div class="ke-modal-hdr" style="margin:0;">🔊 ${sEsc(L('የድምፅ ንባብ ምርጫ እና ቋንቋ', 'Voice Readout & Language'))}</div>
+        <button type="button" class="btn muted sm" style="height:24px;padding:0 8px;font-size:10px;" onclick="KoraEnt.testVoiceSample()">▶️ ${sEsc(L('ሞክር', 'Test'))}</button>
+      </div>
+      <div class="grid-2" style="gap:6px;">
         <div>
           <label class="lbl" style="font-size:10px;">${sEsc(L('ምን ይናገር?', 'Readout'))}</label>
           <select class="sel" style="height:31px;font-size:11px;" onchange="state.cfg.voiceReadMode=this.value;saveState();">
-            <option value="qty" ${state.cfg.voiceReadMode === 'qty' ? 'selected' : ''}>${sEsc(L('የተጫነ ብዛት (5, 10...)', 'Total Qty (5, 10...)'))}</option>
-            <option value="clicks" ${state.cfg.voiceReadMode === 'clicks' ? 'selected' : ''}>${sEsc(L('የክሊክ ቁጥር (1, 2, 3...)', 'Click Count (1, 2, 3...)'))}</option>
-            <option value="both" ${state.cfg.voiceReadMode === 'both' ? 'selected' : ''}>${sEsc(L('ሁለቱንም (ሸክም + ብዛት)', 'Both (Load + Qty)'))}</option>
+            <option value="clicks" ${state.cfg.voiceReadMode === 'clicks' ? 'selected' : ''}>${sEsc(L('የሸክም / ክሊክ ቁጥር (1, 2, 3...)', 'Load / Click # (1, 2, 3...)'))}</option>
+            <option value="qty" ${state.cfg.voiceReadMode === 'qty' ? 'selected' : ''}>${sEsc(L('የተጫነ ብዛት (5, 10, 15...)', 'Total Qty (5, 10, 15...)'))}</option>
+            <option value="both" ${state.cfg.voiceReadMode === 'both' ? 'selected' : ''}>${sEsc(L('ሁለቱንም (ሸክም 4 — 20)', 'Both (Load 4 — 20)'))}</option>
           </select>
         </div>
         <div>
@@ -702,46 +617,8 @@
     switchBox.appendChild(wrap);
   }
 
-  function installVoiceInterceptor() {
-    if (!('speechSynthesis' in global) || global._keVoiceHooked) return;
-    global._keVoiceHooked = true;
-    const origSpeak = global.speechSynthesis.speak.bind(global.speechSynthesis);
-    global.speechSynthesis.speak = function (utt) {
-      try {
-        if (hasState() && state.activeMainTab === 'tally' && utt && utt.text) {
-          ensureEntState();
-          const mode = state.cfg.voiceReadMode || 'qty';
-          const lang = state.cfg.voiceLang || 'am';
-          const rawNum = Number(String(utt.text).replace(/[^\d.]/g, ''));
-          const kpis = document.querySelectorAll('#viewRoot .kpi-val');
-          const clicksNum = kpis[1] ? Number(String(kpis[1].textContent).replace(/[^\d]/g, '')) : 0;
-          if (!Number.isNaN(rawNum) && rawNum > 0) {
-            const targetVal = mode === 'clicks' && clicksNum > 0 ? clicksNum : rawNum;
-            if (lang === 'am') {
-              const vs = global.speechSynthesis.getVoices() || [];
-              const amV = vs.find((v) => (v.lang || '').toLowerCase().startsWith('am'));
-              if (amV) {
-                utt.voice = amV; utt.lang = 'am-ET';
-                utt.text = mode === 'both' && clicksNum > 0 ? `ሸክም ${clicksNum}፣ ${rawNum}` : String(targetVal);
-              } else {
-                utt.lang = 'en-US';
-                utt.text = mode === 'both' && clicksNum > 0
-                  ? `shekim ${numToAmPhonetic(clicksNum)}, ${numToAmPhonetic(rawNum)}`
-                  : numToAmPhonetic(targetVal);
-              }
-            } else {
-              utt.lang = lang;
-              utt.text = mode === 'both' && clicksNum > 0 ? `Load ${clicksNum}, ${rawNum}` : String(targetVal);
-            }
-          }
-        }
-      } catch {}
-      return origSpeak(utt);
-    };
-  }
-
   // ---------------------------------------------------------------------------
-  // 4. ኦፍላይን QR ኮድ SVG ሠሪ
+  // 5. ኦፍላይን QR ኮድ SVG ሠሪ
   // ---------------------------------------------------------------------------
   function buildOfflineQrSvg(text) {
     const str = String(text || 'KORA');
@@ -766,7 +643,7 @@
   }
 
   // ---------------------------------------------------------------------------
-  // 5. ዘመናዊ ራሱን የቻለ የገበያና ማስታወቂያ ገጽ (Kora Market)
+  // 6. ዘመናዊ ገበያ / ማስታወቂያ (Kora Market)
   // ---------------------------------------------------------------------------
   let mktCat = 'all', mktSort = 'new', mktQuery = '', adPhotoDraft = '';
 
@@ -852,10 +729,7 @@
               <div class="ke-ad-body">
                 <div style="font-size:9.5px;color:var(--amber);font-weight:800;">${sEsc(ad.seller)} · ${sEsc(ad.city)}</div>
                 <b style="font-size:12.5px;line-height:1.25;">${sEsc(ad.title)}</b>
-                <div style="display:flex;align-items:baseline;gap:4px;">
-                  <b style="color:#38bdf8;font-size:14px;font-family:ui-monospace,monospace;">${sMoney(ad.price)}</b>
-                  <span style="font-size:10px;color:var(--muted);">/ ${sEsc(ad.unit)}</span>
-                </div>
+                <div style="display:flex;align-items:baseline;gap:4px;"><b style="color:#38bdf8;font-size:14px;font-family:ui-monospace,monospace;">${sMoney(ad.price)}</b><span style="font-size:10px;color:var(--muted);">/ ${sEsc(ad.unit)}</span></div>
                 <div style="font-size:10px;color:var(--muted);">${sEsc(L('ዝቅተኛ ግዢ', 'MOQ'))}: ${sNum(ad.moq)} ${sEsc(ad.unit)}</div>
                 <div class="ke-ad-acts">
                   <a class="ke-ad-btn" href="tel:${sEsc(cleanPhone)}">📞</a>
@@ -939,7 +813,7 @@
   }
 
   // ---------------------------------------------------------------------------
-  // 6. ዓለም አቀፋዊ ማጓጓዣ (ትዕዛዞች -> Live Map -> QR መውጫ ፈቃድ -> ተሽከርካሪዎች)
+  // 7. ዓለም አቀፋዊ ማጓጓዣ (ትዕዛዞች -> Live Map -> QR መውጫ ፈቃድ -> ተሽከርካሪዎች)
   // ---------------------------------------------------------------------------
   let leafletMap = null, leafletLoading = null, podPhotoData = '';
 
@@ -1111,14 +985,9 @@
   }
 
   function verifyGatePass(id) {
-    if (global.KoraPro && typeof global.KoraPro.openVerifyGatePass === 'function') {
-      global.KoraPro.openVerifyGatePass(id);
-      return;
-    }
-    const g = (state.gatePasses || []).find((x) => String(x.id) === String(id));
-    if (!g) return;
-    openModal(`🛂 ${L('የመውጫ ፈቃድ ማረጋገጫ', 'Verify Gate Exit')} · ${g.passNo}`, `
-      <div class="sub-card"><b>${sEsc(g.party)}</b><input id="keGpCode" class="inp gate-pin" placeholder="${sEsc(L('የፈቃድ ኮድ', 'Pass Code'))}"></div>`, `
+    if (global.KoraPro && typeof global.KoraPro.openVerifyGatePass === 'function') { global.KoraPro.openVerifyGatePass(id); return; }
+    const g = (state.gatePasses || []).find((x) => String(x.id) === String(id)); if (!g) return;
+    openModal(`🛂 ${L('የመውጫ ፈቃድ ማረጋገጫ', 'Verify Gate Exit')} · ${g.passNo}`, `<div class="sub-card"><b>${sEsc(g.party)}</b><input id="keGpCode" class="inp gate-pin" placeholder="${sEsc(L('የፈቃድ ኮድ', 'Pass Code'))}"></div>`, `
       <button type="button" class="btn muted" onclick="closeModal()">${sEsc(L('ተው', 'Cancel'))}</button>
       <button type="button" class="btn teal" onclick="KoraEnt.confirmGpExit('${sEsc(id)}')">✅ ${sEsc(L('አረጋግጥ', 'Confirm'))}</button>`);
   }
@@ -1275,7 +1144,7 @@
   }
 
   // ---------------------------------------------------------------------------
-  // 7. ውህደት (Hooks)
+  // 8. ውህደት (Hooks)
   // ---------------------------------------------------------------------------
   function installEnterpriseHooks() {
     if (!hasState() || global._keHooksDone) return;
@@ -1366,26 +1235,11 @@
   }
 
   global.KoraEnt = {
-    triggerTallyLock() {
-      if (cachedRealLockBtn) {
-        cachedRealLockBtn.click();
-        setTimeout(applyTallyLayoutAndModes, 30);
-      }
-    },
-    triggerTallyCfg() {
-      if (cachedRealCfgBtn) cachedRealCfgBtn.click();
-    },
-    clickNotifBtn(idx) {
-      const target = capturedNotifBtns[idx]?.el;
-      closeModal();
-      if (target) target.click();
-    },
-    toggleTallyMode(key, el) {
-      state.cfg[key] = state.cfg[key] === false ? true : false;
-      if (el) el.classList.toggle('on', state.cfg[key] !== false);
-      saveState();
-      applyTallyLayoutAndModes();
-    },
+    testVoiceSample,
+    triggerTallyLock() { if (cachedRealLockBtn) { cachedRealLockBtn.click(); setTimeout(applyTallyLayoutAndModes, 30); } },
+    triggerTallyCfg() { if (cachedRealCfgBtn) cachedRealCfgBtn.click(); },
+    clickNotifBtn(idx) { const target = capturedNotifBtns[idx]?.el; closeModal(); if (target) target.click(); },
+    toggleTallyMode(key, el) { state.cfg[key] = state.cfg[key] === false ? true : false; if (el) el.classList.toggle('on', state.cfg[key] !== false); saveState(); applyTallyLayoutAndModes(); },
     setMktCat(c) { mktCat = c; renderView(); },
     setMktSort(s) { mktSort = s; renderView(); },
     setMktQuery(q) { mktQuery = q; renderView(); },
