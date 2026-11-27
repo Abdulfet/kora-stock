@@ -1,8 +1,8 @@
 // =============================================================================
-// ኮራ ስቶክ — Matte Obsidian Unified Design System (kora-theme-pro.js — v28)
-// • የተቆረጠውን የታችኛው ዳሰሳ (transform bug) 100% ማስተካከያ
-// • የጎን ሜኑ (Drawer) እና የመላው አፑ ቁልፎች ሙሉ Outline SVG አዶዎች
-// • የጎን ሜኑ ድግምግሞሽ ማጽጃ (ድርብ ቋንቋ፣ የቆጠራ ቅንብር፣ የፒዲኤፍ ስቱዲዮ)
+// ኮራ ስቶክ — Unified Matte Obsidian UI & Focus Navigation (kora-theme-pro.js — v29)
+// • 4 ዋና ገጾች: ቋሚ ተንሳፋፊ SVG ዳሰሳ (ወደ ታች ሲወርድም አይደበቅም)
+// • ቆጠራ ገጽ: ሙሉ ስክሪን Focus Mode (የታች ዳሰሳ ይጠፋል፣ Swipe-Back + ← ይሠራል)
+// • የጎን ሜኑ እና የቅንብሮች ድግምግሞሽ ማጥፊያ (የፒዲኤፍ ስቱዲዮ፣ የቆጠራ ቅንብር፣ ድርብ ቋንቋ)
 // =============================================================================
 (function (global) {
   'use strict';
@@ -14,8 +14,8 @@
     tally: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2.5"/><path d="M9 3v2h6V3"/><path d="m9 13 2 2 4-4"/></svg>',
     dispatch: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10V7a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 7v9a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l1.5-.86"/><path d="m3.3 6.7 8.7 5 8.7-5M12 21.8V11.7"/><path d="m16 17 2 2 4-4"/></svg>',
     menu: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h12"/></svg>',
+    back: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>',
     bell: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>',
-    // የጎን ሜኑ እና የአፕ አጠቃላይ Outline SVG አዶዎች
     sparkles: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 3v4M21 5h-4"/></svg>',
     shield: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
     box: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5M12 22V12"/></svg>',
@@ -38,6 +38,9 @@
     checkSm: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>'
   };
 
+  let lastMainTab = 'dashboard';
+  let tallyHistoryPushed = false;
+
   function injectMatteThemeCss() {
     let st = document.getElementById('koraMatteThemeCss');
     if (!st) {
@@ -46,7 +49,6 @@
       document.head.appendChild(st);
     }
     st.textContent = `
-      /* === 1. Matte Obsidian ወጥ ቀለም === */
       :root {
         --bg: #070a0e !important;
         --bg-deep: #05080b !important;
@@ -77,49 +79,27 @@
       .ke-brand-txt small { display: none !important; }
       .ke-brand-txt b { font-size: 14px !important; letter-spacing: 0.2px; }
 
-      /* === 2. v28 FIX: ተንሳፋፊ ዳሰሳ — transform: none! (መቆረጡን 100% ያስወግዳል) === */
+      /* === 1. ቋሚ ተንሳፋፊ ዳሰሳ (ለ4ቱ ዋና ገጾች) === */
       .kth-bnav {
         position: fixed !important;
-        left: 10px !important;
-        right: 10px !important;
-        bottom: 8px !important;
-        width: auto !important;
-        max-width: none !important;
-        min-width: 0 !important;
-        margin: 0 !important;
-        transform: none !important;
-        height: 64px !important;
-        padding: 4px 6px !important;
-        border-radius: 26px !important;
-        background: rgba(11, 16, 22, 0.96) !important;
-        backdrop-filter: blur(16px) !important;
+        left: 10px !important; right: 10px !important; bottom: 8px !important;
+        width: auto !important; max-width: none !important; min-width: 0 !important;
+        margin: 0 !important; transform: none !important;
+        height: 64px !important; padding: 4px 6px !important; border-radius: 26px !important;
+        background: rgba(11, 16, 22, 0.96) !important; backdrop-filter: blur(16px) !important;
         border: 1px solid rgba(148, 163, 184, 0.16) !important;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.65) !important;
-        display: grid !important;
-        grid-template-columns: repeat(5, 1fr) !important;
-        align-items: center !important;
-        gap: 2px !important;
-        z-index: 95 !important;
+        display: grid !important; grid-template-columns: repeat(5, 1fr) !important;
+        align-items: center !important; gap: 2px !important; z-index: 95 !important;
         box-sizing: border-box !important;
       }
       .kth-bnav button {
-        background: transparent !important;
-        border: none !important;
-        box-shadow: none !important;
-        border-radius: 18px !important;
-        height: 54px !important;
-        padding: 3px 2px !important;
-        margin: 0 !important;
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: center !important;
-        justify-content: center !important;
-        gap: 3px !important;
-        position: relative !important;
-        color: #8b9bb0 !important;
-        transform: none !important;
-        min-width: 0 !important;
-        width: 100% !important;
+        background: transparent !important; border: none !important; box-shadow: none !important;
+        border-radius: 18px !important; height: 54px !important; padding: 3px 2px !important;
+        margin: 0 !important; display: flex !important; flex-direction: column !important;
+        align-items: center !important; justify-content: center !important; gap: 3px !important;
+        position: relative !important; color: #8b9bb0 !important; transform: none !important;
+        min-width: 0 !important; width: 100% !important;
       }
       .kth-bnav button.active { background: rgba(20, 184, 166, 0.08) !important; }
       .kth-nav-pill {
@@ -142,40 +122,51 @@
         display: flex; align-items: center; justify-content: center; border: 1.5px solid #0b1016;
       }
 
-      /* === 3. የጎን ሜኑ ፕሪሚየም SVG ረድፎች === */
+      /* === 2. ሙሉ ስክሪን Focus Mode (በቆጠራ እና በኮራ ሠንጠረዥ ላይ የታች ዳሰሳ ይጠፋል!) === */
+      html body.kth-focus-tally .kth-bnav,
+      html body.kth-focus-grid .kth-bnav {
+        display: none !important;
+      }
+      html body.kth-focus-tally.ktp-active .viewport {
+        height: calc(100dvh - var(--kth-top-h, 46px)) !important;
+        max-height: calc(100dvh - var(--kth-top-h, 46px)) !important;
+        padding: 4px 8px 10px !important;
+      }
+      html body.kth-focus-tally.ktp-active .ktp-tap {
+        height: 66px !important;
+      }
+      .kth-back-btn {
+        color: #2dd4bf !important;
+        border-color: rgba(20, 184, 166, 0.45) !important;
+        background: rgba(20, 184, 166, 0.12) !important;
+      }
+
+      /* === 3. የጎን ሜኑ ፕሪሚየም SVG + ድግምግሞሽ ማጥፊያ (Specificity Fixed!) === */
       #drawerNav .drawer-item {
-        display: flex !important;
-        align-items: center !important;
-        justify-content: space-between !important;
-        gap: 10px !important;
-        padding: 9px 11px !important;
-        border-radius: 11px !important;
-        font-size: 12.5px !important;
-        font-weight: 700 !important;
-        color: #cbd5e1 !important;
+        display: flex !important; align-items: center !important; justify-content: space-between !important;
+        gap: 10px !important; padding: 9px 11px !important; border-radius: 11px !important;
+        font-size: 12.5px !important; font-weight: 700 !important; color: #cbd5e1 !important;
       }
       #drawerNav .drawer-item.active {
         background: rgba(20, 184, 166, 0.14) !important;
         border: 1px solid rgba(20, 184, 166, 0.45) !important;
         color: #2dd4bf !important;
       }
-      .kth-dr-left {
-        display: inline-flex; align-items: center; gap: 10px; min-width: 0;
+      #drawerNav .drawer-item.kth-dr-hidden,
+      .kth-hide-pdf-btn {
+        display: none !important;
       }
+      .kth-dr-left { display: inline-flex; align-items: center; gap: 10px; min-width: 0; }
       .kth-dr-ico {
         width: 28px; height: 28px; border-radius: 8px;
-        background: rgba(148, 163, 184, 0.08);
-        color: #94a3b8;
-        display: inline-flex; align-items: center; justify-content: center;
-        flex-shrink: 0;
+        background: rgba(148, 163, 184, 0.08); color: #94a3b8;
+        display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
       }
-      #drawerNav .drawer-item.active .kth-dr-ico {
-        background: rgba(20, 184, 166, 0.2);
-        color: #2dd4bf;
-      }
-      .kth-dr-hidden { display: none !important; }
+      #drawerNav .drawer-item.active .kth-dr-ico { background: rgba(20, 184, 166, 0.2); color: #2dd4bf; }
 
-      body:not(.ktp-active) .viewport { padding-bottom: 86px !important; }
+      body:not(.ktp-active):not(.kth-focus-tally):not(.kth-focus-grid) .viewport {
+        padding-bottom: 86px !important;
+      }
     `;
   }
 
@@ -247,7 +238,7 @@
     if (t.includes('ሰራተኞች') || t.includes('ደንበኞች') || t.includes('staff') || t.includes('customer')) return SVG.users;
     if (t.includes('መልዕክት') || t.includes('channel') || t.includes('message')) return SVG.send;
     if (t.includes('ማጽደቂያ') || t.includes('approval')) return SVG.checkSq;
-    if (t.includes('ቅፅ') || t.includes('ቅጽ') || t.includes('form') || t.includes('ፒዲኤፍ')) return SVG.form;
+    if (t.includes('ቅፅ') || t.includes('ቅጽ') || t.includes('form')) return SVG.form;
     if (t.includes('ባክአፕ') || t.includes('backup')) return SVG.db;
     if (t.includes('ቋንቋ') || t.includes('lang')) return SVG.globe;
     return SVG.gear;
@@ -257,83 +248,128 @@
     const nav = document.getElementById('drawerNav');
     if (!nav) return;
 
-    const seenKeys = new Set();
+    let seenLang = false;
     Array.from(nav.querySelectorAll('.drawer-item')).forEach((btn) => {
       const rawTxt = (btn.textContent || '').trim();
       const cleanTxt = stripEmojis(rawTxt);
+      const low = cleanTxt.toLowerCase();
 
-      // 1. ድግምግሞሾችን እና በገጽ ውስጥ ያሉ አላስፈላጊ ታቦችን መደበቅ
-      const isDupLang = btn.hasAttribute('data-ke-lang') || (cleanTxt.includes('ቋንቋ ቀይር') && seenKeys.has('lang'));
-      const isTallyCfg = cleanTxt.includes('የቆጠራ ቅንብር') || cleanTxt.toLowerCase().includes('tally setting');
-      const isPdfStudio = cleanTxt.includes('የፒዲኤፍ ስቱዲዮ') || cleanTxt.toLowerCase().includes('pdf studio');
+      const isLang = low.includes('ቋንቋ') || low.includes('language');
+      const isDupLang = btn.hasAttribute('data-ke-lang') || (isLang && seenLang);
+      const isTallyCfg = cleanTxt.includes('የቆጠራ ቅንብር') || low.includes('tally setting');
+      const isPdfStudio = cleanTxt.includes('ፒዲኤፍ ስቱዲዮ') || cleanTxt.includes('የፒዲኤፍ') || low.includes('pdf studio');
 
       if (isDupLang || isTallyCfg || isPdfStudio) {
         btn.classList.add('kth-dr-hidden');
         return;
       }
-      if (cleanTxt.includes('ቋንቋ ቀይር') || cleanTxt.toLowerCase().includes('language')) seenKeys.add('lang');
+      if (isLang) seenLang = true;
 
       if (btn.dataset.kthDrDone === cleanTxt) return;
       btn.dataset.kthDrDone = cleanTxt;
 
-      // በቀኝ በኩል ባጅ/ፒል ካለ ጠብቆ ማቆየት (ለምሳሌ «እንግሊዝኛ»)
       let rightBadge = '';
       const pill = btn.querySelector('.pill, .badge');
       if (pill) rightBadge = pill.outerHTML;
       const pureLabel = pill ? stripEmojis(rawTxt.replace(pill.textContent, '')) : cleanTxt;
 
-      btn.innerHTML = `
-        <span class="kth-dr-left">
-          <span class="kth-dr-ico">${pickDrawerSvg(pureLabel)}</span>
-          <span>${pureLabel}</span>
-        </span>
-        ${rightBadge}`;
+      btn.innerHTML = `<span class="kth-dr-left"><span class="kth-dr-ico">${pickDrawerSvg(pureLabel)}</span><span>${pureLabel}</span></span>${rightBadge}`;
     });
   }
 
   function upgradeGlobalInlineIcons() {
     const root = document.getElementById('viewRoot');
     if (!root) return;
-    // በዋና ቁልፎች ውስጥ ያሉ ባለቀለም ኢሞጂዎችን ወደ ንጹህ SVG መቀየር
+
+    // በቅንብሮች ገጽ ውስጥ የነበረውን የድሮ «የፒዲኤፍ ስቱዲዮ» ቁልፍ መደበቅ
+    root.querySelectorAll('button').forEach((b) => {
+      const t = (b.textContent || '').trim().toLowerCase();
+      if (t.includes('የፒዲኤፍ ስቱዲዮ') || t.includes('ፒዲኤፍ ስቱዲዮ') || t.includes('pdf studio')) {
+        b.classList.add('kth-hide-pdf-btn');
+      }
+    });
+
     const swaps = [
-      ['🚚', SVG.truckSm],
-      ['⛽', SVG.fuelSm],
-      ['📞', SVG.phoneSm],
-      ['🧭', SVG.navSm],
-      ['✅', SVG.checkSm]
+      ['🚚', SVG.truckSm], ['⛽', SVG.fuelSm], ['📞', SVG.phoneSm],
+      ['🧭', SVG.navSm], ['✅', SVG.checkSm]
     ];
     root.querySelectorAll('button.btn, a.btn').forEach((el) => {
       if (el.dataset.kthBtnIco) return;
       const html = el.innerHTML;
       if (html.includes('<svg')) { el.dataset.kthBtnIco = '1'; return; }
       let next = html;
-      swaps.forEach(([em, svg]) => {
-        if (next.includes(em)) next = next.replaceAll(em, svg);
-      });
+      swaps.forEach(([em, svg]) => { if (next.includes(em)) next = next.replaceAll(em, svg); });
       if (next !== html) {
         el.innerHTML = next;
-        el.style.display = 'inline-flex';
-        el.style.alignItems = 'center';
-        el.style.justifyContent = 'center';
-        el.style.gap = '5px';
+        el.style.display = 'inline-flex'; el.style.alignItems = 'center';
+        el.style.justifyContent = 'center'; el.style.gap = '5px';
       }
       el.dataset.kthBtnIco = '1';
     });
   }
 
-  function upgradeTopbarChrome() {
+  function exitTallyFocus() {
+    tallyHistoryPushed = false;
+    document.body.classList.remove('kth-focus-tally');
+    const target = (lastMainTab && lastMainTab !== 'tally') ? lastMainTab : 'dashboard';
+    if (typeof global.switchMainTab === 'function') global.switchMainTab(target);
+  }
+
+  function syncFocusAndTopbar() {
+    const isTally = typeof state !== 'undefined' && state && state.activeMainTab === 'tally';
+    if (typeof state !== 'undefined' && state && state.activeMainTab && state.activeMainTab !== 'tally' && !String(state.activeMainTab).startsWith('setup:')) {
+      lastMainTab = state.activeMainTab;
+    }
+
+    document.body.classList.toggle('kth-focus-tally', Boolean(isTally));
+
+    // ለሞባይል Swipe-Back (<) የታሪክ ሁኔታ መመዝገብ — አፑ ሳይዘጋ ወደ ቀድሞው ገጽ እንዲመለስ
+    if (isTally && !tallyHistoryPushed) {
+      try { window.history.pushState({ koraFocus: 'tally' }, ''); tallyHistoryPushed = true; } catch {}
+    } else if (!isTally) {
+      tallyHistoryPushed = false;
+    }
+
+    const topbar = document.querySelector('.topbar');
+    if (topbar) {
+      document.documentElement.style.setProperty('--kth-top-h', Math.ceil(topbar.getBoundingClientRect().height) + 'px');
+    }
+
     const row1 = document.querySelector('.topbar .topbar-row');
     if (!row1) return;
+
+    // 1. በቆጠራ ሙሉ ስክሪን ጊዜ ☰ ወደ ← መመለሻ ይቀየራል (0 ተጨማሪ ቦታ!)
     const menuBtn = row1.querySelector('button:first-child');
-    if (menuBtn && !menuBtn.querySelector('svg') && menuBtn.id !== 'keNotifBell' && menuBtn.id !== 'btnNotifBell') {
-      menuBtn.innerHTML = SVG.menu;
+    if (menuBtn && menuBtn.id !== 'keNotifBell' && menuBtn.id !== 'btnNotifBell') {
+      if (isTally) {
+        if (!menuBtn.dataset.kthOrigOnclick) {
+          menuBtn.dataset.kthOrigOnclick = menuBtn.getAttribute('onclick') || '';
+        }
+        menuBtn.innerHTML = SVG.back;
+        menuBtn.classList.add('kth-back-btn');
+        menuBtn.setAttribute('onclick', 'KoraTheme.exitFocus()');
+      } else {
+        menuBtn.classList.remove('kth-back-btn');
+        if (menuBtn.dataset.kthOrigOnclick !== undefined) {
+          if (menuBtn.dataset.kthOrigOnclick) menuBtn.setAttribute('onclick', menuBtn.dataset.kthOrigOnclick);
+          else menuBtn.removeAttribute('onclick');
+          delete menuBtn.dataset.kthOrigOnclick;
+        }
+        if (!menuBtn.querySelector('svg') || menuBtn.innerHTML !== SVG.menu) {
+          menuBtn.innerHTML = SVG.menu;
+        }
+      }
     }
+
+    // 2. 🔔 ደወል SVG
     const bell = document.getElementById('btnNotifBell') || document.getElementById('keNotifBell');
     if (bell && !bell.querySelector('svg')) {
       const bdg = bell.querySelector('.ke-bell-badge, .badge, .notif-badge');
       const dot = bell.querySelector('.ke-net-dot');
       bell.innerHTML = `${SVG.bell}${bdg ? bdg.outerHTML : ''}${dot ? dot.outerHTML : ''}`;
     }
+
+    // 3. አንድ ቅርንጫፍ ብቻ ካለ መምረጫውን መደበቅ
     if (typeof state !== 'undefined' && Array.isArray(state.branches)) {
       const scopeSel = row1.querySelector('.scope-sel, select');
       if (scopeSel) scopeSel.style.display = state.branches.length <= 1 ? 'none' : '';
@@ -342,7 +378,7 @@
 
   function applyAllThemePolishes() {
     injectMatteThemeCss();
-    upgradeTopbarChrome();
+    syncFocusAndTopbar();
     upgradeBottomNav();
     upgradeSideDrawer();
     upgradeGlobalInlineIcons();
@@ -350,6 +386,19 @@
 
   function bootTheme() {
     applyAllThemePolishes();
+
+    if (!global._kthPopHooked) {
+      global._kthPopHooked = true;
+      window.addEventListener('popstate', () => {
+        if (global.KoraGrid && global.KoraGrid.isOpen()) {
+          global.KoraGrid.close(true);
+          return;
+        }
+        if (typeof state !== 'undefined' && state && state.activeMainTab === 'tally') {
+          exitTallyFocus();
+        }
+      });
+    }
 
     if (typeof global.renderView === 'function' && !global._kthRVHooked) {
       global._kthRVHooked = true;
@@ -383,12 +432,15 @@
     if (nav && !nav.dataset.kthObs) {
       nav.dataset.kthObs = '1';
       let t = null;
-      new MutationObserver(() => {
-        clearTimeout(t);
-        t = setTimeout(upgradeBottomNav, 30);
-      }).observe(nav, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
+      new MutationObserver(() => { clearTimeout(t); t = setTimeout(upgradeBottomNav, 30); })
+        .observe(nav, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
     }
   }
+
+  global.KoraTheme = {
+    exitFocus: exitTallyFocus,
+    refresh: applyAllThemePolishes
+  };
 
   document.addEventListener('DOMContentLoaded', bootTheme);
   setTimeout(bootTheme, 150);
