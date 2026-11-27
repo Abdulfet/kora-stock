@@ -1,8 +1,7 @@
 // =============================================================================
-// ኮራ ስቶክ — Enterprise Suite (kora-enterprise.js — v24)
-// • የተስተካከለ የድምፅ ሞተር: የተጫነ ብዛት / የሸክም(ክሊክ) ቁጥር / ሁለቱንም + ሙከራ
-// • 100% የሻርፕ ሜታል ባለ 1-ስክሪን የቆጠራ አቀማመጥ + Self-Healing 🔔 ኖቲፊኬሽን
-// • የቆጠራ ሙዶች (ፎቶ/ጥቅል/ሚዛን/ካሜራ) በ«የቆጠራ ቅንብር» (⚙️) ውስጥ
+// ኮራ ስቶክ — Enterprise Suite (kora-enterprise.js — v26)
+// • ድርብ የቆጠራ ታብ ማስወገጃ + የታችኛው 4 ቁልፎች ሳይሸፈኑ ሙሉ 1-ስክሪን ልኬት
+// • Self-Healing 🔔 ኖቲፊኬሽን ደወል + ንጹህ ላይኛው አሞሌ (ኮራ ስቶክ · ቅርንጫፍ · 🔔)
 // • ዘመናዊ ገበያ (Kora Market) + ትዕዛዞች -> Google-Maps Live Map -> QR መውጫ ፈቃድ -> ተሽከርካሪዎች
 // =============================================================================
 (function (global) {
@@ -40,7 +39,7 @@
   }
 
   // ---------------------------------------------------------------------------
-  // 1. Enterprise & Sharp-Metal 1-Screen Tally CSS
+  // 1. Enterprise & Sharp-Metal 1-Screen Tally CSS (v26)
   // ---------------------------------------------------------------------------
   function injectEnterpriseCss() {
     let st = document.getElementById('koraEntCss');
@@ -73,23 +72,68 @@
       .ke-tool-btn { width: 30px; height: 29px; border-radius: 9px; border: 1px solid var(--border-strong); background: rgba(15, 23, 42, 0.92); color: var(--text); font-size: 14px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
       .ke-tool-btn.locked { background: rgba(239, 68, 68, 0.22); border-color: rgba(239, 68, 68, 0.65); }
 
-      body.ke-tally .topbar { padding: 4px 8px 3px !important; gap: 4px !important; }
-      body.ke-tally #subTabsBar { display: grid !important; grid-template-columns: repeat(4, 1fr) !important; gap: 4px !important; padding: 0 !important; overflow: visible !important; }
-      body.ke-tally #subTabsBar .subtab { width: 100% !important; height: 29px !important; padding: 0 3px !important; font-size: 10.5px !important; font-weight: 800 !important; border-radius: 9px !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; text-align: center !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
-      body.ke-tally .viewport { padding-top: 4px !important; padding-left: 7px !important; padding-right: 7px !important; display: flex !important; flex-direction: column !important; }
-      body.ke-tally #viewRoot { display: flex !important; flex-direction: column !important; gap: 5px !important; width: 100% !important; }
-      body.ke-tally #viewRoot > * { flex-shrink: 0; }
-      body.ke-tally #viewRoot .card { padding: 5px 7px !important; gap: 4px !important; border-radius: 11px !important; margin: 0 !important; }
-      body.ke-tally #viewRoot .sub-card { padding: 4px 6px !important; gap: 4px !important; margin: 0 !important; }
-      body.ke-tally #viewRoot .inp, body.ke-tally #viewRoot .sel { height: 28px !important; font-size: 11.5px !important; padding: 0 7px !important; }
-      body.ke-tally #viewRoot .seg { gap: 4px !important; }
-      body.ke-tally #viewRoot .seg-btn { height: 27px !important; font-size: 11px !important; padding: 0 6px !important; }
-      body.ke-tally #viewRoot .kpi { padding: 4px 2px !important; }
-      body.ke-tally #viewRoot .kpi-lbl { font-size: 9.5px !important; }
-      body.ke-tally #viewRoot .kpi-val { font-size: 16px !important; line-height: 1.15 !important; }
-      body.ke-tally .ke-board-grow { flex: 1 1 auto !important; min-height: 170px !important; display: flex !important; flex-direction: column !important; justify-content: space-between !important; }
-      body.ke-tally .ke-board-grow > .ke-round-center { margin-top: auto !important; margin-bottom: auto !important; }
-      body.ke-tally .ke-dock-flush, body.ke-tally .tally-sticky-dock { position: static !important; bottom: auto !important; margin-top: 0 !important; padding: 1px 0 0 !important; gap: 4px !important; flex-shrink: 0 !important; }
+      /* === v26 FIX 1: KoraTallyPro ሲሠራ ድርብ የሆነውን የላይኛው ታብ መስመር ሙሉ ለሙሉ መደበቅ === */
+      html body.ke-tally.ktp-active .ke-sub-wrap { display: none !important; }
+      html body.ke-tally.ktp-active .topbar { padding: 4px 8px !important; gap: 0 !important; }
+
+      /* === v26 FIX 2: የታችኛው +ቁጠር እና 4ቱ ቁልፎች ከዳሰሳው በላይ 100% እንዲታዩ === */
+      html body.ke-tally.ktp-active .viewport {
+        height: var(--ke-tally-h, calc(100dvh - 118px)) !important;
+        max-height: var(--ke-tally-h, calc(100dvh - 118px)) !important;
+        padding: 4px 7px 6px !important;
+        overflow: hidden !important;
+        display: flex !important;
+        flex-direction: column !important;
+        box-sizing: border-box !important;
+      }
+      html body.ke-tally.ktp-active #viewRoot {
+        flex: 1 1 0% !important;
+        height: 100% !important;
+        min-height: 0 !important;
+        max-height: 100% !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 0 !important;
+      }
+      html body.ke-tally.ktp-active .ktp-shell {
+        flex: 1 1 0% !important;
+        min-height: 0 !important;
+        height: 100% !important;
+        gap: 5px !important;
+      }
+      html body.ke-tally.ktp-active .ktp-board {
+        flex: 1 1 0% !important;
+        min-height: 0 !important;
+      }
+      html body.ke-tally.ktp-active .ktp-cell {
+        height: 39px !important;
+        font-size: 13px !important;
+      }
+      html body.ke-tally.ktp-active .ktp-kpi b {
+        font-size: 17px !important;
+      }
+      html body.ke-tally.ktp-active .ktp-tap {
+        height: 48px !important;
+      }
+      html body.ke-tally.ktp-active .ktp-act {
+        height: 36px !important;
+      }
+
+      /* === Fallback: KoraTallyPro በሌለበት ሁኔታ (ነባሩ ቆጠራ) === */
+      body.ke-tally:not(.ktp-active) .topbar { padding: 4px 8px 3px !important; gap: 4px !important; }
+      body.ke-tally:not(.ktp-active) #subTabsBar { display: grid !important; grid-template-columns: repeat(4, 1fr) !important; gap: 4px !important; padding: 0 !important; overflow: visible !important; }
+      body.ke-tally:not(.ktp-active) #subTabsBar .subtab { width: 100% !important; height: 29px !important; padding: 0 3px !important; font-size: 10.5px !important; font-weight: 800 !important; border-radius: 9px !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; text-align: center !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
+      body.ke-tally:not(.ktp-active) .viewport { padding-top: 4px !important; padding-left: 7px !important; padding-right: 7px !important; display: flex !important; flex-direction: column !important; }
+      body.ke-tally:not(.ktp-active) #viewRoot { display: flex !important; flex-direction: column !important; gap: 5px !important; width: 100% !important; }
+      body.ke-tally:not(.ktp-active) #viewRoot > * { flex-shrink: 0; }
+      body.ke-tally:not(.ktp-active) #viewRoot .card { padding: 5px 7px !important; gap: 4px !important; border-radius: 11px !important; margin: 0 !important; }
+      body.ke-tally:not(.ktp-active) #viewRoot .sub-card { padding: 4px 6px !important; gap: 4px !important; margin: 0 !important; }
+      body.ke-tally:not(.ktp-active) #viewRoot .inp, body.ke-tally:not(.ktp-active) #viewRoot .sel { height: 28px !important; font-size: 11.5px !important; padding: 0 7px !important; }
+      body.ke-tally:not(.ktp-active) .ke-board-grow { flex: 1 1 auto !important; min-height: 170px !important; display: flex !important; flex-direction: column !important; justify-content: space-between !important; }
+      body.ke-tally:not(.ktp-active) .ke-board-grow > .ke-round-center { margin-top: auto !important; margin-bottom: auto !important; }
+      body.ke-tally:not(.ktp-active) .ke-dock-flush, body.ke-tally:not(.ktp-active) .tally-sticky-dock { position: static !important; bottom: auto !important; margin-top: 0 !important; padding: 1px 0 0 !important; gap: 4px !important; flex-shrink: 0 !important; }
 
       .ke-kpi-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
       .ke-modal-sep { border: 0; border-top: 1px solid var(--border-strong); margin: 7px 0 5px; }
@@ -142,8 +186,7 @@
     if (!state.cfg) state.cfg = {};
     const cfgDefs = {
       tallyPhoto: true, tallyPack: true, tallyWeight: true, tallyCamera: true,
-      voiceReadMode: 'clicks', // qty | clicks | both
-      voiceLang: 'am',         // am | en-US | ar-SA
+      voiceReadMode: 'clicks', voiceLang: 'am',
       marketShowMine: true, marketShowAds: true, mapLayer: 'street'
     };
     Object.keys(cfgDefs).forEach((k) => {
@@ -196,14 +239,12 @@
   }
 
   // ---------------------------------------------------------------------------
-  // 3. ትክክለኛ የሸክም (ክሊክ) ብዛት አንባቢ እና የድምፅ መቆጣጠሪያ (FIXED in v24)
+  // 3. የድምፅ መቆጣጠሪያ (ከKoraTallyPro ጋር እንዳይጋጭ ተስተካክሏል)
   // ---------------------------------------------------------------------------
   function getExactActiveLoadClicks(rawSpokenQty) {
     if (!hasState()) return 0;
     const t = state.tally || {};
     const sub = state.activeSubTab?.tally || 'tickets';
-
-    // ዘዴ 1: በቀጥታ ከ state.tally የstrokes/loads ድርድር ርዝመት ማንበብ
     try {
       let strokes = null;
       if (sub === 'tickets' && Array.isArray(t.tickets)) {
@@ -212,88 +253,40 @@
           const it = tk.items.find((x) => String(x.itemId) === String(tk.activeItemId)) || tk.items[tk.activeItemIdx || 0] || tk.items[0];
           strokes = it?.strokes || it?.loads || it?.hits || null;
         }
-      } else if (sub === 'free' && t.free) {
-        strokes = t.free.strokes || t.free.loads || t.free.hits || null;
-      } else if (sub === 'audit' && t.audit) {
-        strokes = t.audit.strokes || t.audit.loads || t.audit.hits || null;
-      }
+      } else if (sub === 'free' && t.free) strokes = t.free.strokes || t.free.loads || null;
+      else if (sub === 'audit' && t.audit) strokes = t.audit.strokes || t.audit.loads || null;
       if (Array.isArray(strokes) && strokes.length > 0) return strokes.length;
     } catch {}
-
-    // ዘዴ 2: በስክሪኑ ላይ «ሸክም» ወይም «Loads» የሚለውን ሳጥን መፈለግ
     try {
-      const root = document.getElementById('viewRoot');
-      if (root) {
-        const boxes = root.querySelectorAll('div, span');
-        for (const el of boxes) {
-          if (el.children.length > 3) continue;
-          const txt = (el.textContent || '').trim();
-          if (/^(ሸክም|loads?)\s*\d+/i.test(txt) && !/ቀሪ|rem|በአንድ|per/i.test(txt)) {
-            const m = txt.match(/(\d[\d,]*)/);
-            if (m) {
-              const val = Number(m[1].replace(/,/g, ''));
-              if (val > 0) return val;
-            }
-          }
-        }
-      }
-    } catch {}
-
-    // ዘዴ 3: ከተመረጠው የአንድ ሸክም መጠን (1 = 5 / 1 = 10) ማካፈል
-    try {
-      let step = Number(t.loadSize || t.step || t.perLoad || 0);
+      let step = Number(t.loadSize || t.step || 0);
       if (!(step > 0)) {
-        const txt = document.getElementById('viewRoot')?.textContent || '';
-        const m = txt.match(/1\s*=\s*(\d+)/);
+        const m = (document.getElementById('viewRoot')?.textContent || '').match(/1\s*=\s*(\d+)/);
         if (m) step = Number(m[1]);
       }
-      if (step > 0 && rawSpokenQty > 0) {
-        return Math.max(1, Math.round(rawSpokenQty / step));
-      }
+      if (step > 0 && rawSpokenQty > 0) return Math.max(1, Math.round(rawSpokenQty / step));
     } catch {}
-
     return 0;
   }
 
   function formatVoicePhrase(totalQty, clicksNum, mode, lang) {
     const val = (mode === 'clicks' && clicksNum > 0) ? clicksNum : totalQty;
     const vs = ('speechSynthesis' in global) ? (global.speechSynthesis.getVoices() || []) : [];
-
     if (lang === 'am') {
       const amV = vs.find((v) => (v.lang || '').toLowerCase().startsWith('am'));
-      if (amV) {
-        return {
-          voice: amV,
-          lang: 'am-ET',
-          text: (mode === 'both' && clicksNum > 0) ? `ሸክም ${clicksNum}፣ ${totalQty}` : String(val)
-        };
-      }
-      return {
-        voice: null,
-        lang: 'en-US',
-        text: (mode === 'both' && clicksNum > 0)
-          ? `shekim ${numToAmPhonetic(clicksNum)}, ${numToAmPhonetic(totalQty)}`
-          : numToAmPhonetic(val)
-      };
+      if (amV) return { voice: amV, lang: 'am-ET', text: (mode === 'both' && clicksNum > 0) ? `ሸክም ${clicksNum}፣ ${totalQty}` : String(val) };
+      return { voice: null, lang: 'en-US', text: (mode === 'both' && clicksNum > 0) ? `shekim ${numToAmPhonetic(clicksNum)}, ${numToAmPhonetic(totalQty)}` : numToAmPhonetic(val) };
     }
-
-    const langPrefix = lang.slice(0, 2).toLowerCase();
-    const matchV = vs.find((v) => (v.lang || '').toLowerCase().startsWith(langPrefix)) || null;
-    return {
-      voice: matchV,
-      lang,
-      text: (mode === 'both' && clicksNum > 0) ? `Load ${clicksNum}, ${totalQty}` : String(val)
-    };
+    const matchV = vs.find((v) => (v.lang || '').toLowerCase().startsWith(lang.slice(0, 2).toLowerCase())) || null;
+    return { voice: matchV, lang, text: (mode === 'both' && clicksNum > 0) ? `Load ${clicksNum}, ${totalQty}` : String(val) };
   }
 
   function installVoiceInterceptor() {
     if (!('speechSynthesis' in global)) return;
-    if (!global._keOrigSpeak) {
-      global._keOrigSpeak = global.speechSynthesis.speak.bind(global.speechSynthesis);
-    }
+    if (!global._keOrigSpeak) global._keOrigSpeak = global.speechSynthesis.speak.bind(global.speechSynthesis);
     global.speechSynthesis.speak = function (utt) {
       try {
-        if (hasState() && state.activeMainTab === 'tally' && utt && utt.text && !utt._keBypass) {
+        // KoraTallyPro ሲሠራ የራሱን የድምፅ ስቱዲዮና ቅንብር ስለሚጠቀም አንጋፋበትም
+        if (hasState() && state.activeMainTab === 'tally' && !document.body.classList.contains('ktp-active') && utt && utt.text && !utt._keBypass) {
           ensureEntState();
           const mode = state.cfg.voiceReadMode || 'clicks';
           const lang = state.cfg.voiceLang || 'am';
@@ -314,9 +307,7 @@
   function testVoiceSample() {
     if (!('speechSynthesis' in global)) { showToast(L('ድምፅ አይደገፍም', 'Speech unsupported'), true); return; }
     ensureEntState();
-    const mode = state.cfg.voiceReadMode || 'clicks';
-    const lang = state.cfg.voiceLang || 'am';
-    const built = formatVoicePhrase(20, 4, mode, lang);
+    const built = formatVoicePhrase(20, 4, state.cfg.voiceReadMode || 'clicks', state.cfg.voiceLang || 'am');
     global.speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(built.text);
     u._keBypass = true;
@@ -326,7 +317,7 @@
   }
 
   // ---------------------------------------------------------------------------
-  // 4. Self-Healing Topbar + 🔔 Notification Bell + Sharp Metal 1-Screen Tally
+  // 4. Self-Healing Topbar + 🔔 Notification Bell + 1-Screen Tally Measure
   // ---------------------------------------------------------------------------
   let capturedNotifBtns = [];
   let cachedRealLockBtn = null;
@@ -452,6 +443,11 @@
   }
 
   function measureBottomNav() {
+    const direct = document.querySelector('.bnav, .bottom-nav, #bottomNav, nav.nav, nav[class*="bottom" i]');
+    if (direct) {
+      const r = direct.getBoundingClientRect();
+      if (r.height >= 40 && r.top > window.innerHeight * 0.6) return { navEl: direct, navTop: r.top };
+    }
     let navEl = null, navTop = window.innerHeight;
     const sels = 'nav, footer, [id*="nav" i], [id*="tab" i], [class*="nav" i], [class*="tabbar" i], [class*="bottom" i]';
     document.querySelectorAll(sels).forEach((el) => {
@@ -459,11 +455,11 @@
       const cs = getComputedStyle(el);
       if (cs.display === 'none' || cs.visibility === 'hidden') return;
       const r = el.getBoundingClientRect();
-      if (r.height >= 42 && r.height <= 115 && r.bottom >= window.innerHeight - 28 && r.top > window.innerHeight * 0.65 && r.width > window.innerWidth * 0.6) {
+      if (r.height >= 42 && r.height <= 120 && r.bottom >= window.innerHeight - 36 && r.top > window.innerHeight * 0.65 && r.width > window.innerWidth * 0.6) {
         if (r.top < navTop) { navTop = r.top; navEl = el; }
       }
     });
-    return { navEl, navTop: navEl ? navTop : window.innerHeight - 72 };
+    return { navEl, navTop: navEl ? navTop : window.innerHeight - 78 };
   }
 
   function applyTallyLayoutAndModes() {
@@ -473,13 +469,29 @@
     const root = document.getElementById('viewRoot');
     if (!hasState() || state.activeMainTab !== 'tally') {
       document.body.classList.remove('ke-tally');
+      document.documentElement.style.removeProperty('--ke-tally-h');
       if (vp) vp.style.paddingBottom = '';
       if (root) root.style.minHeight = '';
       return;
     }
+
+    // መጀመሪያ ክላሱን መጨመር — ድርቡ ታብ ወዲያውኑ ስለሚደበቅ ትክክለኛው vpRect.top ይለካል!
     document.body.classList.add('ke-tally');
     if (!root || !vp) return;
 
+    const { navTop } = measureBottomNav();
+    const vpRect = vp.getBoundingClientRect();
+
+    // KoraTallyPro ንቁ ከሆነ ትክክለኛውን የ1-ስክሪን ቁመት ብቻ መስጠት (ከታችኛው ዳሰሳ 4px በላይ!)
+    if (document.body.classList.contains('ktp-active')) {
+      const exactH = Math.max(360, Math.floor(navTop - vpRect.top - 4));
+      document.documentElement.style.setProperty('--ke-tally-h', exactH + 'px');
+      root.style.minHeight = '';
+      vp.style.paddingBottom = '';
+      return;
+    }
+
+    // Fallback: KoraTallyPro ከሌለ ለነባሩ ቆጠራ
     const modeMap = [
       { flag: 'tallyPhoto',  keys: ['ፎቶ', 'photo'] },
       { flag: 'tallyPack',   keys: ['ጥቅል', 'pack'] },
@@ -527,11 +539,8 @@
       topLock.classList.toggle('locked', cachedRealLockBtn.classList.contains('locked'));
     }
 
-    const { navTop } = measureBottomNav();
-    const vpRect = vp.getBoundingClientRect();
     const overlap = Math.max(0, Math.ceil(vpRect.bottom - navTop));
     vp.style.paddingBottom = (overlap > 0 ? overlap + 8 : 6) + 'px';
-
     if (state.activeSubTab?.tally === 'history') { root.style.minHeight = ''; return; }
     root.style.minHeight = Math.max(320, Math.floor(navTop - vpRect.top - 10)) + 'px';
 
@@ -541,7 +550,6 @@
       container.style.display = 'flex'; container.style.flexDirection = 'column';
       container.style.flex = '1 1 auto'; container.style.gap = '4px';
     }
-
     let dockEl = null, boardEl = null;
     Array.from(container.children).forEach((el) => {
       if (el.classList.contains('ke-hidden-el')) return;
@@ -551,7 +559,6 @@
       if (el.classList.contains('tally-sticky-dock') || (/(መልስ|undo)/i.test(txt) && /(አጽዳ|clear)/i.test(txt))) dockEl = el;
       else if (/(×10|0\/10|10\s*\(|ቆጠራው ተቆልፏል|tally paused|ለመቁጠር ዝግጁ|የተቆጠረ|የተጫነ|counted)/i.test(txt) && !(/\+15/.test(txt) && /\+20/.test(txt))) boardEl = el;
     });
-
     if (dockEl) dockEl.classList.add('ke-dock-flush');
     if (boardEl) {
       boardEl.classList.add('ke-board-grow');
@@ -563,7 +570,7 @@
   }
 
   function injectIntoTallySettingsModal() {
-    if (!hasState()) return;
+    if (!hasState() || document.body.classList.contains('ktp-active')) return;
     ensureEntState();
     const modal = document.querySelector('#modalOverlay.open, .modal-bg.open, .modal-backdrop.open, #modalCard, .modal-card, .modal');
     if (!modal) return;
@@ -1223,6 +1230,7 @@
       if (typeof _origRV === 'function') _origRV();
       applyTallyLayoutAndModes();
       requestAnimationFrame(applyTallyLayoutAndModes);
+      setTimeout(applyTallyLayoutAndModes, 120);
     };
 
     window.addEventListener('resize', () => {

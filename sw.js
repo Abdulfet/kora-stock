@@ -1,8 +1,8 @@
 // =============================================================================
-// ኮራ ስቶክ — የኦፍላይን መሸጎጫ (sw.js — v25)
+// ኮራ ስቶክ — የኦፍላይን መሸጎጫ (sw.js — v26)
 // =============================================================================
-const SHELL_CACHE = 'korastock-shell-v25';
-const CDN_CACHE = 'korastock-cdn-v25';
+const SHELL_CACHE = 'korastock-shell-v26';
+const CDN_CACHE = 'korastock-cdn-v26';
 
 const SHELL_ASSETS = [
   './',
