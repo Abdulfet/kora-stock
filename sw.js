@@ -90,4 +90,3 @@ self.addEventListener('fetch', (event) => {
       .catch(() => caches.match(req).then((cached) => cached || caches.match('./index.html')))
   );
 });
-v25
