@@ -1,8 +1,8 @@
 // =============================================================================
-// ኮራ ስቶክ — የኦፍላይን መሸጎጫ (sw.js — v27)
+// ኮራ ስቶክ — የኦፍላይን መሸጎጫ (sw.js — v28)
 // =============================================================================
-const SHELL_CACHE = 'korastock-shell-v27';
-const CDN_CACHE = 'korastock-cdn-v27';
+const SHELL_CACHE = 'korastock-shell-v28';
+const CDN_CACHE = 'korastock-cdn-v28';
 
 const SHELL_ASSETS = [
   './',
@@ -16,7 +16,8 @@ const SHELL_ASSETS = [
   './kora-enterprise.js',
   './kora-erp-guard.js',
   './kora-nextgen.js',
-  './kora-theme-pro.js'
+  './kora-theme-pro.js',
+  './kora-sheets-forms.js'
 ];
 
 self.addEventListener('install', (event) => {
