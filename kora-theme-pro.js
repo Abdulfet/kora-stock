@@ -1,11 +1,11 @@
 // =============================================================================
-// ኮራ ስቶክ — Unified UI, 2x2 Dashboard, Swipe-Exit, Kora Live Grid & Form Builder
-// (kora-theme-pro.js — v30)
+// ኮራ ስቶክ — Unified Theme (Light/Dark/Auto), Privacy Mode, Pure Amharic Menu,
+// 2x2 Dashboard, Swipe-Exit, Kora Live Grid 2.0 (No-Code Columns/Formulas) & Forms
+// (kora-theme-pro.js — v31)
 // =============================================================================
 (function (global) {
   'use strict';
 
-  // ከድሮው kora-sheets-forms.js ጋር ግጭት እንዳይኖር አስቀድሞ መዝጋት
   global._kgHooksDone = true;
   global._ksfHooksDone = true;
 
@@ -26,6 +26,9 @@
     menu: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h12"/></svg>',
     back: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>',
     bell: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>',
+    eye: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>',
+    eyeOff: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-6.5 0-10-7-10-7a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c6.5 0 10 7 10 7a18.5 18.5 0 0 1-2.16 3.19"/><line x1="2" y1="2" x2="22" y2="22"/></svg>',
+    sunMoon: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>',
     undo: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>',
     search: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>',
     dots: '<svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg>',
@@ -37,6 +40,11 @@
     fill: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m19 11-8-8-8.6 8.6a2 2 0 0 0 0 2.8l5.2 5.2a2 2 0 0 0 2.8 0L19 11Z"/><path d="m5 2 5 5M2 13h15"/></svg>',
     plus: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
     trash: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>',
+    cols: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16M15 4v16"/></svg>',
+    print: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>',
+    imgSm: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>',
+    docSm: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></svg>',
+    gridSm: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg>',
     sparkles: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 3v4M21 5h-4"/></svg>',
     shield: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
     box: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5M12 22V12"/></svg>',
@@ -69,20 +77,30 @@
   let selectedColKey = null;
   let styleUndoStack = [];
   let gridHistoryPushed = false;
+  let collapsedCats = {};
 
   const TEXT_PALETTE = ['', '#f1f5f9', '#2dd4bf', '#38bdf8', '#fbbf24', '#fb7185', '#a3e635', '#0f172a'];
   const FILL_PALETTE = ['', 'rgba(20,184,166,0.16)', 'rgba(56,189,248,0.16)', 'rgba(245,158,11,0.18)', 'rgba(244,63,94,0.18)', 'rgba(148,163,184,0.14)'];
 
   function defaultGridStyle() {
-    return { theme: 'dark', fontSize: 12, bold: false, italic: false, align: 'auto', rowPad: 6, wrap: false, hideZero: false, paper: 'A4', colWidths: {}, colStyles: {} };
+    return { theme: 'auto', fontSize: 12, bold: false, italic: false, align: 'auto', rowPad: 6, wrap: false, hideZero: false, paper: 'A4', colWidths: {}, colStyles: {} };
   }
 
-  function ensureGridState() {
+  function ensureUiState() {
     if (!hasState()) return;
+    if (!state.uiTheme) state.uiTheme = 'dark'; // dark | light | auto
+    if (state.privacyBlur === undefined) state.privacyBlur = false;
     if (!state.koraGrid) state.koraGrid = { stockTab: 'daily', finTab: 'cashflow', date: todayIso() };
     state.koraGridStyle = Object.assign(defaultGridStyle(), state.koraGridStyle || {});
     if (!state.koraGridStyle.colWidths) state.koraGridStyle.colWidths = {};
     if (!state.koraGridStyle.colStyles) state.koraGridStyle.colStyles = {};
+    if (!state.koraGridCols) state.koraGridCols = { stock: [], finance: [] };
+    if (!Array.isArray(state.koraGridCols.stock)) state.koraGridCols.stock = [];
+    if (!Array.isArray(state.koraGridCols.finance)) state.koraGridCols.finance = [];
+    if (!state.koraGridHidden) state.koraGridHidden = { stock: [], finance: [] };
+    if (!state.koraGridCellData) state.koraGridCellData = {};
+    if (!Array.isArray(state.koraGridViews)) state.koraGridViews = [];
+
     if (!state.customForms || typeof state.customForms !== 'object') {
       state.customForms = { sales: [], warehouse: [], purchase: [], customer: [], dispatch: [] };
     }
@@ -92,8 +110,23 @@
     if (!state.customFormTab) state.customFormTab = 'sales';
   }
 
+  function resolveLightMode() {
+    const mode = (hasState() && state.uiTheme) || 'dark';
+    if (mode === 'light') return true;
+    if (mode === 'auto') return Boolean(window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches);
+    return false;
+  }
+
+  function applyThemeClasses() {
+    ensureUiState();
+    const isLight = resolveLightMode();
+    document.documentElement.classList.toggle('kth-light', isLight);
+    document.body.classList.toggle('kth-light', isLight);
+    document.body.classList.toggle('kth-privacy', Boolean(hasState() && state.privacyBlur));
+  }
+
   // ---------------------------------------------------------------------------
-  // 1. Unified CSS (Matte Obsidian + 2x2 Dashboard + Swipe Hint + Kora Live Grid)
+  // 1. Unified CSS (Dark + Daylight Light + Privacy + White Receipt Fix + Grid 2.0)
   // ---------------------------------------------------------------------------
   function injectUnifiedCss() {
     let st = document.getElementById('koraMatteThemeCss');
@@ -103,6 +136,7 @@
       document.head.appendChild(st);
     }
     st.textContent = `
+      /* === 1. DARK MODE (Matte Obsidian) === */
       :root {
         --bg: #070a0e !important; --bg-deep: #05080b !important;
         --surface: #0d1218 !important; --surface-deep: #090d12 !important;
@@ -114,54 +148,92 @@
         --rose: #f43f5e !important; --text: #f1f5f9 !important; --muted: #8b9bb0 !important;
       }
 
-      html, body { background: #070a0e !important; color: #f1f5f9 !important; }
-      .topbar { background: rgba(7, 10, 14, 0.94) !important; backdrop-filter: blur(12px) !important; border-bottom: 1px solid rgba(148, 163, 184, 0.10) !important; }
-      .card { background: #10161d !important; border: 1px solid rgba(148, 163, 184, 0.13) !important; box-shadow: none !important; }
-      .sub-card { background: #0b1015 !important; border: 1px solid rgba(148, 163, 184, 0.10) !important; }
-      .kpi { background: #0c1117 !important; border: 1px solid rgba(148, 163, 184, 0.12) !important; }
-      .inp, .sel, .search-wrap, .scope-sel { background: #0b1015 !important; border-color: rgba(148, 163, 184, 0.16) !important; color: #f1f5f9 !important; }
-      .subtab { background: #0d1218 !important; border: 1px solid rgba(148, 163, 184, 0.14) !important; color: #8b9bb0 !important; }
-      .subtab.active { background: rgba(20, 184, 166, 0.16) !important; border-color: rgba(20, 184, 166, 0.65) !important; color: #2dd4bf !important; }
-      .modal-card, #modalCard, .drawer, .drawer-panel { background: #0d1218 !important; border-color: rgba(148, 163, 184, 0.18) !important; }
-      .topbar .icon-btn, .ke-bell-btn { background: #0d1218 !important; border: 1px solid rgba(148, 163, 184, 0.16) !important; color: #cbd5e1 !important; border-radius: 11px !important; }
-      .ke-brand-txt small { display: none !important; }
-      .ke-brand-txt b { font-size: 14px !important; letter-spacing: 0.2px; }
+      /* === 2. DAYLIGHT LIGHT MODE (ንጹህ ብርሃን ገጽታ) === */
+      html.kth-light {
+        --bg: #f1f5f9 !important; --bg-deep: #e2e8f0 !important;
+        --surface: #ffffff !important; --surface-deep: #f8fafc !important;
+        --card: #ffffff !important;
+        --border: rgba(15, 23, 42, 0.10) !important;
+        --border-strong: rgba(15, 23, 42, 0.18) !important;
+        --teal: #0d9488 !important; --primary: #0284c7 !important;
+        --emerald: #059669 !important; --amber: #d97706 !important;
+        --rose: #e11d48 !important; --text: #0f172a !important; --muted: #475569 !important;
+      }
 
-      /* === 2×2 ዳሽቦርድ KPI አቀማመጥ (ግማሽ ስክሪን ይቆጥባል!) === */
+      html, body { background: var(--bg) !important; color: var(--text) !important; }
+      .topbar { background: var(--surface) !important; backdrop-filter: blur(12px) !important; border-bottom: 1px solid var(--border) !important; }
+      .card { background: var(--card) !important; border: 1px solid var(--border) !important; box-shadow: none !important; }
+      .sub-card { background: var(--surface-deep) !important; border: 1px solid var(--border) !important; }
+      .kpi { background: var(--surface) !important; border: 1px solid var(--border) !important; }
+      .inp, .sel, .search-wrap, .scope-sel {
+        background: var(--surface-deep) !important; border-color: var(--border-strong) !important;
+        color: var(--text) !important; line-height: 1.3 !important;
+      }
+      select.sel { min-height: 34px !important; padding-top: 3px !important; padding-bottom: 3px !important; }
+      .subtab { background: var(--surface) !important; border: 1px solid var(--border) !important; color: var(--muted) !important; }
+      .subtab.active { background: rgba(20, 184, 166, 0.16) !important; border-color: var(--teal) !important; color: var(--teal) !important; }
+      .modal-card, #modalCard, .drawer, .drawer-panel { background: var(--surface) !important; border-color: var(--border-strong) !important; color: var(--text) !important; }
+      .topbar .icon-btn, .ke-bell-btn, .kth-eye-btn {
+        background: var(--surface-deep) !important; border: 1px solid var(--border-strong) !important;
+        color: var(--text) !important; border-radius: 11px !important;
+      }
+      .kth-eye-btn {
+        width: 34px !important; height: 32px !important; display: inline-flex !important;
+        align-items: center !important; justify-content: center !important; flex-shrink: 0 !important; cursor: pointer;
+      }
+      .kth-eye-btn.on { background: rgba(245, 158, 11, 0.18) !important; border-color: var(--amber) !important; color: var(--amber) !important; }
+      .ke-brand-txt small { display: none !important; }
+      .ke-brand-txt b { font-size: 14px !important; color: var(--text) !important; }
+
+      /* Light Mode overrides for Tally Pro */
+      html.kth-light .ktp-tab, html.kth-light .ktp-sq, html.kth-light .ktp-cap-main,
+      html.kth-light .ktp-act, html.kth-light .ktp-board, html.kth-light .ktp-cell {
+        background: #ffffff !important; border-color: rgba(15, 23, 42, 0.15) !important; color: #0f172a !important;
+      }
+      html.kth-light .ktp-kpi, html.kth-light .ktp-rbox, html.kth-light .ktp-sp {
+        background: #f1f5f9 !important; border-color: rgba(15, 23, 42, 0.12) !important; color: #0f172a !important;
+      }
+      html.kth-light .ktp-cap-btn { color: #0f172a !important; }
+      html.kth-light .ktp-tap { background: #0d9488 !important; color: #ffffff !important; border-color: #0f766e !important; }
+      html.kth-light .ktp-cell.hit { background: rgba(13, 148, 136, 0.16) !important; color: #0f766e !important; }
+      html.kth-light .btn.muted { background: #e2e8f0 !important; color: #0f172a !important; border-color: #cbd5e1 !important; }
+
+      /* === 3. አስቸኳይ ጥገና: የደረሰኝ ፒዲኤፍ ቅድመ-እይታ ሁልጊዜ ነጭ ወረቀት ላይ ግልጽ ጥቁር ጽሁፍ === */
+      .kth-paper-fix {
+        background: #ffffff !important;
+        color: #0f172a !important;
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 10px !important;
+        padding: 12px !important;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18) !important;
+      }
+      .kth-paper-fix, .kth-paper-fix * {
+        color: #0f172a !important;
+        border-color: #94a3b8 !important;
+      }
+
+      /* === 4. የባለቤት ግላዊነት (Privacy Blur) === */
+      body.kth-privacy .kpi-val,
+      body.kth-privacy .kpi-sub,
+      body.kth-privacy .kth-priv-mask {
+        filter: blur(7px) !important;
+        user-select: none !important;
+        transition: filter 0.15s ease;
+      }
+
+      /* === 5. 2×2 ዳሽቦርድ ካርዶች === */
       .kpi-grid, .stats-grid, .kth-dash-2x2 {
-        display: grid !important;
-        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-        gap: 7px !important;
-        width: 100% !important;
+        display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 7px !important; width: 100% !important;
       }
       .kpi-grid > *, .stats-grid > *, .kth-dash-2x2 > * {
-        min-width: 0 !important;
-        margin: 0 !important;
-        padding: 9px 10px !important;
-        border-radius: 12px !important;
+        min-width: 0 !important; margin: 0 !important; padding: 9px 10px !important; border-radius: 12px !important;
       }
-      .kpi-grid .kpi-lbl, .kth-dash-2x2 .kpi-lbl {
-        font-size: 10px !important;
-        white-space: nowrap !important;
-        overflow: hidden !important;
-        text-overflow: ellipsis !important;
-      }
-      .kpi-grid .kpi-val, .kth-dash-2x2 .kpi-val {
-        font-size: 16.5px !important;
-        line-height: 1.2 !important;
-        white-space: nowrap !important;
-        overflow: hidden !important;
-        text-overflow: ellipsis !important;
-      }
-      .kth-dash-2x2 .kpi-sub, .kpi-grid .kpi-sub {
-        font-size: 9.8px !important;
-        margin-top: 2px !important;
-        white-space: nowrap !important;
-        overflow: hidden !important;
-        text-overflow: ellipsis !important;
-      }
+      .kpi-grid .kpi-lbl, .kth-dash-2x2 .kpi-lbl { font-size: 10px !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
+      .kpi-grid .kpi-val, .kth-dash-2x2 .kpi-val { font-size: 16.5px !important; line-height: 1.2 !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
+      .kth-neg-val { color: var(--rose) !important; }
 
-      /* === ቋሚ ተንሳፋፊ ዳሰሳ === */
+      /* === 6. ቋሚ ተንሳፋፊ ዳሰሳ === */
       .kth-bnav {
         position: fixed !important; left: 10px !important; right: 10px !important; bottom: 8px !important;
         width: auto !important; max-width: none !important; min-width: 0 !important;
@@ -173,20 +245,25 @@
         display: grid !important; grid-template-columns: repeat(5, 1fr) !important;
         align-items: center !important; gap: 2px !important; z-index: 95 !important; box-sizing: border-box !important;
       }
+      html.kth-light .kth-bnav {
+        background: rgba(255, 255, 255, 0.96) !important;
+        border-color: rgba(15, 23, 42, 0.12) !important;
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.14) !important;
+      }
       .kth-bnav button {
         background: transparent !important; border: none !important; box-shadow: none !important;
         border-radius: 18px !important; height: 54px !important; padding: 3px 2px !important; margin: 0 !important;
         display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important;
-        gap: 3px !important; position: relative !important; color: #8b9bb0 !important; transform: none !important; min-width: 0 !important; width: 100% !important;
+        gap: 3px !important; position: relative !important; color: var(--muted) !important; transform: none !important; min-width: 0 !important; width: 100% !important;
       }
       .kth-bnav button.active { background: rgba(20, 184, 166, 0.08) !important; }
-      .kth-nav-pill { width: 46px; height: 30px; border-radius: 15px; display: flex; align-items: center; justify-content: center; color: #8b9bb0; position: relative; transition: all 0.18s ease; }
-      .kth-bnav button.active .kth-nav-pill { background: rgba(6, 182, 212, 0.18); color: #22d3ee; box-shadow: inset 0 0 0 1px rgba(34, 211, 238, 0.28); }
-      .kth-nav-lbl { font-size: 9.8px; font-weight: 700; color: #8b9bb0; line-height: 1.1; white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
-      .kth-bnav button.active .kth-nav-lbl { color: #22d3ee; font-weight: 800; }
-      .kth-nav-bdg { position: absolute; top: -3px; right: 1px; min-width: 15px; height: 15px; padding: 0 4px; border-radius: 99px; background: #f43f5e; color: #fff; font-size: 9px; font-weight: 900; display: flex; align-items: center; justify-content: center; border: 1.5px solid #0b1016; }
+      .kth-nav-pill { width: 46px; height: 30px; border-radius: 15px; display: flex; align-items: center; justify-content: center; color: var(--muted); position: relative; transition: all 0.18s ease; }
+      .kth-bnav button.active .kth-nav-pill { background: rgba(6, 182, 212, 0.18); color: var(--teal); box-shadow: inset 0 0 0 1px rgba(20, 184, 166, 0.35); }
+      .kth-nav-lbl { font-size: 9.8px; font-weight: 700; color: var(--muted); line-height: 1.1; white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+      .kth-bnav button.active .kth-nav-lbl { color: var(--teal); font-weight: 800; }
+      .kth-nav-bdg { position: absolute; top: -3px; right: 1px; min-width: 15px; height: 15px; padding: 0 4px; border-radius: 99px; background: #f43f5e; color: #fff; font-size: 9px; font-weight: 900; display: flex; align-items: center; justify-content: center; border: 1.5px solid var(--surface); }
 
-      /* === ሙሉ ስክሪን Focus Mode (ቆጠራ እና የኮራ ሠንጠረዥ) === */
+      /* === 7. Focus Mode & Swipe Hint === */
       html body.kth-focus-tally .kth-bnav,
       html body.kth-focus-grid .kth-bnav { display: none !important; }
       html body.kth-focus-tally.ktp-active .viewport {
@@ -195,33 +272,30 @@
         padding: 4px 8px 10px !important;
       }
       html body.kth-focus-tally.ktp-active .ktp-tap { height: 66px !important; }
-      .kth-back-btn { color: #2dd4bf !important; border-color: rgba(20, 184, 166, 0.45) !important; background: rgba(20, 184, 166, 0.12) !important; }
+      .kth-back-btn { color: var(--teal) !important; border-color: var(--teal) !important; background: rgba(20, 184, 166, 0.12) !important; }
 
-      /* === በጣት ወደ ጎን መጎተቻ ጠቋሚ (Swipe-Right Feedback Pill) === */
       #kthSwipeHint {
         position: fixed; left: 0; top: 50%; transform: translate(-110%, -50%);
-        z-index: 220; pointer-events: none;
-        height: 42px; padding: 0 14px 0 10px; border-radius: 0 21px 21px 0;
-        background: rgba(20, 184, 166, 0.94); color: #03201d;
-        font-size: 12px; font-weight: 900;
-        display: flex; align-items: center; gap: 6px;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
-        transition: opacity 0.14s ease; opacity: 0;
+        z-index: 220; pointer-events: none; height: 42px; padding: 0 14px 0 10px;
+        border-radius: 0 21px 21px 0; background: rgba(20, 184, 166, 0.94); color: #03201d;
+        font-size: 12px; font-weight: 900; display: flex; align-items: center; gap: 6px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45); transition: opacity 0.14s ease; opacity: 0;
       }
 
-      /* === የጎን ሜኑ SVG እና ድግምግሞሽ ማጥፊያ === */
-      #drawerNav .drawer-item { display: flex !important; align-items: center !important; justify-content: space-between !important; gap: 10px !important; padding: 9px 11px !important; border-radius: 11px !important; font-size: 12.5px !important; font-weight: 700 !important; color: #cbd5e1 !important; }
-      #drawerNav .drawer-item.active { background: rgba(20, 184, 166, 0.14) !important; border: 1px solid rgba(20, 184, 166, 0.45) !important; color: #2dd4bf !important; }
+      /* === 8. የጎን ሜኑ ቅደም ተከተል (Flex Order) እና SVG === */
+      #drawerNav { display: flex !important; flex-direction: column !important; gap: 3px !important; }
+      #drawerNav .drawer-item { display: flex !important; align-items: center !important; justify-content: space-between !important; gap: 10px !important; padding: 9px 11px !important; border-radius: 11px !important; font-size: 12.5px !important; font-weight: 700 !important; color: var(--text) !important; }
+      #drawerNav .drawer-item.active { background: rgba(20, 184, 166, 0.14) !important; border: 1px solid rgba(20, 184, 166, 0.45) !important; color: var(--teal) !important; }
       #drawerNav .drawer-item.kth-dr-hidden, .kth-hide-pdf-btn { display: none !important; }
       .kth-dr-left { display: inline-flex; align-items: center; gap: 10px; min-width: 0; }
-      .kth-dr-ico { width: 28px; height: 28px; border-radius: 8px; background: rgba(148, 163, 184, 0.08); color: #94a3b8; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
-      #drawerNav .drawer-item.active .kth-dr-ico { background: rgba(20, 184, 166, 0.2); color: #2dd4bf; }
+      .kth-dr-ico { width: 28px; height: 28px; border-radius: 8px; background: rgba(148, 163, 184, 0.10); color: var(--muted); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+      #drawerNav .drawer-item.active .kth-dr-ico { background: rgba(20, 184, 166, 0.2); color: var(--teal); }
       body:not(.ktp-active):not(.kth-focus-tally):not(.kth-focus-grid) .viewport { padding-bottom: 86px !important; }
 
-      /* === ሙሉ ስክሪን የኮራ ሠንጠረዥ (Kora Live Grid) === */
+      /* === 9. የኮራ ሠንጠረዥ 2.0 (Kora Live Grid) === */
       .kg-overlay { position: fixed; inset: 0; z-index: 150; display: flex; flex-direction: column; background: #06090d; color: #f1f5f9; font-family: system-ui, -apple-system, sans-serif; }
       .kg-overlay.light { background: #f8fafc; color: #0f172a; }
-      .kg-top { height: 48px; padding: 0 8px; flex-shrink: 0; display: flex; align-items: center; gap: 6px; background: #0b1016; border-bottom: 1px solid rgba(148,163,184,0.16); }
+      .kg-top { height: 48px; padding: 0 8px; flex-shrink: 0; display: flex; align-items: center; gap: 5px; background: #0b1016; border-bottom: 1px solid rgba(148,163,184,0.16); }
       .kg-overlay.light .kg-top { background: #ffffff; border-bottom-color: #cbd5e1; }
       .kg-tbtn { width: 34px; height: 34px; border-radius: 10px; border: none; background: transparent; color: inherit; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; cursor: pointer; }
       .kg-tbtn.on { background: rgba(20,184,166,0.2); color: #2dd4bf; }
@@ -240,6 +314,7 @@
       .kg-tbl tr.kg-letters th { position: sticky; top: 0; z-index: 6; height: 24px; padding: 0 4px; background: #0f161f; color: #64748b; font-size: 10px; font-weight: 800; text-align: center; user-select: none; cursor: pointer; }
       .kg-overlay.light .kg-tbl tr.kg-letters th { background: #e2e8f0; color: #475569; }
       .kg-tbl tr.kg-letters th.col-sel { background: rgba(20,184,166,0.28) !important; color: #2dd4bf !important; border-bottom: 2px solid #14b8a6 !important; }
+      .kg-tbl tr.kg-letters th.kg-addcol { background: rgba(20,184,166,0.16); color: #2dd4bf; font-size: 14px; font-weight: 900; }
       .kg-resizer { position: absolute; top: 0; right: -4px; width: 14px; height: 100%; cursor: col-resize; touch-action: none; z-index: 8; display: flex; align-items: center; justify-content: center; }
       .kg-resizer::after { content: ''; width: 2px; height: 12px; border-radius: 2px; background: rgba(148,163,184,0.38); }
       .kg-tbl tr.kg-letters th.col-sel .kg-resizer::after { background: #2dd4bf; height: 16px; }
@@ -250,8 +325,12 @@
       .kg-tbl tr.kg-letters th.kg-rn { z-index: 9; }
       .kg-tbl tr.kg-heads th.kg-rn { z-index: 8; }
       .kg-tbl td.col-sel { box-shadow: inset 1px 0 0 rgba(20,184,166,0.45), inset -1px 0 0 rgba(20,184,166,0.45); }
-      .kg-tbl tr.kg-cat td { background: rgba(16, 185, 129, 0.22) !important; color: #a7f3d0 !important; font-weight: 900 !important; text-align: left !important; }
+      .kg-tbl td.kg-edit-cell { cursor: text; background: rgba(56,189,248,0.05); }
+      .kg-tbl tr.kg-cat td { background: rgba(16, 185, 129, 0.22) !important; color: #a7f3d0 !important; font-weight: 900 !important; text-align: left !important; cursor: pointer; }
       .kg-overlay.light .kg-tbl tr.kg-cat td { background: #bbf7d0 !important; color: #065f46 !important; }
+      .kg-tbl tr.kg-subtot td { background: rgba(148,163,184,0.09) !important; color: #94a3b8 !important; font-weight: 800 !important; font-size: 10.5px !important; }
+      .kg-overlay.light .kg-tbl tr.kg-subtot td { background: #f1f5f9 !important; color: #334155 !important; }
+      .kg-tbl tr.kg-blank td { height: 14px !important; padding: 0 !important; background: transparent !important; border-left: none !important; border-right: none !important; }
       .kg-tbl tr.kg-in td { background: rgba(16, 185, 129, 0.11); }
       .kg-overlay.light .kg-tbl tr.kg-in td { background: #dcfce7; }
       .kg-tbl tr.kg-void td { background: rgba(239, 68, 68, 0.24) !important; color: #fca5a5 !important; font-weight: 800; }
@@ -277,126 +356,189 @@
       .kg-stab.on { background: rgba(20,184,166,0.22); border-color: #14b8a6; color: #2dd4bf; }
       .kg-overlay.light .kg-stab.on { background: #0f766e; color: #ffffff; border-color: #0f766e; }
 
-      .kg-menu-pop { position: fixed; top: 52px; right: 8px; width: 238px; z-index: 180; background: #101720; border: 1px solid rgba(148,163,184,0.25); border-radius: 14px; padding: 6px; box-shadow: 0 14px 36px rgba(0,0,0,0.65); display: flex; flex-direction: column; gap: 3px; }
+      .kg-menu-pop { position: fixed; top: 52px; right: 8px; width: 246px; max-height: 76vh; overflow-y: auto; z-index: 180; background: #101720; border: 1px solid rgba(148,163,184,0.25); border-radius: 14px; padding: 6px; box-shadow: 0 14px 36px rgba(0,0,0,0.65); display: flex; flex-direction: column; gap: 3px; }
       .kg-overlay.light .kg-menu-pop { background: #ffffff; color: #0f172a; border-color: #cbd5e1; }
-      .kg-mitem { height: 36px; padding: 0 10px; border-radius: 9px; border: none; background: transparent; color: inherit; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: space-between; cursor: pointer; text-align: left; }
+      .kg-mitem { min-height: 35px; padding: 4px 10px; border-radius: 9px; border: none; background: transparent; color: inherit; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: space-between; cursor: pointer; text-align: left; }
       .kg-mitem:active { background: rgba(20,184,166,0.16); }
       .kg-msep { border: 0; border-top: 1px solid rgba(148,163,184,0.16); margin: 3px 0; }
-      .ksf-field-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; background: #080c10; border: 1px solid rgba(148,163,184,0.16); border-radius: 9px; padding: 6px 8px; }
+      .ksf-field-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; background: var(--surface-deep); border: 1px solid var(--border); border-radius: 9px; padding: 6px 8px; }
     `;
   }
 
   // ---------------------------------------------------------------------------
-  // 2. የዳሽቦርድ 4 ካርዶችን ወደ 2×2 መሰብሰብ
+  // 2. የዳሽቦርድ 2×2 + ቀይ ኪሳራ + `-0` ጽዳት + የመልዕክቶች ገጽ ጽዳት
   // ---------------------------------------------------------------------------
-  function enforceDashboard2x2() {
-    if (!hasState() || state.activeMainTab !== 'dashboard') return;
+  function polishDashboardAndPages() {
     const root = document.getElementById('viewRoot');
     if (!root) return;
 
-    // ነባር .kpi-grid / .stats-grid ካለ በቀጥታ 2×2 ማድረግ
-    root.querySelectorAll('.kpi-grid, .stats-grid').forEach((g) => g.classList.add('kth-dash-2x2'));
-
-    // 4ቱ የዳሽቦርድ ካርዶች በቀጥታ በ#viewRoot ውስጥ ተደርድረው ከሆነ በ2×2 wrapper መሰብሰብ
-    if (!root.querySelector('.kth-dash-2x2')) {
-      const kpis = [];
-      for (const ch of Array.from(root.children)) {
-        if (ch.querySelector('table, canvas, select')) break;
-        const txt = (ch.textContent || '').trim();
-        if (ch.classList.contains('kpi') || (ch.classList.contains('card') && txt.length < 95 && /ብር|etb|[\d,]+/i.test(txt))) {
-          kpis.push(ch);
-        } else if (kpis.length >= 2) break;
-      }
-      if (kpis.length >= 2) {
-        const wrap = document.createElement('div');
-        wrap.className = 'kth-dash-2x2';
-        root.insertBefore(wrap, kpis[0]);
-        kpis.forEach((el) => wrap.appendChild(el));
-      }
-    }
-  }
-
-  // ---------------------------------------------------------------------------
-  // 3. እውነተኛ በጣት ወደ ጎን መጎተቻ (In-App Touch Swipe-Right to Exit)
-  // ---------------------------------------------------------------------------
-  function installTouchSwipeExit() {
-    if (global._kthSwipeInstalled) return;
-    global._kthSwipeInstalled = true;
-
-    let hint = document.getElementById('kthSwipeHint');
-    if (!hint) {
-      hint = document.createElement('div');
-      hint.id = 'kthSwipeHint';
-      hint.innerHTML = `${SVG.back}<span>${L('ተመለስ', 'Back')}</span>`;
-      document.body.appendChild(hint);
-    }
-
-    let tracking = false, startX = 0, startY = 0, lastDx = 0;
-
-    function canSwipeNow(target, x) {
-      if (document.querySelector('#modalOverlay.open, .modal-bg.open, .modal-backdrop.open')) return false;
-      if (target && target.closest('#ktpSlide, .kg-resizer, input, select, textarea, .no-scrollbar')) return false;
-
-      if (gridOpen) {
-        const body = document.querySelector('.kg-body');
-        // በሰሌዳው ላይ ከግራ ጠርዝ (<=52px) ወይም ሠንጠረዡ መጀመሪያ ላይ ሲሆን ብቻ ወደ ቀኝ ጎትቶ መውጣት
-        return x <= 52 || !body || body.scrollLeft <= 3;
-      }
-      if (hasState() && (state.activeMainTab === 'tally' || String(state.activeMainTab || '').startsWith('setup:'))) {
-        return true;
-      }
-      return false;
-    }
-
-    document.addEventListener('touchstart', (e) => {
-      if (e.touches.length !== 1) { tracking = false; return; }
-      const t = e.touches[0];
-      if (!canSwipeNow(e.target, t.clientX)) { tracking = false; return; }
-      tracking = true;
-      startX = t.clientX;
-      startY = t.clientY;
-      lastDx = 0;
-    }, { passive: true });
-
-    document.addEventListener('touchmove', (e) => {
-      if (!tracking || e.touches.length !== 1) return;
-      const t = e.touches[0];
-      const dx = t.clientX - startX;
-      const dy = Math.abs(t.clientY - startY);
-      if (dx < 8 || dy > 65 || dy > dx * 0.75) {
-        if (dy > 45 && dx < 28) tracking = false;
-        hint.style.opacity = '0';
-        hint.style.transform = 'translate(-110%, -50%)';
-        lastDx = 0;
-        return;
-      }
-      lastDx = dx;
-      const pct = Math.min(1, dx / 85);
-      hint.style.opacity = String(pct);
-      hint.style.transform = `translate(${Math.round(-110 + pct * 110)}%, -50%)`;
-    }, { passive: true });
-
-    const finishSwipe = () => {
-      if (!tracking) return;
-      tracking = false;
-      hint.style.opacity = '0';
-      hint.style.transform = 'translate(-110%, -50%)';
-      if (lastDx >= 78) {
-        if (navigator.vibrate) navigator.vibrate(16);
-        if (gridOpen) closeGrid();
-        else if (hasState() && (state.activeMainTab === 'tally' || String(state.activeMainTab || '').startsWith('setup:'))) {
-          exitFocusScreen();
+    if (hasState() && state.activeMainTab === 'dashboard') {
+      root.querySelectorAll('.kpi-grid, .stats-grid').forEach((g) => g.classList.add('kth-dash-2x2'));
+      if (!root.querySelector('.kth-dash-2x2')) {
+        const kpis = [];
+        for (const ch of Array.from(root.children)) {
+          if (ch.querySelector('table, canvas, select')) break;
+          const txt = (ch.textContent || '').trim();
+          if (ch.classList.contains('kpi') || (ch.classList.contains('card') && txt.length < 95 && /ብር|etb|[\d,]+/i.test(txt))) kpis.push(ch);
+          else if (kpis.length >= 2) break;
+        }
+        if (kpis.length >= 2) {
+          const wrap = document.createElement('div');
+          wrap.className = 'kth-dash-2x2';
+          root.insertBefore(wrap, kpis[0]);
+          kpis.forEach((el) => wrap.appendChild(el));
         }
       }
-      lastDx = 0;
-    };
+      // አሉታዊ ትርፍ በቀይ እና -0/+0 ጽዳት
+      root.querySelectorAll('.kpi-val').forEach((v) => {
+        if ((v.textContent || '').trim().startsWith('-')) v.classList.add('kth-neg-val');
+      });
+      root.querySelectorAll('table td').forEach((td) => {
+        const t = (td.textContent || '').trim();
+        if (t === '-0' || t === '+0') td.textContent = '0';
+        if (/ብር|etb/i.test(t)) td.classList.add('kth-priv-mask');
+      });
+    }
 
-    document.addEventListener('touchend', finishSwipe, { passive: true });
-    document.addEventListener('touchcancel', finishSwipe, { passive: true });
+    // በሽያጭ ካርድ ላይ ትርፍ (+2,000 ብር) በግላዊነት ሞድ እንዲደበቅ
+    if (hasState() && (state.activeMainTab === 'trade' || state.activeMainTab === 'sales')) {
+      root.querySelectorAll('.pill, .badge').forEach((p) => {
+        if (/^\+[\d,]+\s*(ብር|etb)/i.test((p.textContent || '').trim())) p.classList.add('kth-priv-mask');
+      });
+    }
+
+    // የድሮ «የፒዲኤፍ ስቱዲዮ» ቁልፍን መደበቅ + የአማርኛ ንጽህና + ኢሞጂ ➔ SVG
+    root.querySelectorAll('button, a.btn, .pill').forEach((b) => {
+      const t = (b.textContent || '').trim();
+      const low = t.toLowerCase();
+      if (low.includes('ፒዲኤፍ ስቱዲዮ') || low.includes('pdf studio')) { b.classList.add('kth-hide-pdf-btn'); return; }
+      if (isAm()) {
+        if (b.innerHTML.includes('(OTP)')) b.innerHTML = b.innerHTML.replace('(OTP)', '');
+        if (b.innerHTML.includes('(POD)')) b.innerHTML = b.innerHTML.replace('(POD)', '');
+        if (b.innerHTML.includes('Google Maps አቅጣጫ')) b.innerHTML = b.innerHTML.replace('Google Maps አቅጣጫ', 'የመንገድ አቅጣጫ');
+      }
+    });
+
+    const swaps = [
+      ['🚚', SVG.truckSm], ['⛽', SVG.fuelSm], ['📞', SVG.phoneSm], ['🧭', SVG.navSm],
+      ['✅', SVG.checkSm], ['🖨️', SVG.print], ['🖼️', SVG.imgSm], ['📄', SVG.docSm], ['📊', SVG.gridSm]
+    ];
+    root.querySelectorAll('button, a.btn').forEach((el) => {
+      if (el.dataset.kthBtnIco) return;
+      const html = el.innerHTML;
+      if (!html.includes('<svg')) {
+        let next = html;
+        swaps.forEach(([em, svg]) => { if (next.includes(em)) next = next.replaceAll(em, svg); });
+        if (next !== html) { el.innerHTML = next; el.style.cssText += ';display:inline-flex;align-items:center;justify-content:center;gap:5px;'; }
+      }
+      el.dataset.kthBtnIco = '1';
+    });
   }
 
   // ---------------------------------------------------------------------------
-  // 4. ሙሉ ስክሪን የኮራ ሠንጠረዥ (ለክምችት እና ሂሳብ)
+  // 3. የደረሰኝ ፒዲኤፍ ቅድመ-እይታ ነጭ ወረቀት ጥገና + ተለዋዋጭ የቅፅ ገንቢ
+  // ---------------------------------------------------------------------------
+  const FORM_MODS = [
+    { k: 'sales', am: 'ሽያጭ', en: 'Sales' }, { k: 'warehouse', am: 'መጋዘን', en: 'Warehouse' },
+    { k: 'purchase', am: 'ግዢ', en: 'Purchase' }, { k: 'customer', am: 'ደንበኛ', en: 'Customer' },
+    { k: 'dispatch', am: 'ማጓጓዣ', en: 'Dispatch' }
+  ];
+  const F_TYPES = [
+    { k: 'text', am: 'ጽሁፍ', en: 'Text' }, { k: 'number', am: 'ቁጥር', en: 'Number' },
+    { k: 'select', am: 'ምርጫ', en: 'Dropdown' }, { k: 'date', am: 'ቀን', en: 'Date' },
+    { k: 'toggle', am: 'አዎ/አይ', en: 'Yes/No' }
+  ];
+
+  function buildFormBuilderHtml() {
+    ensureUiState();
+    const mod = state.customFormTab || 'sales';
+    const list = state.customForms[mod] || [];
+    return `
+      <div class="card-row" style="margin-bottom:5px;">
+        <b style="font-size:11.5px;color:var(--teal);">${sEsc(L('የድርጅቱ ተጨማሪ መስኮች', 'Custom Organization Fields'))}</b>
+        <button type="button" class="btn teal sm" style="height:26px;font-size:10.5px;display:inline-flex;align-items:center;gap:3px;" onclick="KoraGrid.openAddField()">${SVG.plus} ${sEsc(L('አዲስ መስክ', 'Add Field'))}</button>
+      </div>
+      <div class="subtabs no-scrollbar" style="margin-bottom:6px;">
+        ${FORM_MODS.map((m) => `<button type="button" class="subtab ${mod === m.k ? 'active' : ''}" style="height:25px;font-size:10.5px;" onclick="KoraGrid.setFormTab('${m.k}')">${sEsc(isAm() ? m.am : m.en)} (${(state.customForms[m.k] || []).length})</button>`).join('')}
+      </div>
+      <div style="display:flex;flex-direction:column;gap:5px;max-height:160px;overflow-y:auto;">
+        ${list.map((f, i) => {
+          const tObj = F_TYPES.find((x) => x.k === f.type) || F_TYPES[0];
+          return `<div class="ksf-field-row"><div style="min-width:0;flex:1;"><b style="font-size:11.5px;">${sEsc(f.label)}</b><span class="pill" style="font-size:9px;margin-left:4px;">${sEsc(isAm() ? tObj.am : tObj.en)}</span>${f.required ? `<span class="pill rose" style="font-size:9px;">*</span>` : ''}</div><div style="display:flex;align-items:center;gap:6px;"><div class="toggle ${f.enabled !== false ? 'on' : ''}" onclick="KoraGrid.toggleField('${mod}',${i})"></div><button type="button" class="btn ghost sm" style="color:var(--rose);padding:0 5px;" onclick="KoraGrid.delField('${mod}',${i})">${SVG.trash}</button></div></div>`;
+        }).join('') || `<div style="font-size:11px;color:var(--muted);text-align:center;padding:8px;">${sEsc(L('የድርጅትህን ተጨማሪ መስክ በ«+ አዲስ መስክ» ጨምር', 'Tap "+ Add Field" to customize any form'))}</div>`}
+      </div>`;
+  }
+
+  function fixModalsAndForms() {
+    if (!hasState()) return;
+    ensureUiState();
+    const modal = document.querySelector('#modalOverlay.open, .modal-bg.open, .modal-backdrop.open, #modalCard, .modal-card');
+    if (!modal) return;
+    const fullTxt = modal.textContent || '';
+
+    // 1. አስቸኳይ ጥገና: የደረሰኝ ፒዲኤፍ ቅድመ-እይታ ነጭ ወረቀት + SVG ህትመት አዶ
+    const titleEl = modal.querySelector('h3, h4, .modal-title, .modal-head');
+    const titleTxt = (titleEl?.textContent || '').trim();
+    if (/ፒዲኤፍ\s*·|pdf\s*·|ደረሰኝ|receipt|invoice/i.test(titleTxt)) {
+      const body = modal.querySelector('.modal-body, #modalBody');
+      if (body) {
+        const paper = body.querySelector('.receipt, .pdf-preview, .sub-card, pre, div');
+        if (paper && !paper.classList.contains('kth-paper-fix')) {
+          paper.classList.add('kth-paper-fix');
+        }
+      }
+      modal.querySelectorAll('button').forEach((b) => {
+        if (b.innerHTML.includes('🖨')) {
+          b.innerHTML = b.innerHTML.replace(/🖨️?/g, SVG.print);
+          b.style.cssText += ';display:inline-flex;align-items:center;justify-content:center;gap:5px;';
+        }
+      });
+    }
+
+    // 2. «የቅጽ ቅንብር» ሞዳል ውስጥ ተለዋዋጭ ቅፅ ገንቢ
+    if ((fullTxt.includes('የቅጽ ቅንብር') || fullTxt.includes('የቅፅ ቅንብር') || fullTxt.includes('ፓድ ቁጥር አሳይ')) && !modal.querySelector('[data-kg-fbuilder]')) {
+      const sws = modal.querySelectorAll('.switch-row');
+      const host = sws.length ? sws[sws.length - 1].parentElement : (modal.querySelector('.modal-body, #modalBody') || modal);
+      if (host) {
+        const box = document.createElement('div');
+        box.setAttribute('data-kg-fbuilder', '1');
+        box.style.cssText = 'margin-top:10px;padding-top:8px;border-top:1px solid var(--border-strong);';
+        box.innerHTML = buildFormBuilderHtml();
+        host.appendChild(box);
+      }
+      return;
+    }
+
+    // 3. የተፈጠሩትን Custom Fields ወደ ቅጾች ማስገባት
+    if (modal.querySelector('[data-kg-cf-inj]') || modal.querySelector('[data-kg-fbuilder]')) return;
+    const head = (titleTxt || fullTxt.slice(0, 50)).toLowerCase();
+    let mod = null;
+    if (head.includes('ሽያጭ') || head.includes('sale')) mod = 'sales';
+    else if (head.includes('መጋዘን') || head.includes('ገቢ') || head.includes('ወጪ') || head.includes('warehouse')) mod = 'warehouse';
+    else if (head.includes('ግዢ') || head.includes('purchase')) mod = 'purchase';
+    else if (head.includes('ደንበኛ') || head.includes('customer')) mod = 'customer';
+    else if (head.includes('ማጓጓዣ') || head.includes('ትዕዛዝ') || head.includes('dispatch')) mod = 'dispatch';
+    if (!mod) return;
+
+    const active = (state.customForms[mod] || []).filter((f) => f.enabled !== false);
+    if (!active.length) return;
+    const body = modal.querySelector('.modal-body, #modalBody') || modal;
+    const wrap = document.createElement('div');
+    wrap.className = 'sub-card'; wrap.setAttribute('data-kg-cf-inj', '1'); wrap.style.marginTop = '6px';
+    wrap.innerHTML = `<div style="font-size:10px;font-weight:800;color:var(--teal);margin-bottom:4px;">${sEsc(L('የድርጅቱ ተጨማሪ መስኮች', 'Custom Fields'))}</div>` +
+      active.map((f) => {
+        if (f.type === 'select') {
+          const opts = (f.options || '').split(',').map((o) => o.trim()).filter(Boolean);
+          return `<div style="margin-top:4px;"><label class="lbl">${sEsc(f.label)}</label><select class="sel" data-cf-id="${f.id}">${opts.map((o) => `<option value="${sEsc(o)}">${sEsc(o)}</option>`).join('')}</select></div>`;
+        }
+        if (f.type === 'toggle') return `<div class="switch-row" style="margin-top:4px;"><span>${sEsc(f.label)}</span><div class="toggle" data-cf-id="${f.id}" onclick="this.classList.toggle('on')"></div></div>`;
+        return `<div style="margin-top:4px;"><label class="lbl">${sEsc(f.label)}</label><input type="${f.type === 'number' ? 'number' : (f.type === 'date' ? 'date' : 'text')}" class="inp sm" data-cf-id="${f.id}"></div>`;
+      }).join('');
+    body.appendChild(wrap);
+  }
+
+  // ---------------------------------------------------------------------------
+  // 4. የኮራ ሠንጠረዥ 2.0 (የሂሳብ ዳታ ጥገና + ያለ ኮድ ዓምድ/ቀመር/ደብቅ + የምድብ ድምር/ባዶ ረድፍ)
   // ---------------------------------------------------------------------------
   function pushStyleUndo() {
     styleUndoStack.push(JSON.stringify(state.koraGridStyle));
@@ -414,6 +556,7 @@
     const br = state.branchScope || 'all';
     const q = gridSearchQuery.trim().toLowerCase();
     const rows = (state.warehouseLedger || []).map((w) => ({
+      id: 'wl_' + (w.id || w.docNo),
       docNo: w.docNo || '-', itemId: w.itemId, itemName: w.itemName || '-',
       openBal: Number(w.openBal || 0), inQty: Number(w.inQty || 0),
       outQty: Number(w.outQty || 0), endBal: Number(w.endBal || 0),
@@ -423,11 +566,10 @@
     }));
     (state.erp?.voidLeaves || []).forEach((v) => {
       rows.push({
-        docNo: v.docNo || 'VOID', itemId: null, itemName: 'VOID',
+        id: 'vd_' + (v.id || v.docNo), docNo: v.docNo || 'VOID', itemId: null, itemName: 'VOID',
         openBal: 0, inQty: 0, outQty: 0, endBal: 0,
         party: `${L('የተሰረዘ ሰነድ', 'VOID')} (${v.reason || '-'})`,
-        branch: br === 'all' ? '' : br,
-        date: (v.date || todayIso()).slice(0, 10), isVoid: true
+        branch: br === 'all' ? '' : br, date: (v.date || todayIso()).slice(0, 10), isVoid: true
       });
     });
     return rows.filter((r) => {
@@ -439,16 +581,69 @@
     });
   }
 
+  function parseNumeric(val) {
+    if (typeof val === 'number') return Number.isFinite(val) ? val : 0;
+    const n = Number(String(val ?? '').replace(/[^0-9.-]/g, ''));
+    return Number.isFinite(n) ? n : 0;
+  }
+
+  function getSysFieldVal(inv, fieldKey, curQty) {
+    if (!inv) return '-';
+    if (fieldKey === 'unit') return (typeof getUnitLabel === 'function' ? getUnitLabel(inv) : inv.unit) || '-';
+    if (fieldKey === 'buyPrice') return Number(inv.buyPrice ?? inv.costPrice ?? 0);
+    if (fieldKey === 'sellPrice') return Number(inv.sellPrice ?? inv.price ?? 0);
+    if (fieldKey === 'zoneCode') return inv.zoneCode || inv.loc || '-';
+    if (fieldKey === 'minStock') return Number(inv.minStock ?? 5);
+    if (fieldKey === 'stockValue') return Math.round(Number(curQty || 0) * Number(inv.buyPrice ?? inv.costPrice ?? inv.sellPrice ?? 0));
+    return '-';
+  }
+
+  function evalCustomColValue(col, rowId, baseMap, inv, curQty) {
+    if (col.type === 'sys') {
+      const v = getSysFieldVal(inv, col.sysKey, curQty);
+      return typeof v === 'number' ? sNum(v) : v;
+    }
+    if (col.type === 'text' || col.type === 'number') {
+      return state.koraGridCellData[rowId]?.[col.k] ?? '';
+    }
+    if (col.type === 'formula') {
+      const a = parseNumeric(baseMap[col.opA] ?? state.koraGridCellData[rowId]?.[col.opA] ?? 0);
+      const b = parseNumeric(baseMap[col.opB] ?? state.koraGridCellData[rowId]?.[col.opB] ?? 0);
+      let res = 0;
+      if (col.op === '+') res = a + b;
+      else if (col.op === '-') res = a - b;
+      else if (col.op === '*') res = a * b;
+      else if (col.op === '/') res = b !== 0 ? Number((a / b).toFixed(2)) : 0;
+      return sNum(Math.round(res * 100) / 100);
+    }
+    return '';
+  }
+
+  function collectFinanceSources() {
+    const sales = state.sales || state.invoices || state.orders || [];
+    const purchases = state.purchases || [];
+    const expenses = state.expenses || [];
+    const banks = state.banks || state.accounts || state.cashAccounts || [];
+    const credits = state.credits || state.debts || state.creditLedger || [];
+    const bankTx = state.bankTransactions || state.cashflow || state.financeLedger || state.transactions || [];
+    return { sales, purchases, expenses, banks, credits, bankTx };
+  }
+
   function buildGridDataset() {
-    ensureGridState();
+    ensureUiState();
     const refDate = state.koraGrid.date || todayIso();
     const st = state.koraGridStyle;
     const q = gridSearchQuery.trim().toLowerCase();
+    const customCols = state.koraGridCols[gridDomain] || [];
+    const hiddenSet = new Set(state.koraGridHidden[gridDomain] || []);
+
+    let baseCols = [], rawRows = [], title = '', totalsMap = {};
 
     if (gridDomain === 'stock') {
       const tab = state.koraGrid.stockTab || 'daily';
       if (tab === 'history') {
-        const cols = [
+        title = L('ሙሉ ዕለታዊ ታሪክ', 'Full Stock History');
+        baseCols = [
           { k: 'doc',   lbl: L('ሰነድ / ፓድ', 'Doc / Pad'), w: 92,  defAlign: 'left' },
           { k: 'item',  lbl: L('የዕቃ አይነት', 'Item'),     w: 140, defAlign: 'left' },
           { k: 'open',  lbl: L('መነሻ', 'Open'),           w: 62,  defAlign: 'right' },
@@ -460,124 +655,219 @@
         ];
         const list = getStockLedgerRows('', '');
         let tIn = 0, tOut = 0;
-        const rows = list.map((r) => {
+        rawRows = list.map((r) => {
           if (!r.isVoid) { tIn += r.inQty; tOut += r.outQty; }
-          const rowCls = r.isVoid ? 'kg-void' : (r.endBal === 0 && r.outQty > 0 ? 'kg-zero' : (r.inQty > 0 ? 'kg-in' : ''));
+          const inv = (state.inventory || []).find((x) => String(x.id) === String(r.itemId) || x.name === r.itemName);
           return {
-            rowCls,
-            cells: [r.docNo, r.itemName, r.isVoid ? '-' : sNum(r.openBal), r.isVoid || !r.inQty ? '-' : '+' + sNum(r.inQty), r.isVoid || !r.outQty ? '-' : '-' + sNum(r.outQty), r.isVoid ? '-' : sNum(r.endBal), r.party, r.date]
+            rowId: r.id, inv, curQty: r.endBal,
+            rowCls: r.isVoid ? 'kg-void' : (r.endBal === 0 && r.outQty > 0 ? 'kg-zero' : (r.inQty > 0 ? 'kg-in' : '')),
+            map: {
+              doc: r.docNo, item: r.itemName,
+              open: r.isVoid ? '-' : sNum(r.openBal),
+              in: r.isVoid || !r.inQty ? '-' : '+' + sNum(r.inQty),
+              out: r.isVoid || !r.outQty ? '-' : '-' + sNum(r.outQty),
+              bal: r.isVoid ? '-' : sNum(r.endBal),
+              party: r.party, date: r.date
+            }
           };
         });
-        return { title: L('ሙሉ ዕለታዊ ታሪክ', 'Full Stock History'), cols, rows, totals: [L('ድምር', 'TOTAL'), `${rows.length}`, '-', '+' + sNum(tIn), '-' + sNum(tOut), '-', '', ''] };
-      }
-
-      const cols = [
-        { k: 'item', lbl: L('የዕቃ አይነት', 'Item Type'), w: 150, defAlign: 'left' },
-        { k: 'open', lbl: L('መነሻ', 'Start'),           w: 68,  defAlign: 'right' },
-        { k: 'in',   lbl: L('የገባ (+)', 'IN (+)'),     w: 68,  defAlign: 'right' },
-        { k: 'out',  lbl: L('የወጣ (-)', 'OUT (-)'),    w: 68,  defAlign: 'right' },
-        { k: 'bal',  lbl: L('ቀሪ', 'Balance'),         w: 72,  defAlign: 'right' }
-      ];
-      const startIso = tab === 'all' ? '' : dateRangeStart(tab, refDate);
-      const endIso = tab === 'all' ? '' : refDate;
-      const br = state.branchScope || 'all';
-      const ledger = getStockLedgerRows(startIso, endIso).filter((r) => !r.isVoid);
-      const agg = {};
-      ledger.forEach((r) => {
-        const k = String(r.itemId || r.itemName);
-        if (!agg[k]) agg[k] = { inQty: 0, outQty: 0 };
-        agg[k].inQty += r.inQty; agg[k].outQty += r.outQty;
-      });
-      const groups = {};
-      (state.inventory || []).forEach((it) => {
-        if (q && !`${it.name} ${it.category || ''}`.toLowerCase().includes(q)) return;
-        const cur = typeof getItemStock === 'function' ? Number(getItemStock(it, br) || 0) : Number(it.stock || 0);
-        const mv = agg[String(it.id)] || agg[it.name] || { inQty: 0, outQty: 0 };
-        const open = Math.max(0, cur - mv.inQty + mv.outQty);
-        if (st.hideZero && open === 0 && mv.inQty === 0 && mv.outQty === 0 && cur === 0) return;
-        const cat = (it.category || L('መደበኛ ምርቶች', 'General')).trim();
-        if (!groups[cat]) groups[cat] = [];
-        groups[cat].push({ name: it.name, open, inQty: mv.inQty, outQty: mv.outQty, cur, min: Number(it.minStock ?? 5) });
-      });
-      const rows = [];
-      let tOpen = 0, tIn = 0, tOut = 0, tCur = 0;
-      Object.keys(groups).forEach((cat) => {
-        rows.push({ isCat: true, cat: `${cat} (${groups[cat].length})` });
-        groups[cat].forEach((r) => {
-          tOpen += r.open; tIn += r.inQty; tOut += r.outQty; tCur += r.cur;
-          rows.push({
-            rowCls: r.cur === 0 || r.cur <= r.min ? 'kg-low' : '',
-            cells: [r.name, sNum(r.open), r.inQty ? '+' + sNum(r.inQty) : '0', r.outQty ? '-' + sNum(r.outQty) : '0', sNum(r.cur)]
-          });
+        totalsMap = { doc: L('ድምር', 'TOTAL'), item: `${rawRows.length}`, open: '-', in: '+' + sNum(tIn), out: '-' + sNum(tOut), bal: '-', party: '', date: '' };
+      } else {
+        title = tab === 'weekly' ? L('ሳምንታዊ ክምችት', 'Weekly Stock') : (tab === 'monthly' ? L('ወርሃዊ ክምችት', 'Monthly Stock') : L('ዕለታዊ ክምችት', 'Daily Stock'));
+        baseCols = [
+          { k: 'item', lbl: L('የዕቃ አይነት', 'Item Type'), w: 150, defAlign: 'left' },
+          { k: 'open', lbl: L('መነሻ', 'Start'),           w: 68,  defAlign: 'right' },
+          { k: 'in',   lbl: L('የገባ (+)', 'IN (+)'),     w: 68,  defAlign: 'right' },
+          { k: 'out',  lbl: L('የወጣ (-)', 'OUT (-)'),    w: 68,  defAlign: 'right' },
+          { k: 'bal',  lbl: L('ቀሪ', 'Balance'),         w: 72,  defAlign: 'right' }
+        ];
+        const startIso = dateRangeStart(tab, refDate);
+        const br = state.branchScope || 'all';
+        const ledger = getStockLedgerRows(startIso, refDate).filter((r) => !r.isVoid);
+        const agg = {};
+        ledger.forEach((r) => {
+          const k = String(r.itemId || r.itemName);
+          if (!agg[k]) agg[k] = { inQty: 0, outQty: 0 };
+          agg[k].inQty += r.inQty; agg[k].outQty += r.outQty;
         });
-      });
-      const tLbl = tab === 'weekly' ? L('ሳምንታዊ ክምችት', 'Weekly Stock') : (tab === 'monthly' ? L('ወርሃዊ ክምችት', 'Monthly Stock') : L('ዕለታዊ ክምችት', 'Daily Stock'));
-      return { title: tLbl, cols, rows, totals: [L('ጠቅላላ ድምር', 'TOTAL'), sNum(tOpen), '+' + sNum(tIn), '-' + sNum(tOut), sNum(tCur)] };
+        const groups = {};
+        (state.inventory || []).forEach((it) => {
+          if (q && !`${it.name} ${it.category || ''}`.toLowerCase().includes(q)) return;
+          const cur = typeof getItemStock === 'function' ? Number(getItemStock(it, br) || 0) : Number(it.stock || 0);
+          const mv = agg[String(it.id)] || agg[it.name] || { inQty: 0, outQty: 0 };
+          const open = Math.max(0, cur - mv.inQty + mv.outQty);
+          if (st.hideZero && open === 0 && mv.inQty === 0 && mv.outQty === 0 && cur === 0) return;
+          const cat = (it.category || L('መደበኛ ምርቶች', 'General')).trim();
+          if (!groups[cat]) groups[cat] = [];
+          groups[cat].push({ it, open, inQty: mv.inQty, outQty: mv.outQty, cur, min: Number(it.minStock ?? 5) });
+        });
+
+        let tOpen = 0, tIn = 0, tOut = 0, tCur = 0;
+        const catNames = Object.keys(groups);
+        catNames.forEach((cat, catIdx) => {
+          const items = groups[cat];
+          const isCol = Boolean(collapsedCats[cat]);
+          rawRows.push({ isCat: true, cat, count: items.length, collapsed: isCol });
+          let cOpen = 0, cIn = 0, cOut = 0, cCur = 0;
+          items.forEach((r) => {
+            cOpen += r.open; cIn += r.inQty; cOut += r.outQty; cCur += r.cur;
+            tOpen += r.open; tIn += r.inQty; tOut += r.outQty; tCur += r.cur;
+            if (!isCol) {
+              rawRows.push({
+                rowId: 'it_' + r.it.id, inv: r.it, curQty: r.cur,
+                rowCls: r.cur === 0 || r.cur <= r.min ? 'kg-low' : '',
+                map: {
+                  item: r.it.name, open: sNum(r.open),
+                  in: r.inQty ? '+' + sNum(r.inQty) : '0',
+                  out: r.outQty ? '-' + sNum(r.outQty) : '0',
+                  bal: sNum(r.cur)
+                }
+              });
+            }
+          });
+          // የምድብ ንዑስ-ድምር + 1 ባዶ መለያ ረድፍ
+          rawRows.push({
+            isSubtot: true,
+            map: { item: `${L('የ', '')}${cat} ${L('ድምር', 'Subtotal')}`, open: sNum(cOpen), in: cIn ? '+' + sNum(cIn) : '0', out: cOut ? '-' + sNum(cOut) : '0', bal: sNum(cCur) }
+          });
+          if (catIdx < catNames.length - 1) rawRows.push({ isBlank: true });
+        });
+        totalsMap = { item: L('ጠቅላላ ድምር', 'TOTAL'), open: sNum(tOpen), in: '+' + sNum(tIn), out: '-' + sNum(tOut), bal: sNum(tCur) };
+      }
+    } else {
+      // === ሂሳብ (Finance — ከሁሉም የሲስተሙ መዛግብት የሚሰበስብ) ===
+      const ftab = state.koraGrid.finTab || 'cashflow';
+      const src = collectFinanceSources();
+
+      if (ftab === 'banks') {
+        title = L('ባንክ እና ካዝና', 'Banks & Cash');
+        baseCols = [
+          { k: 'bank', lbl: L('ባንክ / ካዝና', 'Account'), w: 135, defAlign: 'left' },
+          { k: 'acc',  lbl: L('ቁጥር', 'Account No'),     w: 112, defAlign: 'left' },
+          { k: 'open', lbl: L('መነሻ', 'Opening'),        w: 80,  defAlign: 'right' },
+          { k: 'bal',  lbl: L('ቀሪ (ብር)', 'Balance'),   w: 94,  defAlign: 'right' }
+        ];
+        let sum = 0;
+        rawRows = src.banks.filter((b) => !q || `${b.name || ''} ${b.accNo || b.account || ''}`.toLowerCase().includes(q)).map((b, i) => {
+          const open = Number(b.openBal ?? b.opening ?? b.initialBalance ?? 0);
+          const bal = Number(b.balance ?? b.endBal ?? b.current ?? open);
+          sum += bal;
+          return {
+            rowId: 'bk_' + (b.id || i),
+            rowCls: bal > 0 ? 'kg-in' : 'kg-low',
+            map: { bank: b.name || '-', acc: b.accNo || b.account || b.code || '-', open: sNum(open), bal: sNum(bal) }
+          };
+        });
+        totalsMap = { bank: L('ጠቅላላ ገንዘብ', 'TOTAL'), acc: '', open: '-', bal: sNum(sum) };
+      } else if (ftab === 'credit') {
+        title = L('የደንበኛ እና አቅራቢ ዱቤ', 'Receivables & Payables');
+        baseCols = [
+          { k: 'ref',   lbl: L('ሰነድ', 'Ref'),        w: 88,  defAlign: 'left' },
+          { k: 'party', lbl: L('ደንበኛ / አቅራቢ', 'Party'), w: 135, defAlign: 'left' },
+          { k: 'kind',  lbl: L('ዓይነት', 'Type'),     w: 82,  defAlign: 'center' },
+          { k: 'paid',  lbl: L('የተከፈለ', 'Paid'),    w: 78,  defAlign: 'right' },
+          { k: 'due',   lbl: L('ቀሪ ዕዳ', 'Due'),     w: 86,  defAlign: 'right' }
+        ];
+        const list = [];
+        src.credits.forEach((c, i) => {
+          const due = Number(c.balance ?? c.remaining ?? c.due ?? (Number(c.total || 0) - Number(c.paid || 0)));
+          const isPay = String(c.type || c.kind || '').toLowerCase().includes('pay') || String(c.docNo || '').startsWith('PUR');
+          list.push({ id: 'cr_' + (c.id || i), ref: c.docNo || c.code || 'CRD', party: c.party || c.name || c.customer || '-', kind: isPay ? L('የሚከፈል', 'Payable') : L('የሚሰበሰብ', 'Receivable'), paid: Number(c.paid || 0), due, isPay });
+        });
+        if (!list.length) {
+          src.purchases.forEach((p, i) => {
+            const due = Number(p.credit ?? p.due ?? p.balance ?? Math.max(0, Number(p.total || 0) - Number(p.paid || 0)));
+            if (due > 0) list.push({ id: 'pc_' + (p.id || i), ref: p.docNo || 'PUR', party: p.supplier || p.party || '-', kind: L('የሚከፈል', 'Payable'), paid: Number(p.paid || 0), due, isPay: true });
+          });
+          (state.customers || []).forEach((c, i) => {
+            const due = Number(c.balance || c.credit || 0);
+            if (due > 0) list.push({ id: 'cu_' + (c.id || i), ref: 'CUST', party: c.name || '-', kind: L('የሚሰበሰብ', 'Receivable'), paid: 0, due, isPay: false });
+          });
+        }
+        let sumDue = 0;
+        rawRows = list.filter((x) => !q || `${x.ref} ${x.party}`.toLowerCase().includes(q)).map((x) => {
+          sumDue += x.due;
+          return {
+            rowId: x.id, rowCls: x.isPay ? 'kg-low' : 'kg-zero',
+            map: { ref: x.ref, party: x.party, kind: x.kind, paid: sNum(x.paid), due: sNum(x.due) }
+          };
+        });
+        totalsMap = { ref: L('ድምር', 'TOTAL'), party: `${rawRows.length}`, kind: '', paid: '-', due: sNum(sumDue) };
+      } else {
+        title = ftab === 'pnl' ? L('ትርፍ እና ኪሳራ', 'Profit & Loss') : L('የሂሳብ መዝገብ', 'Finance Ledger');
+        baseCols = [
+          { k: 'doc',  lbl: L('ሰነድ', 'Ref'),            w: 88,  defAlign: 'left' },
+          { k: 'desc', lbl: L('ዝርዝር / ደንበኛ', 'Detail'), w: 148, defAlign: 'left' },
+          { k: 'in',   lbl: L('ገቢ (+)', 'Income'),      w: 84,  defAlign: 'right' },
+          { k: 'out',  lbl: L('ወጪ (-)', 'Expense'),     w: 84,  defAlign: 'right' },
+          { k: 'date', lbl: L('ቀን', 'Date'),            w: 90,  defAlign: 'center' }
+        ];
+        const rows = [];
+        let tIn = 0, tOut = 0;
+        src.sales.forEach((s, i) => {
+          if (String(s.status || '').toLowerCase() === 'void' || s.voided) return;
+          const amt = Number(s.grandTotal ?? s.total ?? s.amount ?? 0);
+          const desc = `${s.customer || s.customerName || s.party || '-'} · ${s.itemName || s.items?.[0]?.name || ''}`.replace(/·\s*$/, '').trim();
+          const doc = s.docNo || s.invNo || s.no || `INV-${i + 1}`;
+          if (q && !`${doc} ${desc}`.toLowerCase().includes(q)) return;
+          tIn += amt;
+          rows.push({ rowId: 'sl_' + (s.id || i), rowCls: 'kg-in', map: { doc, desc, in: '+' + sNum(amt), out: '-', date: String(s.date || todayIso()).slice(0, 10) } });
+        });
+        src.purchases.forEach((p, i) => {
+          if (String(p.status || '').toLowerCase() === 'void' || p.voided) return;
+          const amt = Number(p.total ?? p.grandTotal ?? p.amount ?? 0);
+          const desc = `${L('ግዢ', 'Buy')}: ${p.supplier || p.party || '-'} · ${p.itemName || p.items?.[0]?.name || ''}`.replace(/·\s*$/, '').trim();
+          const doc = p.docNo || p.no || `PUR-${i + 1}`;
+          if (q && !`${doc} ${desc}`.toLowerCase().includes(q)) return;
+          tOut += amt;
+          rows.push({ rowId: 'pr_' + (p.id || i), rowCls: 'kg-low', map: { doc, desc, in: '-', out: '-' + sNum(amt), date: String(p.date || todayIso()).slice(0, 10) } });
+        });
+        src.expenses.forEach((e, i) => {
+          const amt = Number(e.amount ?? e.total ?? 0);
+          const desc = `${L('ወጪ', 'Exp')}: ${e.title || e.category || e.note || '-'}`;
+          const doc = e.docNo || e.ref || `EXP-${i + 1}`;
+          if (q && !`${doc} ${desc}`.toLowerCase().includes(q)) return;
+          tOut += amt;
+          rows.push({ rowId: 'ex_' + (e.id || i), rowCls: 'kg-low', map: { doc, desc, in: '-', out: '-' + sNum(amt), date: String(e.date || todayIso()).slice(0, 10) } });
+        });
+        src.bankTx.forEach((tx, i) => {
+          const inA = Number(tx.inAmount ?? tx.credit ?? (tx.type === 'IN' ? tx.amount : 0) ?? 0);
+          const outA = Number(tx.outAmount ?? tx.debit ?? (tx.type === 'OUT' ? tx.amount : 0) ?? 0);
+          if (!(inA > 0 || outA > 0)) return;
+          const desc = tx.note || tx.desc || tx.party || tx.bank || '-';
+          const doc = tx.docNo || tx.ref || `TX-${i + 1}`;
+          if (q && !`${doc} ${desc}`.toLowerCase().includes(q)) return;
+          tIn += inA; tOut += outA;
+          rows.push({ rowId: 'tx_' + (tx.id || i), rowCls: inA > 0 ? 'kg-in' : 'kg-low', map: { doc, desc, in: inA ? '+' + sNum(inA) : '-', out: outA ? '-' + sNum(outA) : '-', date: String(tx.date || todayIso()).slice(0, 10) } });
+        });
+        rawRows = rows;
+        const net = tIn - tOut;
+        totalsMap = { doc: L('የተጣራ', 'NET'), desc: sMoney(net), in: '+' + sNum(tIn), out: '-' + sNum(tOut), date: '' };
+      }
     }
 
-    // === ሂሳብ ===
-    const ftab = state.koraGrid.finTab || 'cashflow';
-    if (ftab === 'banks') {
-      const cols = [
-        { k: 'bank', lbl: L('ባንክ / ካዝና', 'Account'), w: 135, defAlign: 'left' },
-        { k: 'acc',  lbl: L('ቁጥር', 'Account No'),     w: 112, defAlign: 'left' },
-        { k: 'open', lbl: L('መነሻ', 'Opening'),        w: 80,  defAlign: 'right' },
-        { k: 'bal',  lbl: L('ቀሪ (ብር)', 'Balance'),   w: 92,  defAlign: 'right' }
-      ];
-      let sum = 0;
-      const rows = (state.banks || []).filter((b) => !q || `${b.name} ${b.accNo || b.account || ''}`.toLowerCase().includes(q)).map((b) => {
-        const bal = Number(b.balance ?? b.endBal ?? b.openBal ?? 0);
-        sum += bal;
-        return { rowCls: bal > 0 ? 'kg-in' : 'kg-low', cells: [b.name || '-', b.accNo || b.account || '-', sNum(b.openBal || 0), sNum(bal)] };
+    // ሁሉም ዓምዶች (ነባር + ብጁ) -> የተደበቁትን ማጣራት (Show/Hide Sync ለስክሪን/PDF/Excel)
+    const allCols = [...baseCols, ...customCols.map((c) => ({ ...c, isCustom: true, w: c.w || 95, defAlign: c.type === 'number' || c.type === 'formula' ? 'right' : 'left' }))];
+    const visibleCols = allCols.filter((c) => !hiddenSet.has(c.k));
+    const finalCols = visibleCols.length ? visibleCols : allCols.slice(0, 1);
+
+    // የብጁ ዓምዶችን ዋጋ ማስላት እና ድምር ማውጣት
+    const customTotals = {};
+    rawRows.forEach((r) => {
+      if (r.isCat || r.isBlank || r.isSubtot) return;
+      customCols.forEach((cc) => {
+        const val = evalCustomColValue(cc, r.rowId, r.map, r.inv, r.curQty);
+        r.map[cc.k] = val;
+        if (cc.type === 'number' || cc.type === 'formula' || (cc.type === 'sys' && cc.sysKey === 'stockValue')) {
+          customTotals[cc.k] = (customTotals[cc.k] || 0) + parseNumeric(val);
+        }
       });
-      return { title: L('ባንክ እና ካዝና', 'Banks & Cash'), cols, rows, totals: [L('ጠቅላላ ገንዘብ', 'TOTAL'), '', '-', sNum(sum)] };
-    }
-    if (ftab === 'credit') {
-      const cols = [
-        { k: 'cust', lbl: L('ደንበኛ', 'Customer'),  w: 140, defAlign: 'left' },
-        { k: 'ph',   lbl: L('ስልክ', 'Phone'),       w: 102, defAlign: 'left' },
-        { k: 'due',  lbl: L('ቀሪ ዱቤ (ብር)', 'Due'), w: 92,  defAlign: 'right' },
-        { k: 'lim',  lbl: L('ገደብ', 'Limit'),       w: 82,  defAlign: 'right' }
-      ];
-      const map = {};
-      (state.customers || []).forEach((c) => { if (c.name) map[c.name] = { name: c.name, phone: c.phone || '-', due: Number(c.balance || c.credit || 0), lim: 0 }; });
-      (state.erp?.creditRules || []).forEach((r) => {
-        if (!map[r.name]) map[r.name] = { name: r.name, phone: r.phone || '-', due: Number(r.manualBal || 0), lim: 0 };
-        map[r.name].lim = Number(r.limit || 0);
-      });
-      let sum = 0;
-      const rows = Object.values(map).filter((c) => !q || c.name.toLowerCase().includes(q)).map((c) => {
-        sum += c.due;
-        const over = c.lim > 0 && c.due >= c.lim;
-        return { rowCls: over ? 'kg-void' : (c.due > 0 ? 'kg-zero' : ''), cells: [c.name, c.phone, sNum(c.due), c.lim > 0 ? sNum(c.lim) : '∞'] };
-      });
-      return { title: L('የደንበኛ ዱቤ', 'Customer Credits'), cols, rows, totals: [L('ጠቅላላ ዱቤ', 'TOTAL'), '', sNum(sum), ''] };
-    }
-    const cols = [
-      { k: 'doc',  lbl: L('ሰነድ', 'Ref'),            w: 86,  defAlign: 'left' },
-      { k: 'desc', lbl: L('ዝርዝር / ደንበኛ', 'Detail'), w: 145, defAlign: 'left' },
-      { k: 'in',   lbl: L('ገቢ (+)', 'Income'),      w: 84,  defAlign: 'right' },
-      { k: 'out',  lbl: L('ወጪ (-)', 'Expense'),     w: 84,  defAlign: 'right' },
-      { k: 'date', lbl: L('ቀን', 'Date'),            w: 88,  defAlign: 'center' }
-    ];
-    const rows = [];
-    let tIn = 0, tOut = 0;
-    (state.sales || []).forEach((s) => {
-      const amt = Number(s.total || 0);
-      const desc = `${s.party || s.customer || '-'} · ${s.itemName || ''}`.trim();
-      if (q && !`${s.docNo || s.invNo || ''} ${desc}`.toLowerCase().includes(q)) return;
-      tIn += amt;
-      rows.push({ rowCls: 'kg-in', cells: [s.docNo || s.invNo || 'SALE', desc, '+' + sNum(amt), '-', (s.date || todayIso()).slice(0, 10)] });
     });
-    (state.expenses || []).forEach((e) => {
-      const amt = Number(e.amount || e.total || 0);
-      const desc = `${e.title || e.category || e.note || L('ወጪ', 'Expense')}`;
-      if (q && !desc.toLowerCase().includes(q)) return;
-      tOut += amt;
-      rows.push({ rowCls: 'kg-low', cells: [e.ref || 'EXP', desc, '-', '-' + sNum(amt), (e.date || todayIso()).slice(0, 10)] });
+    customCols.forEach((cc) => {
+      totalsMap[cc.k] = customTotals[cc.k] !== undefined ? sNum(Math.round(customTotals[cc.k] * 100) / 100) : '';
     });
-    const net = tIn - tOut;
-    return { title: ftab === 'pnl' ? `${L('ትርፍና ኪሳራ', 'P&L')} (${sMoney(net)})` : L('የሂሳብ መዝገብ', 'Finance Ledger'), cols, rows, totals: [L('የተጣራ', 'NET'), sMoney(net), '+' + sNum(tIn), '-' + sNum(tOut), ''] };
+
+    return { title, allCols, cols: finalCols, rows: rawRows, totalsMap };
   }
 
   function getEffectiveStyle(colKey, defAlign) {
@@ -593,7 +883,7 @@
   }
 
   function renderGridOverlay() {
-    ensureGridState();
+    ensureUiState();
     injectUnifiedCss();
     let ov = document.getElementById('koraLiveGridOverlay');
     if (!gridOpen) {
@@ -609,33 +899,47 @@
     }
 
     const st = state.koraGridStyle;
-    ov.className = `kg-overlay ${st.theme === 'light' ? 'light' : ''}`;
+    const isLightGrid = st.theme === 'light' || (st.theme === 'auto' && resolveLightMode());
+    ov.className = `kg-overlay ${isLightGrid ? 'light' : ''}`;
+
     const ds = buildGridDataset();
     const curSelStyle = selectedColKey ? getEffectiveStyle(selectedColKey, 'left') : { bold: st.bold, italic: st.italic, align: st.align, color: '', bg: '' };
 
     const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    const colgroupHtml = `<colgroup><col style="width:32px;">${ds.cols.map((c) => `<col style="width:${Number(st.colWidths[c.k] || c.w)}px;">`).join('')}</colgroup>`;
-    const letterRow = `<tr class="kg-letters"><th class="kg-rn" onclick="KoraGrid.selectCol(null)">#</th>${ds.cols.map((c, i) => `<th class="${selectedColKey === c.k ? 'col-sel' : ''}" onclick="KoraGrid.selectCol('${c.k}')">${letters[i] || i + 1}<span class="kg-resizer" data-col="${c.k}" data-defw="${c.w}"></span></th>`).join('')}</tr>`;
+    const colgroupHtml = `<colgroup><col style="width:32px;">${ds.cols.map((c) => `<col style="width:${Number(st.colWidths[c.k] || c.w)}px;">`).join('')}<col style="width:38px;"></colgroup>`;
+    const letterRow = `<tr class="kg-letters"><th class="kg-rn" onclick="KoraGrid.selectCol(null)">#</th>${ds.cols.map((c, i) => `<th class="${selectedColKey === c.k ? 'col-sel' : ''}" onclick="KoraGrid.selectCol('${c.k}')">${letters[i] || i + 1}<span class="kg-resizer" data-col="${c.k}" data-defw="${c.w}"></span></th>`).join('')}<th class="kg-addcol" onclick="KoraGrid.openAddColModal()" title="${sEsc(L('አዲስ ዓምድ ጨምር', 'Add Column'))}">+</th></tr>`;
     const headRow = `<tr class="kg-heads"><th class="kg-rn"></th>${ds.cols.map((c) => {
       const ef = getEffectiveStyle(c.k, c.defAlign);
       return `<th class="${selectedColKey === c.k ? 'col-sel' : ''}" style="font-size:${st.fontSize}px;text-align:${ef.align};white-space:${st.wrap ? 'normal' : 'nowrap'};">${sEsc(c.lbl)}</th>`;
-    }).join('')}</tr>`;
+    }).join('')}<th style="cursor:pointer;text-align:center;" onclick="KoraGrid.openColManager()">${SVG.cols}</th></tr>`;
 
     let rn = 0;
     const bodyHtml = ds.rows.map((r) => {
+      if (r.isBlank) return `<tr class="kg-blank"><td class="kg-rn"></td><td colspan="${ds.cols.length + 1}"></td></tr>`;
       rn++;
-      if (r.isCat) return `<tr class="kg-cat"><td class="kg-rn">${rn}</td><td colspan="${ds.cols.length}" style="padding:${st.rowPad}px 7px;font-size:${st.fontSize}px;">${sEsc(r.cat)}</td></tr>`;
-      return `<tr class="${r.rowCls || ''}"><td class="kg-rn">${rn}</td>${r.cells.map((val, ci) => {
-        const c = ds.cols[ci], ef = getEffectiveStyle(c.k, c.defAlign);
+      if (r.isCat) {
+        return `<tr class="kg-cat" onclick="KoraGrid.toggleCat('${sEsc(r.cat)}')"><td class="kg-rn">${rn}</td><td colspan="${ds.cols.length + 1}" style="padding:${st.rowPad}px 7px;font-size:${st.fontSize}px;">${r.collapsed ? '▸' : '▾'} ${sEsc(r.cat)} (${r.count})</td></tr>`;
+      }
+      if (r.isSubtot) {
+        return `<tr class="kg-subtot"><td class="kg-rn"></td>${ds.cols.map((c) => {
+          const ef = getEffectiveStyle(c.k, c.defAlign);
+          return `<td style="padding:${Math.max(3, st.rowPad - 1)}px 7px;text-align:${ef.align};">${sEsc(r.map[c.k] ?? '')}</td>`;
+        }).join('')}<td></td></tr>`;
+      }
+      return `<tr class="${r.rowCls || ''}"><td class="kg-rn">${rn}</td>${ds.cols.map((c) => {
+        const ef = getEffectiveStyle(c.k, c.defAlign);
+        const editable = c.isCustom && (c.type === 'text' || c.type === 'number');
+        const val = r.map[c.k] ?? '';
         const css = [`padding:${st.rowPad}px 7px`, `font-size:${st.fontSize}px`, `text-align:${ef.align}`, `font-weight:${ef.bold ? '800' : '500'}`, `font-style:${ef.italic ? 'italic' : 'normal'}`, `white-space:${st.wrap ? 'normal' : 'nowrap'}`, ef.color ? `color:${ef.color}` : '', ef.bg ? `background:${ef.bg}` : ''].filter(Boolean).join(';');
-        return `<td class="${selectedColKey === c.k ? 'col-sel' : ''}" style="${css}">${sEsc(val)}</td>`;
-      }).join('')}</tr>`;
-    }).join('') || `<tr><td colspan="${ds.cols.length + 1}" style="text-align:center;padding:30px;color:#8b9bb0;">${sEsc(L('ምንም መረጃ የለም', 'No records'))}</td></tr>`;
+        const clickAttr = editable ? `onclick="KoraGrid.editCell('${sEsc(r.rowId)}','${sEsc(c.k)}','${sEsc(c.lbl)}','${c.type}')"` : '';
+        return `<td class="${selectedColKey === c.k ? 'col-sel' : ''} ${editable ? 'kg-edit-cell' : ''}" style="${css}" ${clickAttr}>${sEsc(val)}</td>`;
+      }).join('')}<td></td></tr>`;
+    }).join('') || `<tr><td colspan="${ds.cols.length + 2}" style="text-align:center;padding:30px;color:#8b9bb0;">${sEsc(L('ምንም መረጃ የለም', 'No records'))}</td></tr>`;
 
-    const totRow = ds.totals ? `<tr class="kg-tot"><td class="kg-rn">Σ</td>${ds.totals.map((val, ci) => {
-      const c = ds.cols[ci], ef = getEffectiveStyle(c.k, c.defAlign);
-      return `<td style="padding:${st.rowPad + 1}px 7px;font-size:${st.fontSize}px;text-align:${ef.align};">${sEsc(val)}</td>`;
-    }).join('')}</tr>` : '';
+    const totRow = `<tr class="kg-tot"><td class="kg-rn">Σ</td>${ds.cols.map((c) => {
+      const ef = getEffectiveStyle(c.k, c.defAlign);
+      return `<td style="padding:${st.rowPad + 1}px 7px;font-size:${st.fontSize}px;text-align:${ef.align};">${sEsc(ds.totalsMap[c.k] ?? '')}</td>`;
+    }).join('')}<td></td></tr>`;
 
     const bottomTabsHtml = gridDomain === 'stock'
       ? [['daily', L('ዕለታዊ', 'Daily'), true], ['weekly', L('ሳምንታዊ', 'Weekly'), true], ['monthly', L('ወርሃዊ', 'Monthly'), true], ['history', L('ሙሉ ታሪክ', 'Full Log'), false]]
@@ -645,14 +949,18 @@
 
     const menuPop = gridMenuOpen ? `
       <div class="kg-menu-pop" onclick="event.stopPropagation()">
-        <button type="button" class="kg-mitem" onclick="KoraGrid.toggleTheme()"><span>${sEsc(st.theme === 'dark' ? L('ነጭ ገጽታ (Light)', 'Light Theme') : L('ጥቁር ገጽታ (Dark)', 'Dark Theme'))}</span><span>${st.theme === 'dark' ? '☀️' : '🌙'}</span></button>
+        <button type="button" class="kg-mitem" onclick="KoraGrid.openAddColModal()"><span>+ ${sEsc(L('አዲስ ዓምድ / ቀመር ጨምር', 'Add Column / Formula'))}</span><span>+</span></button>
+        <button type="button" class="kg-mitem" onclick="KoraGrid.openColManager()"><span>${sEsc(L('ዓምዶችን አሳይ / ደብቅ', 'Show / Hide Columns'))}</span><span>${SVG.cols}</span></button>
+        <button type="button" class="kg-mitem" onclick="KoraGrid.openViewsModal()"><span>${sEsc(L('የተቀመጡ እይታዎች', 'Saved Views'))}</span><span>${(state.koraGridViews || []).length}</span></button>
+        <hr class="kg-msep">
+        <button type="button" class="kg-mitem" onclick="KoraGrid.toggleTheme()"><span>${sEsc(isLightGrid ? L('ጥቁር ገጽታ', 'Dark View') : L('ነጭ ገጽታ', 'Light View'))}</span><span>${isLightGrid ? '🌙' : '☀️'}</span></button>
         <button type="button" class="kg-mitem" onclick="KoraGrid.toggleHideZero()"><span>${sEsc(L('ዜሮ ቀሪ ደብቅ', 'Hide Zero Rows'))}</span><span>${st.hideZero ? '✓' : ''}</span></button>
         <button type="button" class="kg-mitem" onclick="KoraGrid.cyclePaper()"><span>${sEsc(L('የወረቀት መጠን', 'Paper Size'))}</span><b>${st.paper}</b></button>
         <hr class="kg-msep">
-        <button type="button" class="kg-mitem" onclick="KoraGrid.exportPdf()"><span>${sEsc(L('PDF / ህትመት (እንደታየው)', 'PDF / Print'))}</span><span>PDF</span></button>
-        <button type="button" class="kg-mitem" onclick="KoraGrid.exportXls()"><span>${sEsc(L('ሰንጠረዥ አውርድ (.xls)', 'Export (.xls)'))}</span><span>XLS</span></button>
-        <button type="button" class="kg-mitem" onclick="KoraGrid.exportCsv()"><span>${sEsc(L('CSV ፋይል አውርድ', 'Export CSV'))}</span><span>CSV</span></button>
-        <button type="button" class="kg-mitem" onclick="KoraGrid.shareSheet()"><span>${sEsc(L('ቀጥታ አጋራ (Share)', 'Share'))}</span><span>➔</span></button>
+        <button type="button" class="kg-mitem" onclick="KoraGrid.exportPdf()"><span>${sEsc(L('PDF / ህትመት (እንደታየው)', 'PDF / Print'))}</span><b>PDF</b></button>
+        <button type="button" class="kg-mitem" onclick="KoraGrid.exportXls()"><span>${sEsc(L('ሰንጠረዥ አውርድ (.xls)', 'Export (.xls)'))}</span><b>XLS</b></button>
+        <button type="button" class="kg-mitem" onclick="KoraGrid.exportCsv()"><span>${sEsc(L('CSV ፋይል አውርድ', 'Export CSV'))}</span><b>CSV</b></button>
+        <button type="button" class="kg-mitem" onclick="KoraGrid.shareSheet()"><span>${sEsc(L('ቀጥታ አጋራ', 'Share'))}</span><span>➔</span></button>
         <hr class="kg-msep">
         <button type="button" class="kg-mitem" style="color:#fb7185;" onclick="KoraGrid.resetStyle()"><span>${sEsc(L('ቅርጸቱን ወደ ነባር መልስ', 'Reset Layout'))}</span><span>↺</span></button>
       </div>` : '';
@@ -683,8 +991,8 @@
         <span style="font-size:11px;font-family:ui-monospace,monospace;font-weight:800;padding:0 3px;">${st.fontSize}</span>
         <button type="button" class="kg-fbtn" onclick="KoraGrid.stepFont(1)">A+</button>
         <span class="kg-fsep"></span>
-        <button type="button" class="kg-fbtn" onclick="KoraGrid.stepColW(-14)" title="Narrow">↔-</button>
-        <button type="button" class="kg-fbtn" onclick="KoraGrid.stepColW(14)" title="Widen">↔+</button>
+        <button type="button" class="kg-fbtn" onclick="KoraGrid.stepColW(-14)">↔-</button>
+        <button type="button" class="kg-fbtn" onclick="KoraGrid.stepColW(14)">↔+</button>
         <span class="kg-fsep"></span>
         <button type="button" class="kg-fbtn ${curSelStyle.align === 'left' ? 'on' : ''}" onclick="KoraGrid.setAlign('left')">${SVG.alignL}</button>
         <button type="button" class="kg-fbtn ${curSelStyle.align === 'center' ? 'on' : ''}" onclick="KoraGrid.setAlign('center')">${SVG.alignC}</button>
@@ -699,7 +1007,7 @@
 
       <div class="kg-sheet-tabs no-scrollbar">
         ${bottomTabsHtml}
-        <input type="date" style="margin-left:auto;height:31px;border-radius:15px;padding:0 9px;border:1px solid rgba(148,163,184,0.22);background:#0f151d;color:#cbd5e1;font-size:11px;font-family:ui-monospace,monospace;flex-shrink:0;" value="${sEsc(state.koraGrid.date)}" onchange="KoraGrid.setDate(this.value)">
+        <input type="date" style="margin-left:auto;height:31px;border-radius:15px;padding:0 9px;border:1px solid rgba(148,163,184,0.22);background:${isLightGrid ? '#fff' : '#0f151d'};color:inherit;font-size:11px;font-family:ui-monospace,monospace;flex-shrink:0;" value="${sEsc(state.koraGrid.date)}" onchange="KoraGrid.setDate(this.value)">
       </div>
       ${menuPop}`;
 
@@ -723,24 +1031,28 @@
   }
 
   function buildExactExportHtml() {
+    // ለPDF/Excel ሲወጣ የታጠፉ ምድቦችን አስቀድሞ ዘርግቶ ሁሉንም የሚታዩ ዓምዶች ብቻ ይልካል
+    const bakCollapsed = { ...collapsedCats };
+    collapsedCats = {};
     const ds = buildGridDataset(), st = state.koraGridStyle;
+    collapsedCats = bakCollapsed;
+
     const colTags = ds.cols.map((c) => `<col style="width:${Number(st.colWidths[c.k] || c.w)}px;">`).join('');
     const headCells = ds.cols.map((c) => {
       const ef = getEffectiveStyle(c.k, c.defAlign);
       return `<th style="background:#0f172a;color:#fff;padding:${st.rowPad + 1}px 6px;font-size:${st.fontSize}px;text-align:${ef.align};">${sEsc(c.lbl)}</th>`;
     }).join('');
     const bodyRows = ds.rows.map((r) => {
-      if (r.isCat) return `<tr style="background:#bbf7d0;color:#065f46;font-weight:bold;"><td colspan="${ds.cols.length}" style="padding:${st.rowPad}px 7px;font-size:${st.fontSize}px;">${sEsc(r.cat)}</td></tr>`;
+      if (r.isBlank) return `<tr><td colspan="${ds.cols.length}" style="height:12px;border:none;background:#ffffff;"></td></tr>`;
+      if (r.isCat) return `<tr style="background:#bbf7d0;color:#065f46;font-weight:bold;"><td colspan="${ds.cols.length}" style="padding:${st.rowPad}px 7px;font-size:${st.fontSize}px;">${sEsc(r.cat)} (${r.count})</td></tr>`;
+      if (r.isSubtot) return `<tr style="background:#f1f5f9;color:#334155;font-weight:bold;">${ds.cols.map((c) => `<td style="padding:${Math.max(3, st.rowPad - 1)}px 6px;font-size:${Math.max(9, st.fontSize - 1)}px;text-align:${getEffectiveStyle(c.k, c.defAlign).align};">${sEsc(r.map[c.k] ?? '')}</td>`).join('')}</tr>`;
       const bg = r.rowCls === 'kg-void' ? '#fee2e2' : (r.rowCls === 'kg-zero' ? '#fef3c7' : (r.rowCls === 'kg-in' ? '#dcfce7' : (r.rowCls === 'kg-low' ? '#fef2f2' : '#ffffff')));
-      return `<tr style="background:${bg};">${r.cells.map((val, ci) => {
-        const c = ds.cols[ci], ef = getEffectiveStyle(c.k, c.defAlign);
-        return `<td style="padding:${st.rowPad}px 6px;font-size:${st.fontSize}px;text-align:${ef.align};font-weight:${ef.bold ? 'bold' : 'normal'};font-style:${ef.italic ? 'italic' : 'normal'};white-space:${st.wrap ? 'normal' : 'nowrap'};">${sEsc(val)}</td>`;
+      return `<tr style="background:${bg};">${ds.cols.map((c) => {
+        const ef = getEffectiveStyle(c.k, c.defAlign);
+        return `<td style="padding:${st.rowPad}px 6px;font-size:${st.fontSize}px;text-align:${ef.align};font-weight:${ef.bold ? 'bold' : 'normal'};font-style:${ef.italic ? 'italic' : 'normal'};white-space:${st.wrap ? 'normal' : 'nowrap'};">${sEsc(r.map[c.k] ?? '')}</td>`;
       }).join('')}</tr>`;
     }).join('');
-    const totRow = ds.totals ? `<tr style="background:#e2e8f0;font-weight:bold;">${ds.totals.map((val, ci) => {
-      const c = ds.cols[ci], ef = getEffectiveStyle(c.k, c.defAlign);
-      return `<td style="padding:${st.rowPad + 1}px 6px;font-size:${st.fontSize}px;text-align:${ef.align};">${sEsc(val)}</td>`;
-    }).join('')}</tr>` : '';
+    const totRow = `<tr style="background:#e2e8f0;font-weight:bold;">${ds.cols.map((c) => `<td style="padding:${st.rowPad + 1}px 6px;font-size:${st.fontSize}px;text-align:${getEffectiveStyle(c.k, c.defAlign).align};">${sEsc(ds.totalsMap[c.k] ?? '')}</td>`).join('')}</tr>`;
     return `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="utf-8"><style>@page{size:${st.paper};margin:8mm;}body{font-family:system-ui,Arial,sans-serif;color:#0f172a;background:#fff;margin:0;}h3{margin:0 0 8px;font-size:15px;}table{border-collapse:collapse;width:100%;}th,td{border:1px solid #94a3b8;}</style></head><body><h3>${sEsc(state.orgName || 'ኮራ ስቶክ')} — ${sEsc(ds.title)} (${sEsc(state.koraGrid.date)})</h3><table><colgroup>${colTags}</colgroup><thead><tr>${headCells}</tr></thead><tbody>${bodyRows}${totRow}</tbody></table></body></html>`;
   }
 
@@ -751,14 +1063,10 @@
   }
 
   function openGrid(domain) {
-    ensureGridState();
+    ensureUiState();
     gridDomain = domain || 'stock';
-    gridOpen = true;
-    gridMenuOpen = false;
-    selectedColKey = null;
-    if (!gridHistoryPushed) {
-      try { window.history.pushState({ koraFocus: 'grid' }, ''); gridHistoryPushed = true; } catch {}
-    }
+    gridOpen = true; gridMenuOpen = false; selectedColKey = null;
+    if (!gridHistoryPushed) { try { window.history.pushState({ koraFocus: 'grid' }, ''); gridHistoryPushed = true; } catch {} }
     renderGridOverlay();
   }
 
@@ -781,96 +1089,94 @@
     const activeSub = document.querySelector('#subTabsBar .subtab.active');
     if (!activeSub) return;
     const txt = (activeSub.textContent || '').replace(/[\u{1F300}-\u{1FAFF}\u2600-\u27BF]/gu, '').trim().toLowerCase();
-    if (txt.includes('ክምችት') || txt === 'stock' || txt === 'ledger') {
-      openGrid('stock');
-    } else if (txt.includes('ሂሳብ') || txt.includes('ሒሳብ') || txt === 'finance' || txt === 'accounts') {
-      openGrid('finance');
+    if (txt.includes('ክምችት') || txt === 'stock' || txt === 'ledger') openGrid('stock');
+    else if (txt.includes('ሂሳብ') || txt.includes('ሒሳብ') || txt === 'finance' || txt === 'accounts') openGrid('finance');
+  }
+
+  // ---------------------------------------------------------------------------
+  // 5. የጎን ሜኑ ቅደም ተከተል (100% ንጹህ አማርኛ + ትክክለኛ SVG አዶዎች + ገጽታ መቀየሪያ)
+  // ---------------------------------------------------------------------------
+  function stripEmojis(s) { return String(s || '').replace(/[\u{1F300}-\u{1FAFF}\u2600-\u27BF\uFE0F]/gu, '').replace(/\s+/g, ' ').trim(); }
+
+  function pickDrawerIconAndPriority(text) {
+    const t = text.toLowerCase();
+    // ቡድን 1: የዕለት ተዕለት ሥራ (10–25)
+    if (t.includes('ማጽደቂ')) return { ico: SVG.checkSq, ord: 10 };
+    if (t.includes('ወጪ')) return { ico: SVG.expense, ord: 12 };
+    if (t.includes('ቁጥጥር') || t.includes('ሪፖርት')) return { ico: SVG.shield, ord: 14 };
+    if (t.includes('ገበያ') || t.includes('market')) return { ico: SVG.market, ord: 16 };
+    // ቡድን 2: ዋና መዛግብት (30–45)
+    if (t.includes('ዕቃ') || t.includes('እቃ') || t.includes('item')) return { ico: SVG.box, ord: 30 };
+    if (t.includes('ደንበ')) return { ico: SVG.users, ord: 32 };
+    if (t.includes('አቅራቢ') || t.includes('supplier')) return { ico: SVG.supplier, ord: 34 };
+    if (t.includes('ባንክ') || t.includes('ባንኮ') || t.includes('bank')) return { ico: SVG.bank, ord: 36 };
+    if (t.includes('ቅርንጫ') || t.includes('branch')) return { ico: SVG.branch, ord: 38 };
+    // ቡድን 3: አስተዳደር እና ቅንብር (50–95)
+    if (t.includes('ሰራተ') || t.includes('ሠራተ') || t.includes('staff')) return { ico: SVG.users, ord: 50 };
+    if (t.includes('ቅፅ') || t.includes('ቅጽ') || t.includes('form')) return { ico: SVG.form, ord: 55 };
+    if (t.includes('ኦዲት') || t.includes('audit')) return { ico: SVG.shield, ord: 60 };
+    if (t.includes('መልዕክ') || t.includes('መልእክ') || t.includes('channel')) return { ico: SVG.send, ord: 65 };
+    if (t.includes('ዘመናዊ') || t.includes('ተጨማሪ') || t.includes('next-gen')) return { ico: SVG.sparkles, ord: 70 };
+    if (t.includes('ባክአፕ') || t.includes('backup')) return { ico: SVG.db, ord: 75 };
+    if (t.includes('ገጽታ') || t.includes('theme')) return { ico: SVG.sunMoon, ord: 80 };
+    if (t.includes('ቋንቋ') || t.includes('lang')) return { ico: SVG.globe, ord: 85 };
+    return { ico: SVG.gear, ord: 90 };
+  }
+
+  function cleanDrawerLabel(txt) {
+    let s = stripEmojis(txt);
+    if (isAm()) {
+      s = s.replace(/\s*\((Next-Gen|ERP|English|Amharic)\)/gi, '').trim();
+      if (s === 'ዘመናዊ መሣሪያዎች') s = 'ተጨማሪ መሣሪያዎች';
     }
+    return s;
   }
 
-  // ---------------------------------------------------------------------------
-  // 5. ተለዋዋጭ የድርጅት ቅፅ ገንቢ (በ«የቅጽ ቅንብር» ሞዳል ውስጥ)
-  // ---------------------------------------------------------------------------
-  const FORM_MODS = [
-    { k: 'sales', am: 'ሽያጭ', en: 'Sales' }, { k: 'warehouse', am: 'መጋዘን', en: 'Warehouse' },
-    { k: 'purchase', am: 'ግዢ', en: 'Purchase' }, { k: 'customer', am: 'ደንበኛ', en: 'Customer' },
-    { k: 'dispatch', am: 'ማጓጓዣ', en: 'Dispatch' }
-  ];
-  const F_TYPES = [
-    { k: 'text', am: 'ጽሁፍ', en: 'Text' }, { k: 'number', am: 'ቁጥር', en: 'Number' },
-    { k: 'select', am: 'ምርጫ', en: 'Dropdown' }, { k: 'date', am: 'ቀን', en: 'Date' },
-    { k: 'toggle', am: 'አዎ/አይ', en: 'Yes/No' }
-  ];
+  function upgradeSideDrawer() {
+    const nav = document.getElementById('drawerNav');
+    if (!nav) return;
 
-  function buildFormBuilderHtml() {
-    ensureGridState();
-    const mod = state.customFormTab || 'sales';
-    const list = state.customForms[mod] || [];
-    return `
-      <div class="card-row" style="margin-bottom:5px;">
-        <b style="font-size:11.5px;color:#2dd4bf;">${sEsc(L('የድርጅቱ ተጨማሪ መስኮች', 'Custom Organization Fields'))}</b>
-        <button type="button" class="btn teal sm" style="height:26px;font-size:10.5px;display:inline-flex;align-items:center;gap:3px;" onclick="KoraGrid.openAddField()">${SVG.plus} ${sEsc(L('አዲስ መስክ', 'Add Field'))}</button>
-      </div>
-      <div class="subtabs no-scrollbar" style="margin-bottom:6px;">
-        ${FORM_MODS.map((m) => `<button type="button" class="subtab ${mod === m.k ? 'active' : ''}" style="height:25px;font-size:10.5px;" onclick="KoraGrid.setFormTab('${m.k}')">${sEsc(isAm() ? m.am : m.en)} (${(state.customForms[m.k] || []).length})</button>`).join('')}
-      </div>
-      <div style="display:flex;flex-direction:column;gap:5px;max-height:160px;overflow-y:auto;">
-        ${list.map((f, i) => {
-          const tObj = F_TYPES.find((x) => x.k === f.type) || F_TYPES[0];
-          return `<div class="ksf-field-row"><div style="min-width:0;flex:1;"><b style="font-size:11.5px;">${sEsc(f.label)}</b><span class="pill" style="font-size:9px;margin-left:4px;">${sEsc(isAm() ? tObj.am : tObj.en)}</span>${f.required ? `<span class="pill rose" style="font-size:9px;">*</span>` : ''}</div><div style="display:flex;align-items:center;gap:6px;"><div class="toggle ${f.enabled !== false ? 'on' : ''}" onclick="KoraGrid.toggleField('${mod}',${i})"></div><button type="button" class="btn ghost sm" style="color:#fb7185;padding:0 5px;" onclick="KoraGrid.delField('${mod}',${i})">${SVG.trash}</button></div></div>`;
-        }).join('') || `<div style="font-size:11px;color:#8b9bb0;text-align:center;padding:8px;">${sEsc(L('የድርጅትህን ተጨማሪ መስክ በ«+ አዲስ መስክ» ጨምር', 'Tap "+ Add Field" to customize any form'))}</div>`}
-      </div>`;
-  }
+    // የብርሃን / ጨለማ / እንደ ስልኩ ገጽታ መቀየሪያ ንጥል በጎን ሜኑ ውስጥ መጨመር
+    let themeBtn = nav.querySelector('[data-kth-theme-btn]');
+    const tMode = (hasState() && state.uiTheme) || 'dark';
+    const tBadge = tMode === 'light' ? L('ብርሃን', 'Light') : (tMode === 'auto' ? L('ራስ-ሰር', 'Auto') : L('ጨለማ', 'Dark'));
+    if (!themeBtn) {
+      themeBtn = document.createElement('button');
+      themeBtn.type = 'button';
+      themeBtn.className = 'drawer-item';
+      themeBtn.setAttribute('data-kth-theme-btn', '1');
+      themeBtn.onclick = () => KoraTheme.cycleTheme();
+      nav.appendChild(themeBtn);
+    }
+    themeBtn.style.order = '80';
+    themeBtn.innerHTML = `<span class="kth-dr-left"><span class="kth-dr-ico">${SVG.sunMoon}</span><span>${sEsc(L('የገጽታ ቀለም', 'Appearance'))}</span></span><span class="pill teal">${sEsc(tBadge)}</span>`;
 
-  function injectIntoModals() {
-    if (!hasState()) return;
-    ensureGridState();
-    const modal = document.querySelector('#modalOverlay.open, .modal-bg.open, .modal-backdrop.open, #modalCard, .modal-card');
-    if (!modal) return;
-    const fullTxt = modal.textContent || '';
-
-    if ((fullTxt.includes('የቅጽ ቅንብር') || fullTxt.includes('የቅፅ ቅንብር') || fullTxt.includes('ፓድ ቁጥር አሳይ')) && !modal.querySelector('[data-kg-fbuilder]')) {
-      const sws = modal.querySelectorAll('.switch-row');
-      const host = sws.length ? sws[sws.length - 1].parentElement : (modal.querySelector('.modal-body, #modalBody') || modal);
-      if (host) {
-        const box = document.createElement('div');
-        box.setAttribute('data-kg-fbuilder', '1');
-        box.style.cssText = 'margin-top:10px;padding-top:8px;border-top:1px solid rgba(148,163,184,0.18);';
-        box.innerHTML = buildFormBuilderHtml();
-        host.appendChild(box);
+    let seenLang = false;
+    Array.from(nav.querySelectorAll('.drawer-item')).forEach((btn) => {
+      if (btn.hasAttribute('data-kth-theme-btn')) return;
+      const rawTxt = (btn.textContent || '').trim();
+      const cleanTxt = cleanDrawerLabel(rawTxt), low = cleanTxt.toLowerCase();
+      const isLang = low.includes('ቋንቋ') || low.includes('language');
+      if (btn.hasAttribute('data-ke-lang') || (isLang && seenLang) || cleanTxt.includes('የቆጠራ ቅንብር') || cleanTxt.includes('ፒዲኤፍ ስቱዲዮ') || cleanTxt.includes('የፒዲኤፍ') || low.includes('pdf studio')) {
+        btn.classList.add('kth-dr-hidden'); return;
       }
-      return;
-    }
+      if (isLang) seenLang = true;
 
-    if (modal.querySelector('[data-kg-cf-inj]') || modal.querySelector('[data-kg-fbuilder]')) return;
-    const head = (modal.querySelector('h3, h4, .modal-title, .modal-head')?.textContent || fullTxt.slice(0, 50)).toLowerCase();
-    let mod = null;
-    if (head.includes('ሽያጭ') || head.includes('sale')) mod = 'sales';
-    else if (head.includes('መጋዘን') || head.includes('ገቢ') || head.includes('ወጪ') || head.includes('warehouse')) mod = 'warehouse';
-    else if (head.includes('ግዢ') || head.includes('purchase')) mod = 'purchase';
-    else if (head.includes('ደንበኛ') || head.includes('customer')) mod = 'customer';
-    else if (head.includes('ማጓጓዣ') || head.includes('ትዕዛዝ') || head.includes('dispatch')) mod = 'dispatch';
-    if (!mod) return;
+      const meta = pickDrawerIconAndPriority(cleanTxt);
+      btn.style.order = String(meta.ord);
 
-    const active = (state.customForms[mod] || []).filter((f) => f.enabled !== false);
-    if (!active.length) return;
-    const body = modal.querySelector('.modal-body, #modalBody') || modal;
-    const wrap = document.createElement('div');
-    wrap.className = 'sub-card'; wrap.setAttribute('data-kg-cf-inj', '1'); wrap.style.marginTop = '6px';
-    wrap.innerHTML = `<div style="font-size:10px;font-weight:800;color:#2dd4bf;margin-bottom:4px;">${sEsc(L('የድርጅቱ ተጨማሪ መስኮች', 'Custom Fields'))}</div>` +
-      active.map((f) => {
-        if (f.type === 'select') {
-          const opts = (f.options || '').split(',').map((o) => o.trim()).filter(Boolean);
-          return `<div style="margin-top:4px;"><label class="lbl">${sEsc(f.label)}</label><select class="sel" data-cf-id="${f.id}">${opts.map((o) => `<option value="${sEsc(o)}">${sEsc(o)}</option>`).join('')}</select></div>`;
-        }
-        if (f.type === 'toggle') return `<div class="switch-row" style="margin-top:4px;"><span>${sEsc(f.label)}</span><div class="toggle" data-cf-id="${f.id}" onclick="this.classList.toggle('on')"></div></div>`;
-        return `<div style="margin-top:4px;"><label class="lbl">${sEsc(f.label)}</label><input type="${f.type === 'number' ? 'number' : (f.type === 'date' ? 'date' : 'text')}" class="inp sm" data-cf-id="${f.id}"></div>`;
-      }).join('');
-    body.appendChild(wrap);
+      const pill = btn.querySelector('.pill, .badge');
+      const pureLabel = pill ? cleanDrawerLabel(rawTxt.replace(pill.textContent, '')) : cleanTxt;
+      const sig = `${pureLabel}|${pill ? pill.textContent : ''}`;
+      if (btn.dataset.kthDrDone === sig) return;
+      btn.dataset.kthDrDone = sig;
+
+      btn.innerHTML = `<span class="kth-dr-left"><span class="kth-dr-ico">${meta.ico}</span><span>${sEsc(pureLabel)}</span></span>${pill ? pill.outerHTML : ''}`;
+    });
   }
 
   // ---------------------------------------------------------------------------
-  // 6. ዳሰሳ፣ ጎን ሜኑ እና Focus Mode ማስተባበሪያ
+  // 6. ዳሰሳ፣ የላይ አሞሌ (Privacy Eye + Back/Menu + Bell) እና Swipe-Right
   // ---------------------------------------------------------------------------
   function detectNavKey(btn) {
     const hay = `${btn.getAttribute('onclick') || ''} ${btn.dataset?.tab || ''} ${btn.textContent || ''}`.toLowerCase();
@@ -916,67 +1222,6 @@
     });
   }
 
-  function stripEmojis(s) { return String(s || '').replace(/[\u{1F300}-\u{1FAFF}\u2600-\u27BF\uFE0F]/gu, '').replace(/\s+/g, ' ').trim(); }
-
-  function pickDrawerSvg(text) {
-    const t = text.toLowerCase();
-    if (t.includes('ዘመናዊ') || t.includes('next-gen')) return SVG.sparkles;
-    if (t.includes('ቁጥጥር') || t.includes('erp') || t.includes('ኦዲት')) return SVG.shield;
-    if (t.includes('ዕቃዎች') || t.includes('item')) return SVG.box;
-    if (t.includes('ቅርንጫፍ') || t.includes('branch')) return SVG.branch;
-    if (t.includes('ባንክ') || t.includes('bank')) return SVG.bank;
-    if (t.includes('አቅራቢ') || t.includes('supplier')) return SVG.supplier;
-    if (t.includes('ወጪ') || t.includes('expense')) return SVG.expense;
-    if (t.includes('ገበያ') || t.includes('market')) return SVG.market;
-    if (t.includes('ሰራተኞች') || t.includes('ደንበኞች') || t.includes('staff') || t.includes('customer')) return SVG.users;
-    if (t.includes('መልዕክት') || t.includes('channel')) return SVG.send;
-    if (t.includes('ማጽደቂያ') || t.includes('approval')) return SVG.checkSq;
-    if (t.includes('ቅፅ') || t.includes('ቅጽ') || t.includes('form')) return SVG.form;
-    if (t.includes('ባክአፕ') || t.includes('backup')) return SVG.db;
-    if (t.includes('ቋንቋ') || t.includes('lang')) return SVG.globe;
-    return SVG.gear;
-  }
-
-  function upgradeSideDrawer() {
-    const nav = document.getElementById('drawerNav');
-    if (!nav) return;
-    let seenLang = false;
-    Array.from(nav.querySelectorAll('.drawer-item')).forEach((btn) => {
-      const rawTxt = (btn.textContent || '').trim();
-      const cleanTxt = stripEmojis(rawTxt), low = cleanTxt.toLowerCase();
-      const isLang = low.includes('ቋንቋ') || low.includes('language');
-      if (btn.hasAttribute('data-ke-lang') || (isLang && seenLang) || cleanTxt.includes('የቆጠራ ቅንብር') || cleanTxt.includes('ፒዲኤፍ ስቱዲዮ') || cleanTxt.includes('የፒዲኤፍ') || low.includes('pdf studio')) {
-        btn.classList.add('kth-dr-hidden'); return;
-      }
-      if (isLang) seenLang = true;
-      if (btn.dataset.kthDrDone === cleanTxt) return;
-      btn.dataset.kthDrDone = cleanTxt;
-      const pill = btn.querySelector('.pill, .badge');
-      const pureLabel = pill ? stripEmojis(rawTxt.replace(pill.textContent, '')) : cleanTxt;
-      btn.innerHTML = `<span class="kth-dr-left"><span class="kth-dr-ico">${pickDrawerSvg(pureLabel)}</span><span>${pureLabel}</span></span>${pill ? pill.outerHTML : ''}`;
-    });
-  }
-
-  function upgradeInlineIconsAndHidePdf() {
-    const root = document.getElementById('viewRoot');
-    if (!root) return;
-    root.querySelectorAll('button').forEach((b) => {
-      const t = (b.textContent || '').trim().toLowerCase();
-      if (t.includes('ፒዲኤፍ ስቱዲዮ') || t.includes('pdf studio')) b.classList.add('kth-hide-pdf-btn');
-    });
-    const swaps = [['🚚', SVG.truckSm], ['⛽', SVG.fuelSm], ['📞', SVG.phoneSm], ['🧭', SVG.navSm], ['✅', SVG.checkSm]];
-    root.querySelectorAll('button.btn, a.btn').forEach((el) => {
-      if (el.dataset.kthBtnIco) return;
-      const html = el.innerHTML;
-      if (!html.includes('<svg')) {
-        let next = html;
-        swaps.forEach(([em, svg]) => { if (next.includes(em)) next = next.replaceAll(em, svg); });
-        if (next !== html) { el.innerHTML = next; el.style.cssText += ';display:inline-flex;align-items:center;justify-content:center;gap:5px;'; }
-      }
-      el.dataset.kthBtnIco = '1';
-    });
-  }
-
   function exitFocusScreen() {
     tallyHistoryPushed = false;
     document.body.classList.remove('kth-focus-tally');
@@ -990,9 +1235,8 @@
       lastMainTab = state.activeMainTab;
     }
     document.body.classList.toggle('kth-focus-tally', Boolean(isTally));
-    if (isTally && !tallyHistoryPushed) {
-      try { window.history.pushState({ koraFocus: 'tally' }, ''); tallyHistoryPushed = true; } catch {}
-    } else if (!isTally) tallyHistoryPushed = false;
+    if (isTally && !tallyHistoryPushed) { try { window.history.pushState({ koraFocus: 'tally' }, ''); tallyHistoryPushed = true; } catch {} }
+    else if (!isTally) tallyHistoryPushed = false;
 
     const topbar = document.querySelector('.topbar');
     if (topbar) document.documentElement.style.setProperty('--kth-top-h', Math.ceil(topbar.getBoundingClientRect().height) + 'px');
@@ -1000,7 +1244,7 @@
     const row1 = document.querySelector('.topbar .topbar-row');
     if (!row1) return;
     const menuBtn = row1.querySelector('button:first-child');
-    if (menuBtn && menuBtn.id !== 'keNotifBell' && menuBtn.id !== 'btnNotifBell') {
+    if (menuBtn && menuBtn.id !== 'keNotifBell' && menuBtn.id !== 'btnNotifBell' && menuBtn.id !== 'kthEyeBtn') {
       if (isTally) {
         if (!menuBtn.dataset.kthOrigOnclick) menuBtn.dataset.kthOrigOnclick = menuBtn.getAttribute('onclick') || '';
         menuBtn.innerHTML = SVG.back; menuBtn.classList.add('kth-back-btn');
@@ -1015,24 +1259,91 @@
         if (!menuBtn.querySelector('svg') || menuBtn.innerHTML !== SVG.menu) menuBtn.innerHTML = SVG.menu;
       }
     }
+
     const bell = document.getElementById('btnNotifBell') || document.getElementById('keNotifBell');
     if (bell && !bell.querySelector('svg')) {
       const bdg = bell.querySelector('.ke-bell-badge, .badge, .notif-badge'), dot = bell.querySelector('.ke-net-dot');
       bell.innerHTML = `${SVG.bell}${bdg ? bdg.outerHTML : ''}${dot ? dot.outerHTML : ''}`;
     }
+
+    // የባለቤት ግላዊነት ዓይን (Privacy Blur) ቁልፍ — በዳሽቦርድ እና ግብይት ላይ
+    let eyeBtn = document.getElementById('kthEyeBtn');
+    const showEye = hasState() && (state.activeMainTab === 'dashboard' || state.activeMainTab === 'trade' || state.activeMainTab === 'sales');
+    if (showEye && bell) {
+      if (!eyeBtn) {
+        eyeBtn = document.createElement('button');
+        eyeBtn.id = 'kthEyeBtn'; eyeBtn.type = 'button'; eyeBtn.className = 'kth-eye-btn';
+        eyeBtn.onclick = () => KoraTheme.togglePrivacy();
+        row1.insertBefore(eyeBtn, bell);
+      }
+      eyeBtn.style.display = 'inline-flex';
+      eyeBtn.classList.toggle('on', Boolean(state.privacyBlur));
+      eyeBtn.innerHTML = state.privacyBlur ? SVG.eyeOff : SVG.eye;
+    } else if (eyeBtn) {
+      eyeBtn.style.display = 'none';
+    }
+
     if (hasState() && Array.isArray(state.branches)) {
       const scopeSel = row1.querySelector('.scope-sel, select');
       if (scopeSel) scopeSel.style.display = state.branches.length <= 1 ? 'none' : '';
     }
   }
 
+  function installTouchSwipeExit() {
+    if (global._kthSwipeInstalled) return;
+    global._kthSwipeInstalled = true;
+    let hint = document.getElementById('kthSwipeHint');
+    if (!hint) {
+      hint = document.createElement('div'); hint.id = 'kthSwipeHint';
+      hint.innerHTML = `${SVG.back}<span>${L('ተመለስ', 'Back')}</span>`;
+      document.body.appendChild(hint);
+    }
+    let tracking = false, startX = 0, startY = 0, lastDx = 0;
+    function canSwipeNow(target, x) {
+      if (document.querySelector('#modalOverlay.open, .modal-bg.open, .modal-backdrop.open')) return false;
+      if (target && target.closest('#ktpSlide, .kg-resizer, input, select, textarea, .no-scrollbar')) return false;
+      if (gridOpen) { const body = document.querySelector('.kg-body'); return x <= 52 || !body || body.scrollLeft <= 3; }
+      return hasState() && (state.activeMainTab === 'tally' || String(state.activeMainTab || '').startsWith('setup:'));
+    }
+    document.addEventListener('touchstart', (e) => {
+      if (e.touches.length !== 1) { tracking = false; return; }
+      const t = e.touches[0];
+      if (!canSwipeNow(e.target, t.clientX)) { tracking = false; return; }
+      tracking = true; startX = t.clientX; startY = t.clientY; lastDx = 0;
+    }, { passive: true });
+    document.addEventListener('touchmove', (e) => {
+      if (!tracking || e.touches.length !== 1) return;
+      const t = e.touches[0], dx = t.clientX - startX, dy = Math.abs(t.clientY - startY);
+      if (dx < 8 || dy > 65 || dy > dx * 0.75) {
+        if (dy > 45 && dx < 28) tracking = false;
+        hint.style.opacity = '0'; hint.style.transform = 'translate(-110%, -50%)'; lastDx = 0; return;
+      }
+      lastDx = dx;
+      const pct = Math.min(1, dx / 85);
+      hint.style.opacity = String(pct);
+      hint.style.transform = `translate(${Math.round(-110 + pct * 110)}%, -50%)`;
+    }, { passive: true });
+    const done = () => {
+      if (!tracking) return;
+      tracking = false; hint.style.opacity = '0'; hint.style.transform = 'translate(-110%, -50%)';
+      if (lastDx >= 78) {
+        if (navigator.vibrate) navigator.vibrate(16);
+        if (gridOpen) closeGrid();
+        else if (hasState() && (state.activeMainTab === 'tally' || String(state.activeMainTab || '').startsWith('setup:'))) exitFocusScreen();
+      }
+      lastDx = 0;
+    };
+    document.addEventListener('touchend', done, { passive: true });
+    document.addEventListener('touchcancel', done, { passive: true });
+  }
+
   function applyAll() {
     injectUnifiedCss();
+    applyThemeClasses();
     syncFocusAndTopbar();
     upgradeBottomNav();
     upgradeSideDrawer();
-    upgradeInlineIconsAndHidePdf();
-    enforceDashboard2x2();
+    polishDashboardAndPages();
     checkAndLaunchGridFromSubTab();
   }
 
@@ -1049,7 +1360,10 @@
       document.addEventListener('click', (e) => {
         if (e.target?.closest?.('#subTabsBar .subtab')) setTimeout(checkAndLaunchGridFromSubTab, 35);
       }, true);
-      new MutationObserver(() => injectIntoModals()).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
+      new MutationObserver(() => fixModalsAndForms()).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
+      if (window.matchMedia) {
+        window.matchMedia('(prefers-color-scheme: light)').addEventListener?.('change', applyThemeClasses);
+      }
     }
 
     if (typeof global.renderView === 'function' && !global._kthRVHooked) {
@@ -1070,7 +1384,7 @@
     if (typeof global.openModal === 'function' && !global._kthOMHooked) {
       global._kthOMHooked = true;
       const origOM = global.openModal;
-      global.openModal = function () { const res = origOM.apply(this, arguments); setTimeout(injectIntoModals, 15); return res; };
+      global.openModal = function () { const res = origOM.apply(this, arguments); setTimeout(fixModalsAndForms, 15); return res; };
     }
 
     const nav = findBottomNavEl();
@@ -1082,7 +1396,29 @@
     }
   }
 
-  global.KoraTheme = { exitFocus: exitFocusScreen, refresh: applyAll };
+  global.KoraTheme = {
+    exitFocus: exitFocusScreen,
+    refresh: applyAll,
+    cycleTheme() {
+      ensureUiState();
+      const order = ['dark', 'light', 'auto'];
+      state.uiTheme = order[(order.indexOf(state.uiTheme) + 1) % order.length];
+      saveState();
+      applyThemeClasses();
+      upgradeSideDrawer();
+      const lbl = state.uiTheme === 'light' ? L('የብርሃን ገጽታ', 'Light Mode') : (state.uiTheme === 'auto' ? L('ራስ-ሰር ገጽታ', 'Auto Theme') : L('የጨለማ ገጽታ', 'Dark Mode'));
+      showToast(lbl);
+    },
+    togglePrivacy() {
+      ensureUiState();
+      state.privacyBlur = !state.privacyBlur;
+      saveState();
+      applyThemeClasses();
+      syncFocusAndTopbar();
+      showToast(state.privacyBlur ? L('የገንዘብ ቁጥሮች ተደብቀዋል', 'Amounts hidden') : L('የገንዘብ ቁጥሮች ታይተዋል', 'Amounts visible'));
+    }
+  };
+
   global.KoraGrid = {
     isOpen: () => gridOpen, open: openGrid, close: closeGrid,
     undo() { if (!styleUndoStack.length) { showToast(L('የሚመለስ ለውጥ የለም', 'Nothing to undo')); return; } state.koraGridStyle = JSON.parse(styleUndoStack.pop()); saveState(); renderGridOverlay(); },
@@ -1093,8 +1429,150 @@
     setDate(d) { state.koraGrid.date = d || todayIso(); saveState(); renderGridOverlay(); },
     setTab(t) { if (gridDomain === 'stock') state.koraGrid.stockTab = t; else state.koraGrid.finTab = t; selectedColKey = null; saveState(); renderGridOverlay(); },
     selectCol(k) { selectedColKey = selectedColKey === k ? null : k; renderGridOverlay(); },
+    toggleCat(cat) { collapsedCats[cat] = !collapsedCats[cat]; renderGridOverlay(); },
+
+    // ያለ ኮድ ዓምድ መጨመሪያ + ሕዋስ መጻፊያ + Show/Hide + የተቀመጡ እይታዎች
+    openAddColModal() {
+      gridMenuOpen = false; renderGridOverlay();
+      const ds = buildGridDataset();
+      const colOpts = ds.allCols.map((c) => `<option value="${sEsc(c.k)}">${sEsc(c.lbl)}</option>`).join('');
+      openModal(`+ ${L('አዲስ ዓምድ ጨምር', 'Add Custom Column')}`, `
+        <div class="sub-card">
+          <label class="lbl">${sEsc(L('የዓምዱ ስም', 'Column Name'))}</label>
+          <input id="kgNcLbl" class="inp" placeholder="${sEsc(L('ለምሳሌ ምርመራ / ጠቅላላ ዋጋ / የቦታ ኮድ', 'e.g. Remark / Total Value / Rack'))}">
+          <label class="lbl" style="margin-top:6px;">${sEsc(L('የዓምዱ ዓይነት', 'Column Type'))}</label>
+          <select id="kgNcType" class="sel" onchange="document.getElementById('kgNcFml').style.display=this.value==='formula'?'block':'none';document.getElementById('kgNcSys').style.display=this.value==='sys'?'block':'none';">
+            <option value="text">${sEsc(L('ጽሁፍ (ቀጥታ መጻፊያ)', 'Manual Text'))}</option>
+            <option value="number">${sEsc(L('ቁጥር (ቀጥታ መጻፊያ)', 'Manual Number'))}</option>
+            <option value="formula">${sEsc(L('ቀመር (ከሌሎች ዓምዶች የሚሰላ)', 'Formula (A op B)'))}</option>
+            ${gridDomain === 'stock' ? `<option value="sys">${sEsc(L('ከሲስተም ዳታ መሳቢያ', 'Live System Field'))}</option>` : ''}
+          </select>
+          <div id="kgNcFml" style="display:none;margin-top:6px;">
+            <div style="display:grid;grid-template-columns:1fr 56px 1fr;gap:5px;">
+              <select id="kgNcA" class="sel">${colOpts}</select>
+              <select id="kgNcOp" class="sel"><option value="*">×</option><option value="+">+</option><option value="-">−</option><option value="/">÷</option></select>
+              <select id="kgNcB" class="sel">${colOpts}</select>
+            </div>
+          </div>
+          <div id="kgNcSys" style="display:none;margin-top:6px;">
+            <select id="kgNcSysK" class="sel">
+              <option value="sellPrice">${sEsc(L('የመሸጫ ዋጋ', 'Sell Price'))}</option>
+              <option value="buyPrice">${sEsc(L('የመግዣ ዋጋ', 'Buy Price'))}</option>
+              <option value="stockValue">${sEsc(L('ጠቅላላ የክምችት ዋጋ', 'Total Stock Value'))}</option>
+              <option value="unit">${sEsc(L('መለኪያ', 'Unit'))}</option>
+              <option value="zoneCode">${sEsc(L('የመደርደሪያ ቦታ', 'Rack Location'))}</option>
+              <option value="minStock">${sEsc(L('ዝቅተኛ ገደብ', 'Min Stock'))}</option>
+            </select>
+          </div>
+        </div>`, `
+        <button type="button" class="btn muted" onclick="closeModal()">${sEsc(L('ተው', 'Cancel'))}</button>
+        <button type="button" class="btn teal" onclick="KoraGrid.saveNewCol()">${sEsc(L('ዓምድ ጨምር', 'Add Column'))}</button>`);
+    },
+    saveNewCol() {
+      const lbl = (document.getElementById('kgNcLbl')?.value || '').trim();
+      const type = document.getElementById('kgNcType')?.value || 'text';
+      if (!lbl) { showToast(L('የዓምዱን ስም ያስገቡ', 'Enter column name'), true); return; }
+      const col = { k: 'c_' + Date.now().toString(36), lbl, type, w: 96 };
+      if (type === 'formula') {
+        col.opA = document.getElementById('kgNcA')?.value;
+        col.op = document.getElementById('kgNcOp')?.value || '*';
+        col.opB = document.getElementById('kgNcB')?.value;
+      } else if (type === 'sys') {
+        col.sysKey = document.getElementById('kgNcSysK')?.value || 'sellPrice';
+      }
+      state.koraGridCols[gridDomain].push(col);
+      saveState(); closeModal(); renderGridOverlay();
+      showToast(L('አዲሱ ዓምድ ተጨምሯል!', 'Column added!'));
+    },
+    editCell(rowId, colKey, colLbl, colType) {
+      const cur = state.koraGridCellData[rowId]?.[colKey] ?? '';
+      openModal(`${sEsc(colLbl)}`, `
+        <div class="sub-card">
+          <input id="kgCellInp" type="${colType === 'number' ? 'number' : 'text'}" class="inp" value="${sEsc(cur)}" onkeydown="if(event.key==='Enter') KoraGrid.saveCell('${sEsc(rowId)}','${sEsc(colKey)}')">
+        </div>`, `
+        <button type="button" class="btn muted" onclick="closeModal()">${sEsc(L('ተው', 'Cancel'))}</button>
+        <button type="button" class="btn teal" onclick="KoraGrid.saveCell('${sEsc(rowId)}','${sEsc(colKey)}')">${sEsc(L('አስቀምጥ', 'Save'))}</button>`);
+      setTimeout(() => document.getElementById('kgCellInp')?.focus(), 30);
+    },
+    saveCell(rowId, colKey) {
+      const v = (document.getElementById('kgCellInp')?.value ?? '').trim();
+      if (!state.koraGridCellData[rowId]) state.koraGridCellData[rowId] = {};
+      state.koraGridCellData[rowId][colKey] = v;
+      saveState(); closeModal(); renderGridOverlay();
+    },
+    openColManager() {
+      gridMenuOpen = false; renderGridOverlay();
+      const ds = buildGridDataset();
+      const hidden = new Set(state.koraGridHidden[gridDomain] || []);
+      openModal(`${L('ዓምዶችን አሳይ / ደብቅ', 'Show / Hide Columns')}`, `
+        <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">${sEsc(L('የተደበቁ ዓምዶች በስክሪንም፣ በPDF እና በኤክሴል ሲላኩ አብረው ይደበቃሉ።', 'Hidden columns are excluded from Screen, PDF, Excel & Share.'))}</div>
+        <div style="display:flex;flex-direction:column;gap:5px;max-height:55vh;overflow-y:auto;">
+          ${ds.allCols.map((c) => `
+            <div class="ksf-field-row">
+              <b style="font-size:12px;">${sEsc(c.lbl)} ${c.isCustom ? `<span class="pill teal" style="font-size:9px;">${sEsc(L('ብጁ', 'Custom'))}</span>` : ''}</b>
+              <div style="display:flex;align-items:center;gap:6px;">
+                <div class="toggle ${!hidden.has(c.k) ? 'on' : ''}" onclick="KoraGrid.toggleColVis('${sEsc(c.k)}',this)"></div>
+                ${c.isCustom ? `<button type="button" class="btn ghost sm" style="color:var(--rose);padding:0 5px;" onclick="KoraGrid.delCustomCol('${sEsc(c.k)}')">${SVG.trash}</button>` : ''}
+              </div>
+            </div>`).join('')}
+        </div>`, `
+        <button type="button" class="btn teal" onclick="closeModal()">${sEsc(L('ጨርስ', 'Done'))}</button>`);
+    },
+    toggleColVis(colKey, el) {
+      const arr = state.koraGridHidden[gridDomain] || [];
+      const i = arr.indexOf(colKey);
+      if (i >= 0) arr.splice(i, 1); else arr.push(colKey);
+      state.koraGridHidden[gridDomain] = arr;
+      if (el) el.classList.toggle('on', !arr.includes(colKey));
+      saveState(); renderGridOverlay();
+    },
+    delCustomCol(colKey) {
+      state.koraGridCols[gridDomain] = (state.koraGridCols[gridDomain] || []).filter((c) => c.k !== colKey);
+      state.koraGridHidden[gridDomain] = (state.koraGridHidden[gridDomain] || []).filter((k) => k !== colKey);
+      saveState(); closeModal(); renderGridOverlay(); this.openColManager();
+    },
+    openViewsModal() {
+      gridMenuOpen = false; renderGridOverlay();
+      const views = (state.koraGridViews || []).filter((v) => v.domain === gridDomain);
+      openModal(`${L('የተቀመጡ የሰሌዳ እይታዎች', 'Saved Grid Views')}`, `
+        <div class="sub-card" style="display:flex;gap:5px;margin-bottom:8px;">
+          <input id="kgVwName" class="inp sm" placeholder="${sEsc(L('የእይታው ስም (ለምሳሌ የባለቤት ሪፖርት)', 'View name...'))}">
+          <button type="button" class="btn teal sm" onclick="KoraGrid.saveCurrentView()">${sEsc(L('አስቀምጥ', 'Save'))}</button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:5px;">
+          ${views.map((v) => `
+            <div class="ksf-field-row">
+              <b style="font-size:12px;">${sEsc(v.name)}</b>
+              <div style="display:flex;gap:5px;">
+                <button type="button" class="btn teal sm" style="height:26px;" onclick="KoraGrid.loadView('${v.id}')">${sEsc(L('ክፈት', 'Load'))}</button>
+                <button type="button" class="btn ghost sm" style="color:var(--rose);padding:0 5px;" onclick="KoraGrid.delView('${v.id}')">${SVG.trash}</button>
+              </div>
+            </div>`).join('') || `<div style="font-size:11px;color:var(--muted);text-align:center;padding:10px;">${sEsc(L('ገና የተቀመጠ እይታ የለም', 'No saved views yet'))}</div>`}
+        </div>`, `<button type="button" class="btn muted" onclick="closeModal()">${sEsc(L('ዝጋ', 'Close'))}</button>`);
+    },
+    saveCurrentView() {
+      const name = (document.getElementById('kgVwName')?.value || '').trim();
+      if (!name) return;
+      state.koraGridViews.unshift({
+        id: 'vw_' + Date.now(), name, domain: gridDomain,
+        style: JSON.parse(JSON.stringify(state.koraGridStyle)),
+        hidden: [...(state.koraGridHidden[gridDomain] || [])]
+      });
+      saveState(); closeModal(); showToast(L('እይታው ተቀምጧል!', 'View saved!'));
+    },
+    loadView(id) {
+      const v = (state.koraGridViews || []).find((x) => x.id === id); if (!v) return;
+      state.koraGridStyle = JSON.parse(JSON.stringify(v.style));
+      state.koraGridHidden[gridDomain] = [...(v.hidden || [])];
+      saveState(); closeModal(); renderGridOverlay(); showToast(v.name);
+    },
+    delView(id) {
+      state.koraGridViews = (state.koraGridViews || []).filter((x) => x.id !== id);
+      saveState(); closeModal(); this.openViewsModal();
+    },
+
     stepColW(delta) {
-      if (!selectedColKey) { showToast(L('መጀመሪያ የዓምድ ፊደል (A, B, C...) ንካ', 'Tap a column letter (A, B...) first')); return; }
+      if (!selectedColKey) { showToast(L('መጀመሪያ የዓምድ ፊደል (A, B, C...) ንካ', 'Tap a column letter first')); return; }
       pushStyleUndo();
       const cur = Number(state.koraGridStyle.colWidths[selectedColKey] || 90);
       state.koraGridStyle.colWidths[selectedColKey] = Math.max(46, Math.min(300, cur + delta));
@@ -1125,7 +1603,7 @@
     },
     cycleRowPad() { pushStyleUndo(); const c = state.koraGridStyle.rowPad || 6; state.koraGridStyle.rowPad = c === 3 ? 6 : (c === 6 ? 10 : 3); saveState(); renderGridOverlay(); },
     toggleWrap() { pushStyleUndo(); state.koraGridStyle.wrap = !state.koraGridStyle.wrap; saveState(); renderGridOverlay(); },
-    toggleTheme() { state.koraGridStyle.theme = state.koraGridStyle.theme === 'dark' ? 'light' : 'dark'; gridMenuOpen = false; saveState(); renderGridOverlay(); },
+    toggleTheme() { const isL = state.koraGridStyle.theme === 'light' || (state.koraGridStyle.theme === 'auto' && resolveLightMode()); state.koraGridStyle.theme = isL ? 'dark' : 'light'; gridMenuOpen = false; saveState(); renderGridOverlay(); },
     toggleHideZero() { state.koraGridStyle.hideZero = !state.koraGridStyle.hideZero; gridMenuOpen = false; saveState(); renderGridOverlay(); },
     cyclePaper() { state.koraGridStyle.paper = state.koraGridStyle.paper === 'A4' ? 'A5' : 'A4'; saveState(); renderGridOverlay(); },
     resetStyle() { pushStyleUndo(); state.koraGridStyle = defaultGridStyle(); selectedColKey = null; gridMenuOpen = false; saveState(); renderGridOverlay(); showToast(L('ወደ ነባር ተመልሷል', 'Reset')); },
@@ -1133,8 +1611,14 @@
     exportXls() { gridMenuOpen = false; renderGridOverlay(); downloadBlob(new Blob([buildExactExportHtml()], { type: 'application/vnd.ms-excel;charset=utf-8' }), `kora-${gridDomain}-${state.koraGrid.date}.xls`); showToast(L('ሰንጠረዥ (.xls) ወርዷል', 'Downloaded')); },
     exportCsv() {
       gridMenuOpen = false; renderGridOverlay();
-      const ds = buildGridDataset(), lines = [ds.cols.map((c) => `"${c.lbl}"`).join(',')];
-      ds.rows.forEach((r) => lines.push(r.isCat ? `"${r.cat}"` : r.cells.map((x) => `"${String(x).replace(/"/g, '""')}"`).join(',')));
+      const bak = { ...collapsedCats }; collapsedCats = {};
+      const ds = buildGridDataset(); collapsedCats = bak;
+      const lines = [ds.cols.map((c) => `"${c.lbl}"`).join(',')];
+      ds.rows.forEach((r) => {
+        if (r.isBlank) lines.push('');
+        else if (r.isCat) lines.push(`"${r.cat}"`);
+        else lines.push(ds.cols.map((c) => `"${String(r.map[c.k] ?? '').replace(/"/g, '""')}"`).join(','));
+      });
       downloadBlob(new Blob(['\uFEFF' + lines.join('\n')], { type: 'text/csv;charset=utf-8' }), `kora-${gridDomain}-${state.koraGrid.date}.csv`);
       showToast(L('CSV ወርዷል', 'CSV downloaded'));
     },
@@ -1144,6 +1628,7 @@
       try { if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ title: state.orgName || 'ኮራ ስቶክ', files: [file] }); return; } } catch {}
       this.exportXls();
     },
+    // Form Builder API
     setFormTab(m) { state.customFormTab = m; saveState(); const b = document.querySelector('[data-kg-fbuilder]'); if (b) b.innerHTML = buildFormBuilderHtml(); },
     openAddField() {
       const mod = state.customFormTab || 'sales';
